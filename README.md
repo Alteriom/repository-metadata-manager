@@ -288,8 +288,20 @@ This tool is designed to be extended and customized for your organization's need
 
 MIT License - feel free to use and modify for your organization.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Documentation Index](docs/README.md)** - Complete documentation overview
+- **[Environment Setup](docs/guides/ENVIRONMENT.md)** - Development environment configuration
+- **[Organization Setup](docs/guides/ORGANIZATION_SETUP.md)** - Organization-wide setup guide
+- **[Implementation Details](docs/development/IMPLEMENTATION_SUMMARY.md)** - Technical architecture
+- **[Versioning Guidelines](docs/development/VERSIONING.md)** - Release management
+- **[Release Notes](docs/releases/)** - Version history and changelogs
+
 ## 🆘 Support
 
-- **Issues**: Report bugs or request features
-- **Documentation**: Check the main repository docs
+- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/Alteriom/repository-metadata-manager/issues)
+- **Documentation**: Check our comprehensive [documentation](docs/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 - **Organization Standards**: Refer to Alteriom organization guidelines

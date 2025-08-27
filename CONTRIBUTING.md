@@ -8,6 +8,45 @@ We love your input! We want to make contributing to this project as easy and tra
 - Proposing new features
 - Becoming a maintainer
 
+## Development Setup
+
+To get started with local development:
+
+1. **Prerequisites**
+   - Node.js 14+ installed
+   - Git installed
+   - GitHub account
+
+2. **Fork and Clone**
+   ```bash
+   # Fork the repository on GitHub, then clone your fork
+   git clone https://github.com/YOUR_USERNAME/repository-metadata-manager.git
+   cd repository-metadata-manager
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Configuration**
+   ```bash
+   # Copy the example configuration
+   cp config.example.json config.json
+   # Edit config.json with your settings
+   ```
+
+5. **Run Tests**
+   ```bash
+   npm test
+   npm run test:features
+   ```
+
+6. **Lint Your Code**
+   ```bash
+   npm run lint
+   ```
+
 ## We Develop with GitHub
 
 We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.

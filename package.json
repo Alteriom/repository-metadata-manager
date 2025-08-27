@@ -40,7 +40,11 @@
         "postpublish": "echo 'Successfully published version' $(node -p \"require('./package.json').version\") 'to npm!'",
         "release": "node scripts/release.js",
         "release:status": "node scripts/release.js status",
-        "release:check": "node scripts/release.js check"
+        "release:check": "node scripts/release.js check",
+        "docs:check": "node scripts/docs-compliance-check.js",
+        "docs:fix": "node scripts/docs-compliance-check.js --fix",
+        "docs:nav": "node scripts/docs-navigator.js",
+        "docs:validate": "node scripts/docs-navigator.js validate"
     },
     "keywords": [
         "alteriom",
