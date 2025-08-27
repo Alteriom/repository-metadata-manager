@@ -28,8 +28,8 @@ describe('Integration Tests', () => {
             description: 'Integration test package for metadata manager',
             keywords: ['test', 'integration', 'automation'],
             repository: {
-                url: 'https://github.com/Alteriom/test-integration.git'
-            }
+                url: 'https://github.com/Alteriom/test-integration.git',
+            },
         };
     });
 
@@ -47,26 +47,32 @@ describe('Integration Tests', () => {
     describe('End-to-End Workflow', () => {
         it('should complete full metadata management workflow', () => {
             // Create test package.json
-            fs.writeFileSync('test-package.json', JSON.stringify(tempPackageJson, null, 2));
+            fs.writeFileSync(
+                'test-package.json',
+                JSON.stringify(tempPackageJson, null, 2)
+            );
 
             // Initialize manager
             const manager = new RepositoryMetadataManager({
                 organizationTag: 'alteriom',
-                packagePath: './test-package.json'
+                packagePath: './test-package.json',
             });
 
             // Test getPackageMetadata
             const packageMetadata = manager.getPackageMetadata();
             expect(packageMetadata).toBeTruthy();
             expect(packageMetadata.name).toBe('@alteriom/test-integration');
-            expect(packageMetadata.description).toBe('Integration test package for metadata manager');
+            expect(packageMetadata.description).toBe(
+                'Integration test package for metadata manager'
+            );
 
             // Test repository type detection
             const repoType = manager.detectRepositoryType(packageMetadata);
             expect(repoType).toBe('ai-agent'); // 'automation' keyword triggers ai-agent detection
 
             // Test topic generation
-            const recommendedTopics = manager.generateRecommendedTopics(packageMetadata);
+            const recommendedTopics =
+                manager.generateRecommendedTopics(packageMetadata);
             expect(recommendedTopics).toContain('alteriom');
             expect(recommendedTopics).toContain('test');
             expect(recommendedTopics).toContain('integration');
@@ -86,45 +92,54 @@ describe('Integration Tests', () => {
                 {
                     keywords: ['ai', 'agent'],
                     expectedType: 'ai-agent',
-                    expectedTopics: ['automation', 'github-integration', 'compliance']
+                    expectedTopics: [
+                        'automation',
+                        'github-integration',
+                        'compliance',
+                    ],
                 },
                 {
                     keywords: ['api', 'server'],
                     expectedType: 'api',
-                    expectedTopics: ['api', 'backend', 'server']
+                    expectedTopics: ['api', 'backend', 'server'],
                 },
                 {
                     keywords: ['cli', 'tool'],
                     expectedType: 'cli-tool',
-                    expectedTopics: ['cli', 'tool', 'command-line']
+                    expectedTopics: ['cli', 'tool', 'command-line'],
                 },
                 {
                     keywords: ['library', 'sdk'],
                     expectedType: 'library',
-                    expectedTopics: ['library', 'package', 'sdk']
-                }
+                    expectedTopics: ['library', 'package', 'sdk'],
+                },
             ];
 
             testCases.forEach(({ keywords, expectedType, expectedTopics }) => {
                 const testPackage = {
                     ...tempPackageJson,
                     keywords,
-                    name: `@alteriom/test-${expectedType}`
+                    name: `@alteriom/test-${expectedType}`,
                 };
 
-                fs.writeFileSync('test-package.json', JSON.stringify(testPackage, null, 2));
+                fs.writeFileSync(
+                    'test-package.json',
+                    JSON.stringify(testPackage, null, 2)
+                );
 
                 const manager = new RepositoryMetadataManager({
                     organizationTag: 'alteriom',
-                    packagePath: './test-package.json'
+                    packagePath: './test-package.json',
                 });
 
                 const packageMetadata = manager.getPackageMetadata();
-                const detectedType = manager.detectRepositoryType(packageMetadata);
-                const topics = manager.generateRecommendedTopics(packageMetadata);
+                const detectedType =
+                    manager.detectRepositoryType(packageMetadata);
+                const topics =
+                    manager.generateRecommendedTopics(packageMetadata);
 
                 expect(detectedType).toBe(expectedType);
-                expectedTopics.forEach(topic => {
+                expectedTopics.forEach((topic) => {
                     expect(topics).toContain(topic);
                 });
             });
@@ -135,31 +150,34 @@ describe('Integration Tests', () => {
                 {
                     description: '',
                     topics: [],
-                    expectedIssues: 2 // Missing description and topics
+                    expectedIssues: 2, // Missing description and topics
                 },
                 {
                     description: 'Valid description',
                     topics: [],
-                    expectedIssues: 1 // Missing topics only
+                    expectedIssues: 1, // Missing topics only
                 },
                 {
                     description: '',
                     topics: ['topic1', 'topic2'],
-                    expectedIssues: 1 // Missing description only
+                    expectedIssues: 1, // Missing description only
                 },
                 {
                     description: 'Valid description',
                     topics: ['topic1', 'topic2'],
-                    expectedIssues: 0 // All good
-                }
+                    expectedIssues: 0, // All good
+                },
             ];
 
             const manager = new RepositoryMetadataManager({
-                organizationTag: 'alteriom'
+                organizationTag: 'alteriom',
             });
 
             testCases.forEach(({ description, topics, expectedIssues }) => {
-                const validation = manager.validateMetadata(description, topics);
+                const validation = manager.validateMetadata(
+                    description,
+                    topics
+                );
                 expect(validation.issues).toHaveLength(expectedIssues);
             });
         });
@@ -171,15 +189,18 @@ describe('Integration Tests', () => {
                 organizationTag: 'test-org',
                 repositoryType: 'library',
                 customTopics: {
-                    'library': ['custom', 'library', 'topic']
-                }
+                    library: ['custom', 'library', 'topic'],
+                },
             };
 
-            fs.writeFileSync('test-config.json', JSON.stringify(configContent, null, 2));
+            fs.writeFileSync(
+                'test-config.json',
+                JSON.stringify(configContent, null, 2)
+            );
 
             try {
                 const manager = new RepositoryMetadataManager({
-                    configFile: './test-config.json'
+                    configFile: './test-config.json',
                 });
 
                 expect(manager.config.organizationTag).toBe('test-org');
@@ -192,7 +213,7 @@ describe('Integration Tests', () => {
 
         it('should handle missing config file gracefully', () => {
             const manager = new RepositoryMetadataManager({
-                configFile: './non-existent-config.json'
+                configFile: './non-existent-config.json',
             });
 
             // Should still initialize with defaults

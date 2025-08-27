@@ -27,10 +27,10 @@ describe('CLI Integration Tests', () => {
 
         it('should contain main command cases', () => {
             const cliContent = fs.readFileSync(cliPath, 'utf8');
-            expect(cliContent).toContain('case \'report\'');
-            expect(cliContent).toContain('case \'apply\'');
-            expect(cliContent).toContain('case \'dry-run\'');
-            expect(cliContent).toContain('case \'validate\'');
+            expect(cliContent).toContain("case 'report'");
+            expect(cliContent).toContain("case 'apply'");
+            expect(cliContent).toContain("case 'dry-run'");
+            expect(cliContent).toContain("case 'validate'");
         });
 
         it('should contain help and version handling', () => {

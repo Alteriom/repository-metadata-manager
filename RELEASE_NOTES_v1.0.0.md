@@ -5,6 +5,7 @@
 ## 🎯 What's New
 
 ### Core Features
+
 - **📋 Compliance Reporting**: Generate detailed reports showing current vs recommended repository metadata
 - **🤖 Auto-Detection**: Intelligent repository type detection (ai-agent, api, frontend, cli-tool, library, general)
 - **⚙️ Configuration Support**: File-based configuration with organization tag management
@@ -13,6 +14,7 @@
 - **👀 Dry-Run Mode**: Preview changes before applying them
 
 ### CLI Commands
+
 ```bash
 # Generate compliance report
 alteriom-metadata report --org-tag myorg
@@ -28,6 +30,7 @@ alteriom-metadata dry-run --org-tag myorg
 ```
 
 ### Repository Types Detected
+
 - **🤖 AI Agent**: Automation, GitHub integration, compliance tools
 - **🔌 API**: Backend services, REST APIs, GraphQL servers
 - **🎨 Frontend**: React apps, UI libraries, web applications
@@ -51,6 +54,7 @@ npx @alteriom/repository-metadata-manager report --org-tag myorg
 ## 🚀 Quick Start
 
 1. **Create configuration file** (`metadata-config.json`):
+
 ```json
 {
     "organizationTag": "myorg",
@@ -63,6 +67,7 @@ npx @alteriom/repository-metadata-manager report --org-tag myorg
 ```
 
 2. **Add to package.json scripts**:
+
 ```json
 {
     "scripts": {
@@ -74,6 +79,7 @@ npx @alteriom/repository-metadata-manager report --org-tag myorg
 ```
 
 3. **Run compliance check**:
+
 ```bash
 npm run metadata:validate
 ```
@@ -103,13 +109,15 @@ npm run metadata:validate
 ## ⚙️ Configuration Options
 
 ### Environment Variables
+
 - `GITHUB_TOKEN` or `AGENT_ORG_TOKEN`: GitHub API token for repository access
 - `GITHUB_REPOSITORY_OWNER`: Repository owner (auto-detected from git)
 - `GITHUB_REPOSITORY_NAME`: Repository name (auto-detected from git)
 
 ### Command Line Options
+
 - `--owner <name>`: Repository owner
-- `--repo <name>`: Repository name  
+- `--repo <name>`: Repository name
 - `--token <token>`: GitHub API token
 - `--package-path <path>`: Path to package.json (default: ./package.json)
 - `--org-tag <tag>`: Organization tag for topics (**required**)
@@ -133,15 +141,18 @@ npm run metadata:validate
 ## 🛠️ Technical Details
 
 ### Dependencies
+
 - **@octokit/rest**: GitHub API integration
 - **Node.js**: >=14.0.0 support
 
-### Development Dependencies  
+### Development Dependencies
+
 - **jest**: Testing framework
 - **eslint**: Code linting
 - **prettier**: Code formatting
 
 ### Package Info
+
 - **Size**: Lightweight, minimal dependencies
 - **Scope**: @alteriom organization package
 - **License**: MIT
@@ -150,6 +161,7 @@ npm run metadata:validate
 ## 🎯 Use Cases
 
 ### For Individual Repositories
+
 ```bash
 # Quick compliance check
 npx @alteriom/repository-metadata-manager validate --org-tag myorg
@@ -159,6 +171,7 @@ npx @alteriom/repository-metadata-manager apply --org-tag myorg
 ```
 
 ### For Organization-Wide Compliance
+
 ```bash
 # Add to repository template
 npm install --save-dev @alteriom/repository-metadata-manager
@@ -170,16 +183,18 @@ npm run metadata:validate
 ```
 
 ### For GitHub Actions
+
 ```yaml
 - name: Check Repository Compliance
   run: npx @alteriom/repository-metadata-manager validate --org-tag myorg
   env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## 🚀 Future Releases
 
 Future versions will be automatically released using semantic versioning:
+
 - **Patch releases** (1.0.x): Bug fixes and documentation updates
 - **Minor releases** (1.x.0): New features and improvements
 - **Major releases** (x.0.0): Breaking changes and major updates
@@ -193,6 +208,6 @@ Future versions will be automatically released using semantic versioning:
 
 ---
 
-**Ready to ensure your repositories meet compliance standards?** 
+**Ready to ensure your repositories meet compliance standards?**
 
 Install Repository Metadata Manager today and keep your organization's repositories properly documented and discoverable! 🎉

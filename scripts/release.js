@@ -17,7 +17,7 @@ function getCurrentVersion() {
 
 function getNextVersion(type) {
     const [major, minor, patch] = getCurrentVersion().split('.').map(Number);
-    
+
     switch (type) {
         case 'major':
             return `${major + 1}.0.0`;
@@ -61,19 +61,23 @@ Environment Variables:
 function checkStatus() {
     console.log('📋 Current Status:');
     console.log(`📦 Current version: ${getCurrentVersion()}`);
-    
+
     try {
-        const gitStatus = execSync('git status --porcelain', { encoding: 'utf8' });
+        const gitStatus = execSync('git status --porcelain', {
+            encoding: 'utf8',
+        });
         if (gitStatus.trim()) {
             console.log('⚠️  Uncommitted changes detected:');
             console.log(gitStatus);
         } else {
             console.log('✅ Working directory clean');
         }
-        
-        const branch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
+
+        const branch = execSync('git branch --show-current', {
+            encoding: 'utf8',
+        }).trim();
         console.log(`🌿 Current branch: ${branch}`);
-        
+
         if (branch !== 'main' && branch !== 'master') {
             console.log('⚠️  Not on main/master branch');
         }
@@ -84,16 +88,16 @@ function checkStatus() {
 
 function checkReadiness() {
     console.log('🔍 Checking release readiness...');
-    
+
     try {
         console.log('🧹 Running linter...');
         execSync('npm run lint', { stdio: 'inherit' });
         console.log('✅ Linting passed');
-        
+
         console.log('🧪 Running tests...');
         execSync('npm test', { stdio: 'inherit' });
         console.log('✅ All tests passed');
-        
+
         console.log('🎉 Ready for release!');
         return true;
     } catch (error) {
@@ -115,19 +119,21 @@ function previewVersion(type) {
 
 function createRelease(type) {
     const isDryRun = process.env.DRY_RUN === 'true';
-    
+
     if (isDryRun) {
         console.log('🔍 DRY RUN MODE - No changes will be made');
     }
-    
+
     if (!checkReadiness()) {
         process.exit(1);
     }
-    
+
     try {
         const nextVersion = getNextVersion(type);
-        console.log(`🚀 Creating ${type} release: ${getCurrentVersion()} -> ${nextVersion}`);
-        
+        console.log(
+            `🚀 Creating ${type} release: ${getCurrentVersion()} -> ${nextVersion}`
+        );
+
         if (!isDryRun) {
             execSync(`npm run release:${type}`, { stdio: 'inherit' });
             console.log('✅ Release completed successfully!');
@@ -143,7 +149,7 @@ function createRelease(type) {
 }
 
 // Main script logic
-const [,, command, ...args] = process.argv;
+const [, , command, ...args] = process.argv;
 
 switch (command) {
     case 'status':

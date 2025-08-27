@@ -20,7 +20,7 @@ Then edit `.env` with your actual tokens:
 # NPM Authentication Token (for publishing packages)
 NPM_TOKEN=npm_your_actual_token_here
 
-# GitHub API Token (for repository metadata operations)  
+# GitHub API Token (for repository metadata operations)
 GITHUB_TOKEN=ghp_your_github_token_here
 
 # Repository identification (auto-detected from git if not set)
@@ -34,12 +34,14 @@ ORGANIZATION_TAG=alteriom
 ### 2. Token Setup
 
 #### NPM Token
+
 1. Go to https://www.npmjs.com/settings/tokens
 2. Generate new token → "Automation" or "Publish"
 3. Copy the token (starts with `npm_`)
 4. Add to `.env` file
 
 #### GitHub Token
+
 1. Go to https://github.com/settings/tokens
 2. Generate new token → "Fine-grained" or "Classic"
 3. Select scopes: `repo` (full repository access)
@@ -55,6 +57,7 @@ npm run env:check
 ```
 
 This will verify:
+
 - ✅ NPM authentication
 - ✅ GitHub API access
 - ✅ Package permissions
@@ -111,7 +114,7 @@ const RepositoryMetadataManager = require('@alteriom/repository-metadata-manager
 // Environment variables are now available in process.env
 const manager = new RepositoryMetadataManager({
     token: process.env.GITHUB_TOKEN,
-    organizationTag: process.env.ORGANIZATION_TAG
+    organizationTag: process.env.ORGANIZATION_TAG,
 });
 ```
 
@@ -119,27 +122,27 @@ const manager = new RepositoryMetadataManager({
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NPM_TOKEN` | NPM authentication token for publishing | `npm_2xVDaCUbJMTIH1YKy...` |
-| `GITHUB_TOKEN` | GitHub API token for repository access | `ghp_K6ttKQWjMJpSe4CY...` |
+| Variable       | Description                             | Example                    |
+| -------------- | --------------------------------------- | -------------------------- |
+| `NPM_TOKEN`    | NPM authentication token for publishing | `npm_2xVDaCUbJMTIH1YKy...` |
+| `GITHUB_TOKEN` | GitHub API token for repository access  | `ghp_K6ttKQWjMJpSe4CY...`  |
 
 ### Optional Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GITHUB_REPOSITORY_OWNER` | Repository owner | Auto-detected from git |
-| `GITHUB_REPOSITORY_NAME` | Repository name | Auto-detected from git |
-| `ORGANIZATION_TAG` | Default organization tag | None |
-| `PACKAGE_PATH` | Path to package.json | `./package.json` |
-| `AGENT_ORG_TOKEN` | Alternative GitHub token | None |
+| Variable                  | Description              | Default                |
+| ------------------------- | ------------------------ | ---------------------- |
+| `GITHUB_REPOSITORY_OWNER` | Repository owner         | Auto-detected from git |
+| `GITHUB_REPOSITORY_NAME`  | Repository name          | Auto-detected from git |
+| `ORGANIZATION_TAG`        | Default organization tag | None                   |
+| `PACKAGE_PATH`            | Path to package.json     | `./package.json`       |
+| `AGENT_ORG_TOKEN`         | Alternative GitHub token | None                   |
 
 ### Development Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DEBUG` | Enable debug output | `false` |
-| `VERBOSE` | Enable verbose logging | `false` |
+| Variable  | Description                     | Default |
+| --------- | ------------------------------- | ------- |
+| `DEBUG`   | Enable debug output             | `false` |
+| `VERBOSE` | Enable verbose logging          | `false` |
 | `DRY_RUN` | Enable dry-run mode for testing | `false` |
 
 ## 🚨 Security Notes
@@ -155,11 +158,13 @@ const manager = new RepositoryMetadataManager({
 ### 🔒 Token Permissions
 
 #### NPM Token Scopes
+
 - **Automation**: For CI/CD publishing
 - **Publish**: For manual publishing
 - **Read-only**: For checking package info
 
 #### GitHub Token Scopes
+
 - **repo**: Full repository access (required)
 - **public_repo**: Public repository access only
 - **admin:org**: Organization administration (if needed)
@@ -169,11 +174,12 @@ const manager = new RepositoryMetadataManager({
 The system loads environment variables in this order:
 
 1. **System environment variables**
-2. **Shell environment variables**  
+2. **Shell environment variables**
 3. **`.env` file** (overrides system vars)
 4. **Command line arguments** (highest priority)
 
 Example:
+
 ```bash
 # System environment
 export ORGANIZATION_TAG=system-org
@@ -215,32 +221,35 @@ node bin/cli.js report --org-tag test
 ### Common Issues
 
 1. **"ENEEDAUTH" error**:
-   ```bash
-   # Check NPM authentication
-   npm whoami
-   # If not logged in:
-   npm login
-   ```
+
+    ```bash
+    # Check NPM authentication
+    npm whoami
+    # If not logged in:
+    npm login
+    ```
 
 2. **"Token not accessible" error**:
-   ```bash
-   # Check GitHub token permissions
-   curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
-   ```
+
+    ```bash
+    # Check GitHub token permissions
+    curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+    ```
 
 3. **".env file not loading"**:
-   ```bash
-   # Verify file exists and is readable
-   ls -la .env
-   # Check file contents (be careful with sensitive data)
-   head -n 5 .env
-   ```
+
+    ```bash
+    # Verify file exists and is readable
+    ls -la .env
+    # Check file contents (be careful with sensitive data)
+    head -n 5 .env
+    ```
 
 4. **"Variables not set" error**:
-   ```bash
-   # Debug environment loading
-   node -e "require('dotenv').config(); console.log(process.env.NPM_TOKEN ? 'NPM_TOKEN loaded' : 'NPM_TOKEN missing')"
-   ```
+    ```bash
+    # Debug environment loading
+    node -e "require('dotenv').config(); console.log(process.env.NPM_TOKEN ? 'NPM_TOKEN loaded' : 'NPM_TOKEN missing')"
+    ```
 
 ### Recovery Commands
 

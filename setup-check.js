@@ -10,18 +10,15 @@ console.log('🔍 GitHub Secrets Setup Verification\n');
 // Check local environment
 console.log('📋 Local Environment Check:');
 
-const requiredEnvVars = [
-    'NPM_TOKEN',
-    'GITHUB_TOKEN'
-];
+const requiredEnvVars = ['NPM_TOKEN', 'GITHUB_TOKEN'];
 
 const optionalEnvVars = [
     'AGENT_ORG_TOKEN',
     'GITHUB_REPOSITORY_OWNER',
-    'GITHUB_REPOSITORY_NAME'
+    'GITHUB_REPOSITORY_NAME',
 ];
 
-requiredEnvVars.forEach(varName => {
+requiredEnvVars.forEach((varName) => {
     const value = process.env[varName];
     if (value) {
         console.log(`✅ ${varName}: SET (${value.substring(0, 8)}...)`);
@@ -31,7 +28,7 @@ requiredEnvVars.forEach(varName => {
 });
 
 console.log('\n📋 Optional Environment Variables:');
-optionalEnvVars.forEach(varName => {
+optionalEnvVars.forEach((varName) => {
     const value = process.env[varName];
     if (value) {
         console.log(`✅ ${varName}: SET (${value.substring(0, 8)}...)`);
@@ -63,13 +60,20 @@ try {
     const { execSync } = require('child_process');
     const whoami = execSync('npm whoami', { encoding: 'utf8' }).trim();
     console.log(`✅ NPM Authentication: Logged in as "${whoami}"`);
-    
+
     // Test package access
     try {
-        const packageInfo = execSync('npm view @alteriom/repository-metadata-manager version', { encoding: 'utf8' }).trim();
-        console.log(`✅ Package Access: Current version ${packageInfo} found on npm`);
+        const packageInfo = execSync(
+            'npm view @alteriom/repository-metadata-manager version',
+            { encoding: 'utf8' }
+        ).trim();
+        console.log(
+            `✅ Package Access: Current version ${packageInfo} found on npm`
+        );
     } catch (error) {
-        console.log(`❌ Package Access: Cannot access @alteriom/repository-metadata-manager`);
+        console.log(
+            `❌ Package Access: Cannot access @alteriom/repository-metadata-manager`
+        );
     }
 } catch (error) {
     console.log(`❌ NPM Authentication: Not logged in or token invalid`);
@@ -80,10 +84,18 @@ console.log('\n🚀 Release System Status:');
 const packageJson = require('./package.json');
 console.log(`📦 Current Version: ${packageJson.version}`);
 console.log(`📝 Release Scripts Available:`);
-console.log(`   npm run release:patch    # ${packageJson.version} → patch bump`);
-console.log(`   npm run release:minor    # ${packageJson.version} → minor bump`);
-console.log(`   npm run release:major    # ${packageJson.version} → major bump`);
-console.log(`   npm run release:prerelease # ${packageJson.version} → beta version`);
+console.log(
+    `   npm run release:patch    # ${packageJson.version} → patch bump`
+);
+console.log(
+    `   npm run release:minor    # ${packageJson.version} → minor bump`
+);
+console.log(
+    `   npm run release:major    # ${packageJson.version} → major bump`
+);
+console.log(
+    `   npm run release:prerelease # ${packageJson.version} → beta version`
+);
 
 console.log('\n✨ Next Steps:');
 if (!process.env.NPM_TOKEN) {
