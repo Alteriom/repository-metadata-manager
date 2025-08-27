@@ -1,0 +1,15 @@
+{
+    "organizationTag": "myorg",
+    "packagePath": "./package.json",
+    "repositoryType": "auto-detect",
+    "customTopics": {
+        "ai-agent": ["automation", "github-integration", "compliance"],
+        "api": ["api", "backend", "server"],
+        "frontend": ["frontend", "ui", "web"],
+        "cli-tool": ["cli", "tool", "command-line"],
+        "library": ["library", "package", "sdk"],
+        "general": ["utility"]
+    },
+    "organizationName": "My Organization",
+    "descriptionTemplate": "{description} - {organizationName} project"
+}

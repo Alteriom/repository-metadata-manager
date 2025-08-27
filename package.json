@@ -1,0 +1,60 @@
+{
+    "name": "@alteriom/repository-metadata-manager",
+    "version": "1.0.0",
+    "description": "Repository metadata management utility for Alteriom organization compliance",
+    "main": "index.js",
+    "bin": {
+        "alteriom-metadata": "./bin/cli.js"
+    },
+    "scripts": {
+        "test": "jest",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "prepublishOnly": "npm run lint && npm test",
+        "version": "npm run format && git add -A",
+        "postversion": "git push && git push --tags"
+    },
+    "keywords": [
+        "alteriom",
+        "repository",
+        "metadata",
+        "compliance",
+        "github",
+        "automation",
+        "organization-tools",
+        "npm-package",
+        "topics",
+        "description"
+    ],
+    "author": "Alteriom Organization",
+    "license": "MIT",
+    "dependencies": {
+        "@octokit/rest": "^20.0.0"
+    },
+    "devDependencies": {
+        "jest": "^29.0.0",
+        "eslint": "^8.0.0",
+        "prettier": "^3.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Alteriom/repository-metadata-manager.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Alteriom/repository-metadata-manager/issues"
+    },
+    "homepage": "https://github.com/Alteriom/repository-metadata-manager#readme",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "files": [
+        "index.js",
+        "bin/",
+        "README.md",
+        "LICENSE"
+    ]
+}
