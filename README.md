@@ -1,5 +1,11 @@
 # Repository Metadata Manager
 
+[![npm version](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager.svg)](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![npm downloads](https://img.shields.io/npm/dm/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
+
 A generic utility for managing GitHub repository metadata (description and topics) to ensure compliance with organization standards.
 
 ## 🎯 Purpose
