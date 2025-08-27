@@ -6,32 +6,34 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
 [![npm downloads](https://img.shields.io/npm/dm/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
 
-A generic utility for managing GitHub repository metadata (description and topics) to ensure compliance with organization standards.
+**🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations**
+
+A comprehensive utility for managing GitHub repository metadata, security, documentation, CI/CD pipelines, and overall repository health to ensure compliance with organization standards.
 
 ## 🎯 Purpose
 
-This tool addresses common compliance issues:
+This enterprise-grade tool addresses comprehensive repository management needs:
 
-- Missing repository descriptions
-- Missing repository topics/tags for discoverability
-- Inconsistent metadata across organization repositories
+- **📊 Repository Health Scoring**: Calculate overall repository health with weighted scoring
+- **🔒 Security Management**: Security audits, vulnerability detection, and policy enforcement  
+- **🛡️ Branch Protection**: Automated branch protection rule management
+- **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
+- **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
+- **🎯 Compliance Automation**: Full compliance checking with auto-fix capabilities
+- **📋 Interactive Management**: User-friendly CLI with guided workflows
 
 ## 📦 Installation
 
 ### Option 1: Install as NPM Package (Recommended)
 
 ```bash
-npm install --save-dev repository-metadata-manager
+npm install --save-dev @alteriom/repository-metadata-manager
 ```
 
-### Option 2: Direct Installation
+### Option 2: Global Installation
 
 ```bash
-# Clone repository and copy files
-git clone https://github.com/alteriom/repository-metadata-manager.git temp-metadata-manager
-cp temp-metadata-manager/index.js scripts/utility/repository-metadata-manager.js
-cp temp-metadata-manager/bin/cli.js scripts/utility/repository-metadata-cli.js
-rm -rf temp-metadata-manager
+npm install -g @alteriom/repository-metadata-manager
 ```
 
 ## 🚀 Quick Start
@@ -42,13 +44,7 @@ Create a `metadata-config.json` file:
 
 ```json
 {
-    "organizationTag": "myorg",
-    "organizationName": "My Organization",
-    "customTopics": {
-        "ai-agent": ["automation", "github-integration", "compliance"],
-        "api": ["api", "backend", "server"],
-        "frontend": ["frontend", "ui", "web"]
-    }
+    "organizationTag": "myorg"
 }
 ```
 
@@ -57,31 +53,48 @@ Create a `metadata-config.json` file:
 ```json
 {
     "scripts": {
-        "metadata:report": "repository-metadata report --config metadata-config.json",
-        "metadata:validate": "repository-metadata validate --config metadata-config.json",
-        "metadata:apply": "repository-metadata apply --config metadata-config.json",
-        "metadata:dry-run": "repository-metadata dry-run --config metadata-config.json"
+        "health": "repository-manager health",
+        "security": "repository-manager security --audit",
+        "compliance": "repository-manager compliance"
     }
 }
 ```
 
-### 3. Generate compliance report
+### 3. Calculate repository health
 
 ```bash
-npm run metadata:report
+npm run health
 ```
 
-### 4. Apply recommended changes
+### 4. Run full compliance check
 
 ```bash
-# Preview changes first
-npm run metadata:dry-run
+# View compliance report
+npm run compliance
 
-# Apply changes (requires GitHub token)
-npm run metadata:apply
+# Apply automatic fixes
+npm run compliance --fix
 ```
 
-## 📋 Commands
+### 5. Interactive mode
+
+```bash
+npm run interactive
+```
+
+## 📋 Enhanced Commands
+
+| Command     | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `health`    | Calculate overall repository health score (0-100)   |
+| `security`  | Security audit and vulnerability detection          |
+| `branches`  | Branch protection analysis and enforcement          |
+| `docs`      | Documentation quality assessment and generation     |
+| `cicd`      | CI/CD workflow analysis and template generation     |
+| `compliance`| Full compliance check with auto-fix capabilities    |
+| `interactive`| Interactive wizard for guided repository management |
+
+### Original Metadata Commands
 
 | Command    | Description                                             |
 | ---------- | ------------------------------------------------------- |
