@@ -17,6 +17,7 @@
         "cicd": "node bin/enhanced-cli.js cicd --audit",
         "compliance": "node bin/enhanced-cli.js compliance",
         "interactive": "node bin/enhanced-cli.js interactive",
+        "test:features": "node scripts/test-features.js",
         "test": "jest",
         "lint": "eslint .",
         "format": "prettier --write .",

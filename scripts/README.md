@@ -41,6 +41,16 @@ This directory contains utility scripts for managing the repository metadata man
 - Shows the exact token value to copy
 - Cross-platform browser opening support
 
+### `test-features.js`
+
+**Purpose**: Local testing of repository management features  
+**Usage**: `npm run test:features`
+
+- Tests documentation analysis locally (without GitHub API)
+- Demonstrates health score calculation
+- Shows template generation capabilities
+- Provides offline feature validation
+
 ## Environment Dependencies
 
 All scripts automatically load environment variables from `.env` file using dotenv.
@@ -59,9 +69,10 @@ Optional environment variables:
 ## Development Workflow
 
 1. **Environment Setup**: `npm run env:check`
-2. **Development**: Make changes, add tests
-3. **Pre-release Check**: `npm run release:check`
-4. **Release**: `npm run release:patch|minor|major`
+2. **Feature Testing**: `npm run test:features`
+3. **Development**: Make changes, add tests
+4. **Pre-release Check**: `npm run release:check`
+5. **Release**: `npm run release:patch|minor|major`
 
 ## File Structure
 
@@ -70,5 +81,6 @@ scripts/
 ├── README.md              # This documentation
 ├── setup-check.js         # Environment verification
 ├── release.js             # Release management
-└── github-secrets-setup.js # GitHub secrets helper
+├── github-secrets-setup.js # GitHub secrets helper
+└── test-features.js       # Local feature testing
 ```
