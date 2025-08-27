@@ -2,18 +2,244 @@
 
 const chalk = require('chalk');
 const figlet = require('figlet');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Test the repository manager features locally
 console.log(chalk.cyan(figlet.textSync('Repo Test', { horizontalLayout: 'full' })));
 console.log(chalk.gray('🧪 Testing Repository Management Features\n'));
 
+// Local Documentation Manager for real scoring
+class LocalDocumentationManager {
+  async auditDocumentation() {
+    const results = {
+      score: 0,
+      maxScore: 100,
+      files: [],
+      recommendations: []
+    };
+
+    const requiredDocs = [
+      { file: 'README.md', weight: 30, validator: this.validateReadme.bind(this) },
+      { file: 'CHANGELOG.md', weight: 15, validator: this.validateChangelog.bind(this) },
+      { file: 'CONTRIBUTING.md', weight: 15, validator: this.validateContributing.bind(this) },
+      { file: 'CODE_OF_CONDUCT.md', weight: 10, validator: this.validateCodeOfConduct.bind(this) },
+      { file: 'LICENSE', weight: 15, validator: this.validateLicense.bind(this) },
+      { file: '.github/ISSUE_TEMPLATE/', weight: 8, validator: this.validateIssueTemplates.bind(this) },
+      { file: '.github/PULL_REQUEST_TEMPLATE.md', weight: 7, validator: this.validatePRTemplate.bind(this) }
+    ];
+
+    for (const doc of requiredDocs) {
+      const analysis = await this.analyzeDocument(doc);
+      results.files.push(analysis);
+    }
+
+    results.score = this.calculateDocScore(results.files);
+    return results;
+  }
+
+  async analyzeDocument(docConfig) {
+    const { file, weight, validator } = docConfig;
+    const content = await this.getLocalContents(file);
+    
+    const analysis = {
+      file,
+      exists: content !== null,
+      weight,
+      score: 0,
+      issues: [],
+      recommendations: []
+    };
+
+    if (content) {
+      if (validator) {
+        const validation = await validator(content);
+        analysis.score = validation.score;
+        analysis.issues = validation.issues;
+        analysis.recommendations = validation.recommendations;
+      } else {
+        analysis.score = weight;
+      }
+    } else {
+      analysis.issues.push(`${file} is missing`);
+      analysis.recommendations.push(`Create ${file}`);
+    }
+
+    return analysis;
+  }
+
+  async getLocalContents(filePath) {
+    try {
+      const fullPath = path.resolve(filePath);
+      const stats = await fs.stat(fullPath);
+      
+      if (stats.isDirectory()) {
+        const files = await fs.readdir(fullPath);
+        return files.map(name => ({ name, type: 'file' }));
+      } else {
+        const content = await fs.readFile(fullPath, 'utf8');
+        return { content: Buffer.from(content).toString('base64') };
+      }
+    } catch (error) {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    }
+  }
+
+  async validateReadme(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 0, issues: [], recommendations: [] };
+    
+    const requiredSections = [
+      { name: 'Title/Header', pattern: /^#\s+.+/m, weight: 5 },
+      { name: 'Description', pattern: /description|what|purpose/i, weight: 8 },
+      { name: 'Installation', pattern: /install|setup|getting started/i, weight: 6 },
+      { name: 'Usage', pattern: /usage|example|how to/i, weight: 6 },
+      { name: 'Contributing', pattern: /contribut|development/i, weight: 3 },
+      { name: 'License', pattern: /license/i, weight: 2 }
+    ];
+
+    for (const section of requiredSections) {
+      if (section.pattern.test(text)) {
+        validation.score += section.weight;
+      }
+    }
+
+    // Check for badges
+    if (/!\[.*\]\(.*badge.*\)/i.test(text)) {
+      validation.score += 2;
+    }
+
+    return validation;
+  }
+
+  async validateChangelog(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 0, issues: [], recommendations: [] };
+
+    if (/## \[?\d+\.\d+\.\d+\]?/.test(text)) {
+      validation.score += 8;
+    }
+
+    if (/### (Added|Changed|Deprecated|Removed|Fixed|Security)/i.test(text)) {
+      validation.score += 7;
+    }
+
+    return validation;
+  }
+
+  async validateContributing(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 0, issues: [], recommendations: [] };
+
+    const sections = [
+      { name: 'Development setup', pattern: /setup|development|local/i, weight: 5 },
+      { name: 'Pull request process', pattern: /pull request|pr|merge/i, weight: 5 },
+      { name: 'Code standards', pattern: /code|style|standards|lint/i, weight: 3 },
+      { name: 'Testing', pattern: /test|testing/i, weight: 2 }
+    ];
+
+    for (const section of sections) {
+      if (section.pattern.test(text)) {
+        validation.score += section.weight;
+      }
+    }
+
+    return validation;
+  }
+
+  async validateCodeOfConduct(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 10, issues: [], recommendations: [] };
+
+    if (!/contributor covenant/i.test(text) && text.length < 500) {
+      validation.score = 6;
+    }
+
+    return validation;
+  }
+
+  async validateLicense(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 0, issues: [], recommendations: [] };
+
+    const licenses = ['MIT', 'Apache', 'GPL', 'BSD', 'ISC'];
+    if (licenses.some(license => text.includes(license))) {
+      validation.score = 15;
+    }
+
+    return validation;
+  }
+
+  async validateIssueTemplates(content) {
+    const validation = { score: 0, issues: [], recommendations: [] };
+
+    if (Array.isArray(content)) {
+      const templates = content.filter(file => file.name.endsWith('.md'));
+      if (templates.length >= 2) {
+        validation.score = 8;
+      } else if (templates.length === 1) {
+        validation.score = 5;
+      }
+    }
+
+    return validation;
+  }
+
+  async validatePRTemplate(content) {
+    const text = Buffer.from(content.content, 'base64').toString();
+    const validation = { score: 0, issues: [], recommendations: [] };
+
+    if (/checklist|checkbox|\[ \]/.test(text)) {
+      validation.score += 4;
+    }
+    if (/description|summary|changes/i.test(text)) {
+      validation.score += 3;
+    }
+
+    return validation;
+  }
+
+  calculateDocScore(files) {
+    const totalWeight = files.reduce((sum, file) => sum + file.weight, 0);
+    const earnedScore = files.reduce((sum, file) => sum + file.score, 0);
+    return Math.round((earnedScore / totalWeight) * 100);
+  }
+}
+
+// Get real documentation score
+async function getRealDocumentationScore() {
+  try {
+    const docManager = new LocalDocumentationManager();
+    const result = await docManager.auditDocumentation();
+    return Math.min(result.score, 100); // Cap at 100% for health score calculation
+  } catch (error) {
+    console.log(chalk.yellow(`⚠️ Could not get real documentation score: ${error.message}`));
+    return 75; // Fallback to original simulated value
+  }
+}
+
+// Get real security score
+async function getRealSecurityScore() {
+  try {
+    const LocalSecurityAuditor = require('./security-audit-local.js');
+    const securityAuditor = new LocalSecurityAuditor();
+    const result = await securityAuditor.auditSecurity(true); // Silent mode
+    return result.score;
+  } catch (error) {
+    console.log(chalk.yellow(`⚠️ Could not get real security score: ${error.message}`));
+    return 60; // Fallback to original simulated value
+  }
+}
+
 // Test the local documentation analyzer
 async function testDocumentationLocal() {
   console.log(chalk.blue('📚 Testing Documentation Analysis (Local Mode)...\n'));
   
-  const fs = require('fs').promises;
-  const path = require('path');
+  const docManager = new LocalDocumentationManager();
+  const result = await docManager.auditDocumentation();
   
+  // Display individual file results with our original simple scoring for display
   const docsToCheck = [
     'README.md',
     'CHANGELOG.md', 
@@ -23,8 +249,6 @@ async function testDocumentationLocal() {
     '.github/PULL_REQUEST_TEMPLATE.md'
   ];
   
-  const results = [];
-  
   for (const doc of docsToCheck) {
     try {
       const filePath = path.join(process.cwd(), doc);
@@ -33,13 +257,11 @@ async function testDocumentationLocal() {
       if (exists) {
         const content = await fs.readFile(filePath, 'utf8');
         const analysis = analyzeContent(doc, content);
-        results.push({ file: doc, exists: true, ...analysis });
         console.log(`✅ ${doc} - ${analysis.score}/10 points`);
         if (analysis.issues.length > 0) {
           analysis.issues.forEach(issue => console.log(chalk.yellow(`   - ${issue}`)));
         }
       } else {
-        results.push({ file: doc, exists: false, score: 0, issues: [`${doc} is missing`] });
         console.log(`❌ ${doc} - Missing`);
       }
     } catch (error) {
@@ -47,12 +269,8 @@ async function testDocumentationLocal() {
     }
   }
   
-  const totalScore = results.reduce((sum, r) => sum + (r.score || 0), 0);
-  const maxScore = docsToCheck.length * 10;
-  const percentage = Math.round((totalScore / maxScore) * 100);
-  
-  console.log(chalk.bold(`\n📊 Documentation Score: ${totalScore}/${maxScore} (${percentage}%)`));
-  return results;
+  const totalScore = Math.min(result.score, 100); // Cap at 100 for display
+  console.log(chalk.bold(`\n📊 Documentation Score: ${totalScore}/100 (${totalScore}%)`));
 }
 
 function analyzeContent(filename, content) {
@@ -128,24 +346,30 @@ function analyzeLicense(content) {
 async function testHealthScore() {
   console.log(chalk.blue('\n📊 Testing Health Score Calculation...\n'));
   
-  // Simulate category scores
+  // Get real documentation score from our compliance checker
+  const realDocScore = await getRealDocumentationScore();
+  
+  // Get real security score from our local security audit
+  const realSecurityScore = await getRealSecurityScore();
+  
+  // Simulate other category scores (these would be real in production with GitHub API)
   const categories = {
-    documentation: 75,
-    security: 60,
+    documentation: realDocScore,
+    security: realSecurityScore,
     branchProtection: 45,
     cicd: 80
   };
-  
+
   const weights = {
     documentation: 25,
     security: 30,
     branchProtection: 20,
     cicd: 25
   };
-  
+
   let totalWeightedScore = 0;
   let totalWeight = 0;
-  
+
   console.log('Category Breakdown:');
   for (const [category, score] of Object.entries(categories)) {
     const weight = weights[category];
