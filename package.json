@@ -12,7 +12,22 @@
         "format": "prettier --write .",
         "prepublishOnly": "npm run lint && npm test",
         "version": "npm run format && git add -A",
-        "postversion": "git push && git push --tags"
+        "postversion": "git push && git push --tags",
+        "metadata:report": "node bin/cli.js report --org-tag alteriom",
+        "metadata:validate": "node bin/cli.js validate --org-tag alteriom",
+        "metadata:apply": "node bin/cli.js apply --org-tag alteriom",
+        "metadata:apply:token": "node bin/cli.js apply --org-tag alteriom --token",
+        "metadata:dry-run": "node bin/cli.js dry-run --org-tag alteriom",
+        "release:patch": "npm version patch && npm publish --access public",
+        "release:minor": "npm version minor && npm publish --access public",
+        "release:major": "npm version major && npm publish --access public",
+        "release:prerelease": "npm version prerelease --preid=beta && npm publish --access public --tag beta",
+        "release:dry": "npm run lint && npm run test && echo 'Ready for release!'",
+        "prerelease": "npm run lint && npm run test",
+        "postpublish": "echo 'Successfully published version' $(node -p \"require('./package.json').version\") 'to npm!'",
+        "release": "node release.js",
+        "release:status": "node release.js status",
+        "release:check": "node release.js check"
     },
     "keywords": [
         "alteriom",
