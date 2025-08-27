@@ -106,7 +106,7 @@ async function main() {
             await manager.applyRecommendedUpdates(owner, repo, true);
             break;
 
-        case 'validate':
+        case 'validate': {
             const packageMetadata = manager.getPackageMetadata();
             const currentMetadata = await manager.getCurrentMetadata(
                 owner,
@@ -131,6 +131,7 @@ async function main() {
                 }
             }
             break;
+        }
 
         default:
             console.log('🏷️ Repository Metadata Manager');

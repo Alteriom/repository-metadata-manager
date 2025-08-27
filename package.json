@@ -51,6 +51,14 @@
     "engines": {
         "node": ">=14.0.0"
     },
+    "jest": {
+        "testEnvironment": "node",
+        "collectCoverageFrom": [
+            "index.js",
+            "bin/cli.js"
+        ],
+        "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"]
+    },
     "files": [
         "index.js",
         "bin/",
