@@ -4,6 +4,9 @@
  * CLI for @alteriom/repository-metadata-manager
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const RepositoryMetadataManager = require('../index.js');
 
 async function main() {

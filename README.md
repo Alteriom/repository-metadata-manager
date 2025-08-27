@@ -92,7 +92,23 @@ npm run metadata:apply
 
 ## ⚙️ Configuration
 
-### Configuration File (Recommended)
+### Environment Variables (.env file) - Recommended
+
+Create a `.env` file for local development:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit with your tokens
+NPM_TOKEN=npm_your_token_here
+GITHUB_TOKEN=ghp_your_github_token_here
+ORGANIZATION_TAG=alteriom
+```
+
+All CLI commands will automatically load the `.env` file. See [ENVIRONMENT.md](ENVIRONMENT.md) for detailed setup instructions.
+
+### Configuration File (Alternative)
 
 Create a `metadata-config.json` file:
 

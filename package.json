@@ -18,6 +18,8 @@
         "metadata:apply": "node bin/cli.js apply --org-tag alteriom",
         "metadata:apply:token": "node bin/cli.js apply --org-tag alteriom --token",
         "metadata:dry-run": "node bin/cli.js dry-run --org-tag alteriom",
+        "env:check": "node -r dotenv/config scripts/setup-check.js",
+        "env:setup": "node -r dotenv/config scripts/github-secrets-setup.js",
         "release:patch": "npm version patch && npm publish --access public",
         "release:minor": "npm version minor && npm publish --access public",
         "release:major": "npm version major && npm publish --access public",
@@ -25,9 +27,9 @@
         "release:dry": "npm run lint && npm run test && echo 'Ready for release!'",
         "prerelease": "npm run lint && npm run test",
         "postpublish": "echo 'Successfully published version' $(node -p \"require('./package.json').version\") 'to npm!'",
-        "release": "node release.js",
-        "release:status": "node release.js status",
-        "release:check": "node release.js check"
+        "release": "node scripts/release.js",
+        "release:status": "node scripts/release.js status",
+        "release:check": "node scripts/release.js check"
     },
     "keywords": [
         "alteriom",
@@ -47,8 +49,9 @@
         "@octokit/rest": "^20.0.0"
     },
     "devDependencies": {
-        "jest": "^29.0.0",
+        "dotenv": "^17.2.1",
         "eslint": "^8.0.0",
+        "jest": "^29.0.0",
         "prettier": "^3.0.0"
     },
     "repository": {
@@ -72,11 +75,14 @@
             "index.js",
             "bin/cli.js"
         ],
-        "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"]
+        "setupFilesAfterEnv": [
+            "<rootDir>/tests/setup.js"
+        ]
     },
     "files": [
         "index.js",
         "bin/",
+        "scripts/",
         "README.md",
         "LICENSE"
     ]

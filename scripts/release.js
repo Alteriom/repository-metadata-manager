@@ -9,7 +9,7 @@
 require('dotenv').config();
 
 const { execSync } = require('child_process');
-const packageJson = require('./package.json');
+const packageJson = require('../package.json');
 
 function getCurrentVersion() {
     return packageJson.version;
