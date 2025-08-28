@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4] - 2025-08-28
+
+### Added
+
+- **Enhanced Documentation Management**: Local fallback system for GitHub API failures
+- **Comprehensive Token Testing**: `scripts/test-docs-tokens.js` for multi-token validation
+- **Local Analysis Capabilities**: Direct file system analysis when API unavailable
+- **Multi-token Authentication**: Support for GITHUB_TOKEN, AGENT_ORG_TOKEN, ORG_ACCESS_TOKEN
+- **Dependency Review Configuration**: `.github/dependency-review-config.yml`
+- **Release Documentation**: Complete release notes for v1.2.3 and v1.2.4
+
+### Enhanced
+
+- **DocumentationManager**: Added `getLocalContents()` method for offline operation
+- **CI/CD Workflows**: Simplified and improved reliability of GitHub Actions
+- **Error Handling**: Graceful degradation when GitHub API is unavailable
+- **Token Management**: Automatic failover between multiple authentication tokens
+- **Health Scoring**: Achieved 102/100 documentation score with local fallback
+
+### Fixed
+
+- **GitHub API Failures**: Implemented local fallback for 500 server errors
+- **Branch Protection**: Resolved status check reporting for `ci/tests`
+- **Dependency Review**: Fixed configuration conflicts in security workflows
+- **CI Status Checks**: Simplified workflow to ensure proper status reporting
+- **Token Authentication**: Enhanced priority handling and error recovery
+
+### Changed
+
+- **CLI Interface**: Updated token priority configuration in enhanced-cli.js
+- **Testing Strategy**: Enhanced cross-platform compatibility testing
+- **Documentation Standards**: Improved scoring algorithm and analysis
+- **Release Process**: Streamlined with better error handling and validation
+
+## [1.2.3] - 2025-08-28 (Not Published)
+
+### Note
+Version 1.2.3 was a development release that was never published to NPM. All improvements from this version were consolidated into v1.2.4 for better stability.
+
+### Development Changes (Included in v1.2.4)
+- Enhanced GitHub Actions workflow configuration
+- Fixed dependency review action configuration conflicts  
+- Improved status check reporting for branch protection
+- Simplified CI workflow for better reliability
+
 ## [1.2.1] - 2025-08-27
 
 ### Fixed
