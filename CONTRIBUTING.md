@@ -13,7 +13,7 @@ We love your input! We want to make contributing to this project as easy and tra
 To get started with local development:
 
 1. **Prerequisites**
-   - Node.js 14+ installed
+   - Node.js 18+ installed (supports 18.x, 20.x, 22.x)
    - Git installed
    - GitHub account
 
@@ -38,7 +38,19 @@ To get started with local development:
 
 5. **Run Tests**
    ```bash
+   # Run all tests
    npm test
+   
+   # Run comprehensive health assessment
+   npm run health
+   
+   # Run category-specific audits
+   npm run docs              # Documentation compliance
+   npm run security          # Security assessment  
+   npm run branchprotection  # Branch protection
+   npm run cicd             # CI/CD analysis
+   
+   # Run feature integration tests
    npm run test:features
    ```
 
