@@ -368,12 +368,16 @@ async function testHealthScore() {
   // Get real branch protection score from our local audit
   const realBranchScore = await getRealBranchProtectionScore();
   
-  // Simulate CI/CD score (would be real in production with GitHub API)
+  // Get real CI/CD score from local auditor
+  const LocalCICDAuditor = require('./cicd-audit-local.js');
+  const cicdAuditor = new LocalCICDAuditor();
+  const cicdResults = await cicdAuditor.auditCICD();
+  
   const categories = {
     documentation: realDocScore,
     security: realSecurityScore,
     branchProtection: realBranchScore,
-    cicd: 80
+    cicd: cicdResults.score
   };
 
   const weights = {
