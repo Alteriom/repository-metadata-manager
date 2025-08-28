@@ -17,7 +17,7 @@ class DocNavigator {
 
   async listDocs() {
     console.log('\n📚 REPOSITORY DOCUMENTATION');
-    console.log('=' .repeat(50));
+    console.log('='.repeat(50));
     
     console.log('\n🏠 ROOT DOCUMENTATION:');
     const rootDocs = [
