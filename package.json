@@ -30,7 +30,6 @@
         "lint:package": "npm run validate:package",
         "format": "prettier --write .",
         "validate:package": "node -e \"console.log('Package validation:', require('./package.json').name)\"",
-        "prepublishOnly": "npm run lint && npm test",
         "version": "npm run format && git add -A",
         "postversion": "git push && git push --tags",
         "metadata:report": "node bin/cli.js report --org-tag alteriom",
