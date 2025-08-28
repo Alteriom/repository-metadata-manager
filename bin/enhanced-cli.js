@@ -191,7 +191,7 @@ async function loadConfig() {
   require('dotenv').config();
   
   return {
-    token: process.env.GITHUB_TOKEN || process.env.AGENT_ORG_TOKEN,
+    token: process.env.ORG_ACCESS_TOKEN || process.env.AGENT_ORG_TOKEN || process.env.GITHUB_TOKEN,
     owner: process.env.GITHUB_REPOSITORY_OWNER,
     repo: process.env.GITHUB_REPOSITORY_NAME,
     organizationTag: process.env.ORGANIZATION_TAG,
