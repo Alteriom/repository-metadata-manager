@@ -2,7 +2,7 @@ name: Security Scanning
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, '**' ]
   pull_request:
     branches: [ main, develop ]
   schedule:
@@ -39,7 +39,6 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          config-file: ./.github/codeql/codeql-config.yml
         continue-on-error: true
 
       - name: Autobuild
@@ -221,6 +220,8 @@ jobs:
           
           if [ $success_count -ge 3 ]; then
             echo "✅ Security scan PASSED"
+            exit 0
           else
             echo "⚠️ Security scan needs attention"
+            exit 1
           fi
