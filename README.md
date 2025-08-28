@@ -1,7 +1,7 @@
 # Repository Metadata Manager
 
 [![npm version](https://img.shields.io/npm/v/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
-[![npm downloads](https://img.shields.io/npm/dm/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
+[![npm downloads](https://img.shields.io/npm/dt/%40alteriom%2Frepository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![CI](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml)
