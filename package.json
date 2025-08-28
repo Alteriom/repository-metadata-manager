@@ -13,6 +13,7 @@
         "health": "node bin/enhanced-cli.js health",
         "security": "node bin/enhanced-cli.js security --audit",
         "security:local": "node scripts/security-audit-local.js",
+        "security:summary": "node scripts/security-summary.js",
         "audit": "npm audit",
         "audit:fix": "npm audit fix",
         "branches": "node bin/enhanced-cli.js branches --audit",
