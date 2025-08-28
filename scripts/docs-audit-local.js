@@ -1,8 +1,17 @@
-const fs = require('fs').promises;
-const path = require('path');
+#!/usr/bin/env node
 
-class LocalDocumentationManager {
+const fs = require('fs');
+const path = require('path');
+const chalk = require('chalk');
+
+class LocalDocumentationAuditor {
+    constructor(repoPath = process.cwd()) {
+        this.repoPath = repoPath;
+    }
+
     async auditDocumentation() {
+        console.log(chalk.blue('🔍 Starting local documentation audit...'));
+
         const results = {
             score: 0,
             maxScore: 100,
@@ -54,59 +63,70 @@ class LocalDocumentationManager {
         }
 
         results.score = this.calculateDocScore(results.files);
+        results.recommendations = this.generateRecommendations(results.files);
+
+        this.displayResults(results);
         return results;
     }
 
     async analyzeDocument(docConfig) {
         const { file, weight, validator } = docConfig;
-        const content = await this.getLocalContents(file);
+        const filePath = path.join(this.repoPath, file);
 
         const analysis = {
             file,
-            exists: content !== null,
+            exists: false,
             weight,
             score: 0,
             issues: [],
             recommendations: [],
+            path: filePath,
         };
 
-        if (content) {
+        try {
+            const stats = fs.statSync(filePath);
+            analysis.exists = true;
+
+            if (stats.isDirectory()) {
+                // Handle directories (like .github/ISSUE_TEMPLATE/)
+                const files = fs.readdirSync(filePath);
+                analysis.content = files;
+                analysis.size = files.length;
+            } else {
+                // Handle files
+                const content = fs.readFileSync(filePath, 'utf8');
+                analysis.content = content;
+                analysis.size = content.length;
+            }
+
             if (validator) {
-                const validation = await validator(content);
+                const validation = await validator(analysis);
                 analysis.score = validation.score;
                 analysis.issues = validation.issues;
                 analysis.recommendations = validation.recommendations;
             } else {
                 analysis.score = weight; // Full points for existence
             }
-        } else {
+        } catch (error) {
+            // File doesn't exist
             analysis.issues.push(`${file} is missing`);
             analysis.recommendations.push(`Create ${file}`);
+            analysis.score = 0;
         }
 
         return analysis;
     }
 
-    async getLocalContents(filePath) {
-        try {
-            const fullPath = path.resolve(filePath);
-            const stats = await fs.stat(fullPath);
-
-            if (stats.isDirectory()) {
-                const files = await fs.readdir(fullPath);
-                return files.map((name) => ({ name, type: 'file' }));
-            } else {
-                const content = await fs.readFile(fullPath, 'utf8');
-                return { content: Buffer.from(content).toString('base64') };
-            }
-        } catch (error) {
-            if (error.code === 'ENOENT') return null;
-            throw error;
+    async validateReadme(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['README.md not found'],
+                recommendations: ['Create README.md'],
+            };
         }
-    }
 
-    async validateReadme(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+        const text = analysis.content;
         const validation = { score: 0, issues: [], recommendations: [] };
 
         const requiredSections = [
@@ -151,8 +171,16 @@ class LocalDocumentationManager {
         return validation;
     }
 
-    async validateChangelog(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+    async validateChangelog(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['CHANGELOG.md not found'],
+                recommendations: ['Create CHANGELOG.md'],
+            };
+        }
+
+        const text = analysis.content;
         const validation = { score: 0, issues: [], recommendations: [] };
 
         if (/## \[?\d+\.\d+\.\d+\]?/.test(text)) {
@@ -174,8 +202,16 @@ class LocalDocumentationManager {
         return validation;
     }
 
-    async validateContributing(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+    async validateContributing(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['CONTRIBUTING.md not found'],
+                recommendations: ['Create CONTRIBUTING.md'],
+            };
+        }
+
+        const text = analysis.content;
         const validation = { score: 0, issues: [], recommendations: [] };
 
         const sections = [
@@ -210,8 +246,16 @@ class LocalDocumentationManager {
         return validation;
     }
 
-    async validateCodeOfConduct(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+    async validateCodeOfConduct(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['CODE_OF_CONDUCT.md not found'],
+                recommendations: ['Create CODE_OF_CONDUCT.md'],
+            };
+        }
+
+        const text = analysis.content;
         const validation = { score: 10, issues: [], recommendations: [] };
 
         if (!/contributor covenant/i.test(text) && text.length < 500) {
@@ -224,8 +268,16 @@ class LocalDocumentationManager {
         return validation;
     }
 
-    async validateLicense(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+    async validateLicense(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['LICENSE not found'],
+                recommendations: ['Add LICENSE file'],
+            };
+        }
+
+        const text = analysis.content;
         const validation = { score: 0, issues: [], recommendations: [] };
 
         const licenses = ['MIT', 'Apache', 'GPL', 'BSD', 'ISC'];
@@ -241,12 +293,12 @@ class LocalDocumentationManager {
         return validation;
     }
 
-    async validateIssueTemplates(content) {
+    async validateIssueTemplates(analysis) {
         const validation = { score: 0, issues: [], recommendations: [] };
 
-        if (Array.isArray(content)) {
-            const templates = content.filter((file) =>
-                file.name.endsWith('.md')
+        if (analysis.exists && Array.isArray(analysis.content)) {
+            const templates = analysis.content.filter((file) =>
+                file.endsWith('.md')
             );
             if (templates.length >= 2) {
                 validation.score = 8;
@@ -255,19 +307,32 @@ class LocalDocumentationManager {
                 validation.recommendations.push(
                     'Consider adding more issue templates'
                 );
+            } else {
+                validation.issues.push('No markdown issue templates found');
+                validation.recommendations.push(
+                    'Create issue templates for bugs and features'
+                );
             }
         } else {
-            validation.issues.push('No issue templates found');
+            validation.issues.push('No issue templates directory found');
             validation.recommendations.push(
-                'Create issue templates for bugs and features'
+                'Create .github/ISSUE_TEMPLATE/ directory with templates'
             );
         }
 
         return validation;
     }
 
-    async validatePRTemplate(content) {
-        const text = Buffer.from(content.content, 'base64').toString();
+    async validatePRTemplate(analysis) {
+        if (!analysis.exists || !analysis.content) {
+            return {
+                score: 0,
+                issues: ['PR template not found'],
+                recommendations: ['Create .github/PULL_REQUEST_TEMPLATE.md'],
+            };
+        }
+
+        const text = analysis.content;
         const validation = { score: 0, issues: [], recommendations: [] };
 
         if (/checklist|checkbox|\[ \]/.test(text)) {
@@ -291,41 +356,100 @@ class LocalDocumentationManager {
         const earnedScore = files.reduce((sum, file) => sum + file.score, 0);
         return Math.round((earnedScore / totalWeight) * 100);
     }
-}
 
-async function testLocalDocAudit() {
-    const docManager = new LocalDocumentationManager();
-    const result = await docManager.auditDocumentation();
+    generateRecommendations(files) {
+        const allRecommendations = [];
 
-    console.log('📋 Local DocumentationManager Audit Results:');
-    console.log('Overall Score:', result.score + '%');
-    console.log('\nFile Analysis:');
+        files.forEach((file) => {
+            if (file.issues.length > 0) {
+                allRecommendations.push(
+                    `🔴 ${file.file}: ${file.issues.join(', ')}`
+                );
+            }
+            file.recommendations.forEach((rec) => {
+                allRecommendations.push(`💡 ${rec}`);
+            });
+        });
 
-    result.files.forEach((file) => {
-        const status = file.exists ? '✅' : '❌';
-        const percentage =
-            file.weight > 0 ? Math.round((file.score / file.weight) * 100) : 0;
+        return allRecommendations;
+    }
+
+    displayResults(results) {
+        console.log('\n' + chalk.blue('📊 Documentation Audit Results'));
+        console.log('='.repeat(50));
+
+        const grade = this.getGrade(results.score);
+        const gradeColor = this.getGradeColor(grade);
+
         console.log(
-            `  ${status} ${file.file} - ${file.score}/${file.weight} (${percentage}%)`
+            chalk.bold(`\n📊 Documentation Score: ${results.score}/100`)
         );
+        console.log(chalk.bold(`🎓 Grade: ${chalk[gradeColor](grade)}`));
 
-        if (file.issues.length > 0) {
-            file.issues.forEach((issue) => console.log(`    ⚠️  ${issue}`));
+        console.log('\n📋 File Analysis:');
+
+        results.files.forEach((file) => {
+            const status = file.exists ? '✅' : '❌';
+            const scorePercent = Math.round((file.score / file.weight) * 100);
+            console.log(
+                `  ${status} ${file.file} (${file.score}/${file.weight} - ${scorePercent}%)`
+            );
+
+            if (file.issues.length > 0) {
+                file.issues.forEach((issue) => {
+                    console.log(`    ${chalk.red('❌')} ${issue}`);
+                });
+            }
+        });
+
+        if (results.recommendations.length > 0) {
+            console.log('\n🎯 Recommendations:');
+            results.recommendations.forEach((rec, index) => {
+                console.log(`  ${index + 1}. ${rec}`);
+            });
         }
 
-        if (file.recommendations.length > 0) {
-            file.recommendations.forEach((rec) => console.log(`    💡 ${rec}`));
-        }
-    });
+        console.log(
+            '\n' + chalk.green('✅ Local documentation audit completed')
+        );
+    }
 
-    console.log(
-        '\nTotal Weight:',
-        result.files.reduce((sum, f) => sum + f.weight, 0)
-    );
-    console.log(
-        'Total Score:',
-        result.files.reduce((sum, f) => sum + f.score, 0)
-    );
+    getGrade(score) {
+        if (score >= 90) return 'A';
+        if (score >= 80) return 'B';
+        if (score >= 70) return 'C';
+        if (score >= 60) return 'D';
+        return 'F';
+    }
+
+    getGradeColor(grade) {
+        switch (grade) {
+            case 'A':
+                return 'green';
+            case 'B':
+                return 'blue';
+            case 'C':
+                return 'yellow';
+            case 'D':
+                return 'magenta';
+            case 'F':
+                return 'red';
+            default:
+                return 'white';
+        }
+    }
 }
 
-testLocalDocAudit().catch(console.error);
+// Run if called directly
+if (require.main === module) {
+    const auditor = new LocalDocumentationAuditor();
+    auditor.auditDocumentation().catch((error) => {
+        console.error(
+            chalk.red('❌ Documentation audit failed:'),
+            error.message
+        );
+        process.exit(1);
+    });
+}
+
+module.exports = LocalDocumentationAuditor;

@@ -18,9 +18,9 @@ on:
                     - prerelease
 
 permissions:
-  contents: write
-  packages: write
-  actions: write
+    contents: write
+    packages: write
+    actions: write
 
 jobs:
     test:
@@ -49,7 +49,7 @@ jobs:
                   node-version: '18'
                   registry-url: 'https://registry.npmjs.org'
             - run: npm ci
-            - run: npm install -g semver  # Install semver for version calculations
+            - run: npm install -g semver # Install semver for version calculations
             - name: Configure Git
               run: |
                   git config --global user.name 'github-actions[bot]'
@@ -58,7 +58,7 @@ jobs:
               run: |
                   # Get current version
                   CURRENT_VERSION=$(node -p "require('./package.json').version")
-                  
+
                   # Calculate new version
                   case "${{ github.event.inputs.version_type }}" in
                     "patch")
@@ -86,7 +86,7 @@ jobs:
                       ")
                       ;;
                   esac
-                  
+
                   # Update package.json version
                   node -e "
                     const fs = require('fs');
@@ -94,7 +94,7 @@ jobs:
                     pkg.version = '$NEW_VERSION';
                     fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\n');
                   "
-                  
+
                   # Update package-lock.json version
                   node -e "
                     const fs = require('fs');
@@ -105,7 +105,7 @@ jobs:
                     }
                     fs.writeFileSync('package-lock.json', JSON.stringify(lock, null, 2) + '\n');
                   "
-                  
+
                   # Commit and tag
                   git add package.json package-lock.json
                   git commit -m "chore: release v${NEW_VERSION}"

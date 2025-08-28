@@ -7,7 +7,7 @@
 [![CI](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml)
 [![Security](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml)
 [![Release](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml)
-[![Repository Health](https://img.shields.io/badge/health-A%20(96%25)-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![Repository Health](<https://img.shields.io/badge/health-A%20(96%25)-brightgreen.svg>)](https://github.com/Alteriom/repository-metadata-manager)
 
 ## 🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations
 
@@ -18,7 +18,7 @@ A comprehensive utility for managing GitHub repository metadata, security, docum
 This enterprise-grade tool addresses comprehensive repository management needs:
 
 - **📊 Repository Health Scoring**: Calculate overall repository health with weighted scoring
-- **🔒 Security Management**: Security audits, vulnerability detection, and policy enforcement  
+- **🔒 Security Management**: Security audits, vulnerability detection, and policy enforcement
 - **🛡️ Branch Protection**: Automated branch protection rule management
 - **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
 - **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
@@ -87,15 +87,15 @@ npm run interactive
 
 ## 📋 Enhanced Commands
 
-| Command     | Description                                          |
-| ----------- | ---------------------------------------------------- |
-| `health`    | Calculate overall repository health score (0-100)   |
-| `security`  | Security audit and vulnerability detection          |
-| `branches`  | Branch protection analysis and enforcement          |
-| `docs`      | Documentation quality assessment and generation     |
-| `cicd`      | CI/CD workflow analysis and template generation     |
-| `compliance`| Full compliance check with auto-fix capabilities    |
-| `interactive`| Interactive wizard for guided repository management |
+| Command       | Description                                         |
+| ------------- | --------------------------------------------------- |
+| `health`      | Calculate overall repository health score (0-100)   |
+| `security`    | Security audit and vulnerability detection          |
+| `branches`    | Branch protection analysis and enforcement          |
+| `docs`        | Documentation quality assessment and generation     |
+| `cicd`        | CI/CD workflow analysis and template generation     |
+| `compliance`  | Full compliance check with auto-fix capabilities    |
+| `interactive` | Interactive wizard for guided repository management |
 
 ### Original Metadata Commands
 

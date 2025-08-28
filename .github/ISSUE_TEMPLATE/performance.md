@@ -18,17 +18,17 @@ assignees: ''
 - [ ] 🌐 Slow GitHub API calls
 - [ ] 💻 High CPU usage
 - [ ] 📈 Performance degradation over time
-- [ ] Other: ___________
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 📊 Performance Metrics
 
 **Current Performance:**
 
 - **Command:** `repository-manager [command]`
-- **Execution Time:** _____ seconds/minutes
-- **Memory Usage:** _____ MB
-- **CPU Usage:** _____%
-- **Repository Size:** _____ files/MB
+- **Execution Time:** **\_** seconds/minutes
+- **Memory Usage:** **\_** MB
+- **CPU Usage:** **\_**%
+- **Repository Size:** **\_** files/MB
 
 **Measurement Method:**
 
@@ -49,9 +49,9 @@ Paste performance output here
 
 **What performance would you expect?**
 
-- **Target Execution Time:** _____ seconds
-- **Acceptable Memory Usage:** _____ MB
-- **Comparison:** Similar tools take _____ seconds
+- **Target Execution Time:** **\_** seconds
+- **Acceptable Memory Usage:** **\_** MB
+- **Comparison:** Similar tools take **\_** seconds
 
 **Benchmark Reference:**
 If you have performance comparisons with other tools or previous versions.
@@ -61,9 +61,9 @@ If you have performance comparisons with other tools or previous versions.
 **How to reproduce the performance issue:**
 
 1. **Environment Setup:**
-   - Repository type: [Large/Medium/Small]
-   - Number of files: _____
-   - Repository structure: _____
+    - Repository type: [Large/Medium/Small]
+    - Number of files: **\_**
+    - Repository structure: **\_**
 
 2. **Commands to Run:**
 
@@ -92,7 +92,7 @@ time [command]
 
 **Repository Details:**
 
-- **Repository Size:** _____ files
+- **Repository Size:** **\_** files
 - **Repository Type:** [Public/Private/Organization]
 - **Git History:** [Large/Medium/Small]
 - **File Types:** [Mostly JS/Mixed/Large binaries]
@@ -100,14 +100,16 @@ time [command]
 ## 📈 Performance Comparison
 
 **Previous Versions:**
-- Version X.X.X took: _____ seconds
-- Current version takes: _____ seconds
-- Performance change: _____ (better/worse)
+
+- Version X.X.X took: **\_** seconds
+- Current version takes: **\_** seconds
+- Performance change: **\_** (better/worse)
 
 **Other Tools:**
-- Tool A takes: _____ seconds  
-- Tool B takes: _____ seconds
-- Our tool takes: _____ seconds
+
+- Tool A takes: **\_** seconds
+- Tool B takes: **\_** seconds
+- Our tool takes: **\_** seconds
 
 ## 🔍 Investigation
 
@@ -133,7 +135,7 @@ Describe any patterns or insights you've discovered.
 - [ ] Memory management
 - [ ] API call reduction
 - [ ] File I/O optimization
-- [ ] Other: ___________
+- [ ] Other: \***\*\_\_\_\*\***
 
 **Implementation Ideas:**
 If you have specific technical suggestions.
@@ -173,14 +175,16 @@ node --prof-process isolate-*.log > processed.txt
 ## 📋 Additional Context
 
 **Related Performance Issues:**
-- Similar to: #___
-- Caused by: #___
-- Blocks: #___
+
+- Similar to: #\_\_\_
+- Caused by: #\_\_\_
+- Blocks: #\_\_\_
 
 **External Factors:**
-- Network conditions: _____
-- GitHub API rate limits: _____
-- System load: _____
+
+- Network conditions: **\_**
+- GitHub API rate limits: **\_**
+- System load: **\_**
 
 ---
 

@@ -23,7 +23,7 @@ assignees: ''
 - [ ] 🏢 Organization-wide deployment
 - [ ] 🐛 Troubleshooting an issue
 - [ ] 💡 Best practices
-- [ ] Other: ___________
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🎯 Your Question
 
@@ -48,8 +48,8 @@ Describe your goal or use case.
 
 ```json
 {
-  "organizationTag": "your-org",
-  // paste your current config if relevant
+    "organizationTag": "your-org"
+    // paste your current config if relevant
 }
 ```
 
@@ -69,13 +69,13 @@ repository-manager health
 - [ ] CLI help: `repository-manager --help`
 - [ ] GitHub issues/discussions
 - [ ] Stack Overflow
-- [ ] Other resources: ___________
+- [ ] Other resources: \***\*\_\_\_\*\***
 
 **Steps Attempted:**
 
-1. ___________
-2. ___________
-3. ___________
+1. ***
+2. ***
+3. ***
 
 **Results:**
 What happened when you tried these steps?
@@ -97,9 +97,9 @@ How will you know when this is working correctly?
 
 **Team Context:**
 
-- **Team Size:** _____ people
+- **Team Size:** **\_** people
 - **Role:** [Developer / Admin / Manager / DevOps]
-- **Organization Size:** _____ repositories
+- **Organization Size:** **\_** repositories
 
 ## 💡 Additional Information
 
@@ -113,15 +113,15 @@ Paste any error messages here
 Attach screenshots if they help explain your question.
 
 **Related Issues:**
-Link to any related issues or discussions: #___
+Link to any related issues or discussions: #\_\_\_
 
 ## 🚀 Use Case Details
 
 **What's your specific workflow?**
 
-1. ___________
-2. ___________
-3. ___________
+1. ***
+2. ***
+3. ***
 
 **What value are you hoping to get?**
 
@@ -131,7 +131,7 @@ Link to any related issues or discussions: #___
 - [ ] Monitor repository health
 - [ ] Setup CI/CD best practices
 - [ ] Organization-wide governance
-- [ ] Other: ___________
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🏃‍♂️ Urgency
 
