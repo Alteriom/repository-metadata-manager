@@ -330,36 +330,42 @@ async function runInteractiveMode() {
     console.log(chalk.blue(`${'='.repeat(50)}\n`));
     
     switch (action) {
-      case 'health':
+      case 'health': {
         const healthManager = new HealthScoreManager(config);
         const health = await healthManager.calculateHealthScore();
         displayHealthSummary(health);
         break;
-      case 'security':
+      }
+      case 'security': {
         const securityManager = new SecurityManager(config);
         const secResults = await securityManager.securityAudit();
         displaySecurityResults(secResults);
         break;
-      case 'branches':
+      }
+      case 'branches': {
         const branchManager = new BranchProtectionManager(config);
         const branchResults = await branchManager.auditBranchProtection();
         displayBranchResults(branchResults);
         break;
-      case 'docs':
+      }
+      case 'docs': {
         const docsManager = new DocumentationManager(config);
         const docResults = await docsManager.auditDocumentation();
         displayDocumentationResults(docResults);
         break;
-      case 'cicd':
+      }
+      case 'cicd': {
         const cicdManager = new CICDManager(config);
         const cicdResults = await cicdManager.auditWorkflows();
         displayCICDResults(cicdResults);
         break;
-      case 'compliance':
+      }
+      case 'compliance': {
         const complianceManager = new HealthScoreManager(config);
         const complianceHealth = await complianceManager.calculateHealthScore();
         displayHealthSummary(complianceHealth);
         break;
+      }
     }
   }
 }

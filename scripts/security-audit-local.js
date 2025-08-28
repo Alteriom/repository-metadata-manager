@@ -106,10 +106,7 @@ class LocalSecurityAuditor {
         }
         
         // Check for potentially vulnerable patterns
-        const vulnPatterns = [
-          { pattern: /eval\(/, name: 'eval() usage' },
-          { pattern: /innerHTML\s*=/, name: 'innerHTML assignment' }
-        ];
+        // Pattern checking could be implemented here in the future
         
         score += 15; // Base score for having dependencies managed
         

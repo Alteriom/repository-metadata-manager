@@ -287,7 +287,7 @@ async function testDocumentationLocal() {
 }
 
 function analyzeContent(filename, content) {
-  const analysis = { score: 0, issues: [], recommendations: [] };
+  // Analysis logic moved to specific analyzer functions
   
   switch (filename) {
     case 'README.md':
