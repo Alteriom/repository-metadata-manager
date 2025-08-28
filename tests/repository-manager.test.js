@@ -5,6 +5,8 @@ const fs = require('fs');
 jest.mock('@octokit/rest');
 jest.mock('fs');
 
+const { Octokit } = require('@octokit/rest');
+
 describe('RepositoryManager', () => {
   let repositoryManager;
   let mockOctokit;
@@ -12,11 +14,12 @@ describe('RepositoryManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    const { Octokit } = require('@octokit/rest');
     mockOctokit = {
-      repos: {
-        getContent: jest.fn(),
-        get: jest.fn(),
+      rest: {
+        repos: {
+          getContent: jest.fn(),
+          get: jest.fn(),
+        },
       },
     };
     Octokit.mockImplementation(() => mockOctokit);

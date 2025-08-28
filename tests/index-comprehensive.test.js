@@ -63,7 +63,7 @@ describe('RepositoryMetadataManager Comprehensive Tests', () => {
       manager.getPackageMetadata('./custom/package.json');
       
       expect(fs.readFileSync).toHaveBeenCalledWith(
-        expect.stringMatching(/custom[\/\\]package\.json/),
+        expect.stringMatching(/custom[/\\]package\.json/),
         'utf8'
       );
     });
