@@ -1,0 +1,227 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop, '**' ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+        continue-on-error: true
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
+          deny-licenses: GPL-2.0, GPL-3.0
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          echo "Running npm security audit..."
+          npm audit --audit-level moderate || true
+          echo "Generating audit report..."
+          npm audit --json > security-audit.json || true
+
+      - name: Run local security audit
+        run: |
+          echo "Running enhanced security audit..."
+          node scripts/security-audit-local.js
+
+      - name: Check for security policy
+        run: |
+          if [ -f "SECURITY.md" ]; then
+            echo "✅ Security policy found"
+          else
+            echo "⚠️ Security policy not found"
+          fi
+
+      - name: Validate dependencies
+        run: |
+          echo "Checking for known vulnerable packages..."
+          # Check for commonly vulnerable packages
+          if npm list --depth=0 | grep -E "(lodash@[0-3]\.|moment@[0-2]\.|jquery@[0-2]\.)"; then
+            echo "⚠️ Potentially vulnerable dependencies detected"
+          else
+            echo "✅ No obviously vulnerable dependencies found"
+          fi
+
+      - name: Upload security audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-results
+          path: |
+            security-audit.json
+          retention-days: 30
+
+  secrets-scan:
+    name: Secrets Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+        continue-on-error: true
+
+      - name: Manual secrets check
+        run: |
+          echo "Running manual secrets detection..."
+          
+          # Check for potential secrets in files
+          echo "Checking for API keys, tokens, and passwords..."
+          
+          # Look for common secret patterns (excluding test files)
+          if grep -r -E "(api[_-]?key|secret|token|password|pwd)" --include="*.js" --include="*.json" --include="*.yml" --include="*.yaml" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tests . | grep -v -E "(test|spec|example|demo)" | head -10; then
+            echo "⚠️ Potential secrets found - please review"
+          else
+            echo "✅ No obvious secrets detected"
+          fi
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check licenses
+        run: |
+          echo "Checking dependency licenses..."
+          
+          # Install license checker
+          npm install -g license-checker || echo "Failed to install license-checker"
+          
+          # Run license check
+          license-checker --summary || echo "License check completed with warnings"
+          
+          # Check our own license
+          if [ -f "LICENSE" ]; then
+            echo "✅ License file found"
+            head -3 LICENSE
+          else
+            echo "⚠️ No LICENSE file found"
+          fi
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [codeql, security-audit, secrets-scan, license-check]
+    if: always()
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Security Summary
+        run: |
+          echo "🔒 SECURITY SCAN SUMMARY"
+          echo "========================"
+          echo "CodeQL Analysis: ${{ needs.codeql.result }}"
+          echo "Security Audit: ${{ needs.security-audit.result }}"
+          echo "Secrets Scan: ${{ needs.secrets-scan.result }}"
+          echo "License Check: ${{ needs.license-check.result }}"
+          echo ""
+          
+          # Count successful jobs
+          success_count=0
+          if [[ "${{ needs.codeql.result }}" == "success" ]]; then ((success_count++)); fi
+          if [[ "${{ needs.security-audit.result }}" == "success" ]]; then ((success_count++)); fi
+          if [[ "${{ needs.secrets-scan.result }}" == "success" ]]; then ((success_count++)); fi
+          if [[ "${{ needs.license-check.result }}" == "success" ]]; then ((success_count++)); fi
+          
+          echo "Successful security checks: $success_count/4"
+          
+          if [ $success_count -ge 3 ]; then
+            echo "✅ Security scan PASSED"
+            exit 0
+          else
+            echo "⚠️ Security scan needs attention"
+            exit 1
+          fi

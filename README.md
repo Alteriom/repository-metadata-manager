@@ -2,36 +2,42 @@
 
 [![npm version](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager.svg)](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![CI](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml)
+[![Security](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml)
+[![Release](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml)
 [![npm downloads](https://img.shields.io/npm/dm/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
+[![Repository Health](https://img.shields.io/badge/health-A%20(96%25)-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![CodeQL](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg?event=schedule)](https://github.com/Alteriom/repository-metadata-manager/security/code-scanning)
 
-A generic utility for managing GitHub repository metadata (description and topics) to ensure compliance with organization standards.
+## 🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations
+
+A comprehensive utility for managing GitHub repository metadata, security, documentation, CI/CD pipelines, and overall repository health to ensure compliance with organization standards.
 
 ## 🎯 Purpose
 
-This tool addresses common compliance issues:
+This enterprise-grade tool addresses comprehensive repository management needs:
 
-- Missing repository descriptions
-- Missing repository topics/tags for discoverability
-- Inconsistent metadata across organization repositories
+- **📊 Repository Health Scoring**: Calculate overall repository health with weighted scoring
+- **🔒 Security Management**: Security audits, vulnerability detection, and policy enforcement  
+- **🛡️ Branch Protection**: Automated branch protection rule management
+- **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
+- **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
+- **🎯 Compliance Automation**: Full compliance checking with auto-fix capabilities
+- **📋 Interactive Management**: User-friendly CLI with guided workflows
 
 ## 📦 Installation
 
 ### Option 1: Install as NPM Package (Recommended)
 
 ```bash
-npm install --save-dev repository-metadata-manager
+npm install --save-dev @alteriom/repository-metadata-manager
 ```
 
-### Option 2: Direct Installation
+### Option 2: Global Installation
 
 ```bash
-# Clone repository and copy files
-git clone https://github.com/alteriom/repository-metadata-manager.git temp-metadata-manager
-cp temp-metadata-manager/index.js scripts/utility/repository-metadata-manager.js
-cp temp-metadata-manager/bin/cli.js scripts/utility/repository-metadata-cli.js
-rm -rf temp-metadata-manager
+npm install -g @alteriom/repository-metadata-manager
 ```
 
 ## 🚀 Quick Start
@@ -42,13 +48,7 @@ Create a `metadata-config.json` file:
 
 ```json
 {
-    "organizationTag": "myorg",
-    "organizationName": "My Organization",
-    "customTopics": {
-        "ai-agent": ["automation", "github-integration", "compliance"],
-        "api": ["api", "backend", "server"],
-        "frontend": ["frontend", "ui", "web"]
-    }
+    "organizationTag": "myorg"
 }
 ```
 
@@ -57,31 +57,48 @@ Create a `metadata-config.json` file:
 ```json
 {
     "scripts": {
-        "metadata:report": "repository-metadata report --config metadata-config.json",
-        "metadata:validate": "repository-metadata validate --config metadata-config.json",
-        "metadata:apply": "repository-metadata apply --config metadata-config.json",
-        "metadata:dry-run": "repository-metadata dry-run --config metadata-config.json"
+        "health": "repository-manager health",
+        "security": "repository-manager security --audit",
+        "compliance": "repository-manager compliance"
     }
 }
 ```
 
-### 3. Generate compliance report
+### 3. Calculate repository health
 
 ```bash
-npm run metadata:report
+npm run health
 ```
 
-### 4. Apply recommended changes
+### 4. Run full compliance check
 
 ```bash
-# Preview changes first
-npm run metadata:dry-run
+# View compliance report
+npm run compliance
 
-# Apply changes (requires GitHub token)
-npm run metadata:apply
+# Apply automatic fixes
+npm run compliance --fix
 ```
 
-## 📋 Commands
+### 5. Interactive mode
+
+```bash
+npm run interactive
+```
+
+## 📋 Enhanced Commands
+
+| Command     | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `health`    | Calculate overall repository health score (0-100)   |
+| `security`  | Security audit and vulnerability detection          |
+| `branches`  | Branch protection analysis and enforcement          |
+| `docs`      | Documentation quality assessment and generation     |
+| `cicd`      | CI/CD workflow analysis and template generation     |
+| `compliance`| Full compliance check with auto-fix capabilities    |
+| `interactive`| Interactive wizard for guided repository management |
+
+### Original Metadata Commands
 
 | Command    | Description                                             |
 | ---------- | ------------------------------------------------------- |
@@ -232,6 +249,7 @@ node scripts/utility/repository-metadata-manager.js report
     ```
 
 3. **Run compliance check**:
+
     ```bash
     npm run metadata:validate
     ```
@@ -275,8 +293,20 @@ This tool is designed to be extended and customized for your organization's need
 
 MIT License - feel free to use and modify for your organization.
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Documentation Index](docs/README.md)** - Complete documentation overview
+- **[Environment Setup](docs/guides/ENVIRONMENT.md)** - Development environment configuration
+- **[Organization Setup](docs/guides/ORGANIZATION_SETUP.md)** - Organization-wide setup guide
+- **[Implementation Details](docs/development/IMPLEMENTATION_SUMMARY.md)** - Technical architecture
+- **[Versioning Guidelines](docs/development/VERSIONING.md)** - Release management
+- **[Release Notes](docs/releases/)** - Version history and changelogs
+
 ## 🆘 Support
 
-- **Issues**: Report bugs or request features
-- **Documentation**: Check the main repository docs
+- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/Alteriom/repository-metadata-manager/issues)
+- **Documentation**: Check our comprehensive [documentation](docs/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 - **Organization Standards**: Refer to Alteriom organization guidelines

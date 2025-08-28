@@ -1,15 +1,35 @@
 {
     "name": "@alteriom/repository-metadata-manager",
-    "version": "1.1.1",
-    "description": "Repository metadata management utility for Alteriom organization compliance",
+    "version": "2.0.0",
+    "description": "Complete repository compliance and health management suite for GitHub repositories",
     "main": "index.js",
     "bin": {
-        "alteriom-metadata": "./bin/cli.js"
+        "alteriom-metadata": "./bin/cli.js",
+        "repository-manager": "./bin/enhanced-cli.js",
+        "repo-health": "./bin/enhanced-cli.js"
     },
     "scripts": {
+        "start": "node bin/enhanced-cli.js",
+        "health": "node bin/enhanced-cli.js health",
+        "security": "node bin/enhanced-cli.js security --audit",
+        "security:local": "node scripts/security-audit-local.js",
+        "security:summary": "node scripts/security-summary.js",
+        "audit": "npm audit",
+        "audit:fix": "npm audit fix",
+        "branches": "node bin/enhanced-cli.js branches --audit",
+        "branches:local": "node scripts/branch-protection-local.js",
+        "docs": "node bin/enhanced-cli.js docs --audit",
+        "cicd": "node bin/enhanced-cli.js cicd --audit",
+        "compliance": "node bin/enhanced-cli.js compliance",
+        "interactive": "node bin/enhanced-cli.js interactive",
+        "test:features": "node scripts/test-features.js",
         "test": "jest",
+        "test:integration": "node tests/integration.test.js",
+        "build": "echo 'No build step required for Node.js package' && npm pack --dry-run",
         "lint": "eslint .",
+        "lint:package": "npm run validate:package",
         "format": "prettier --write .",
+        "validate:package": "node -e \"console.log('Package validation:', require('./package.json').name)\"",
         "prepublishOnly": "npm run lint && npm test",
         "version": "npm run format && git add -A",
         "postversion": "git push && git push --tags",
@@ -29,7 +49,11 @@
         "postpublish": "echo 'Successfully published version' $(node -p \"require('./package.json').version\") 'to npm!'",
         "release": "node scripts/release.js",
         "release:status": "node scripts/release.js status",
-        "release:check": "node scripts/release.js check"
+        "release:check": "node scripts/release.js check",
+        "docs:check": "node scripts/docs-compliance-check.js",
+        "docs:fix": "node scripts/docs-compliance-check.js --fix",
+        "docs:nav": "node scripts/docs-navigator.js",
+        "docs:validate": "node scripts/docs-navigator.js validate"
     },
     "keywords": [
         "alteriom",
@@ -41,12 +65,21 @@
         "organization-tools",
         "npm-package",
         "topics",
-        "description"
+        "description",
+        "health-score",
+        "security",
+        "documentation",
+        "ci-cd",
+        "branch-protection"
     ],
     "author": "Alteriom Organization",
     "license": "MIT",
     "dependencies": {
-        "@octokit/rest": "^20.0.0"
+        "@octokit/rest": "^20.0.0",
+        "chalk": "^4.1.2",
+        "commander": "^14.0.0",
+        "figlet": "^1.8.2",
+        "inquirer": "^8.2.6"
     },
     "devDependencies": {
         "dotenv": "^17.2.1",
@@ -82,6 +115,7 @@
     "files": [
         "index.js",
         "bin/",
+        "lib/",
         "scripts/",
         "README.md",
         "LICENSE"

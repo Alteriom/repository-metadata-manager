@@ -1,0 +1,31 @@
+# CODEOWNERS
+# Global owners for all files
+* @Alteriom
+
+# Core application files
+/lib/                   @Alteriom
+/bin/                   @Alteriom
+/scripts/               @Alteriom
+index.js                @Alteriom
+
+# Configuration files
+package.json            @Alteriom
+config.json             @Alteriom
+.env.example           @Alteriom
+
+# Documentation
+/docs/                 @Alteriom
+README.md              @Alteriom
+CONTRIBUTING.md        @Alteriom
+SECURITY.md            @Alteriom
+CHANGELOG.md           @Alteriom
+
+# CI/CD and workflows
+/.github/              @Alteriom
+
+# Test files
+/tests/                @Alteriom
+
+# Release related files
+RELEASE_NOTES_*.md     @Alteriom
+VERSIONING.md          @Alteriom
