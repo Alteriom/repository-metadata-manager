@@ -2,11 +2,15 @@
 
 [![npm version](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager.svg)](https://badge.fury.io/js/@alteriom%2Frepository-metadata-manager)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![CI](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/ci.yml)
+[![Security](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml)
+[![Release](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml)
 [![npm downloads](https://img.shields.io/npm/dm/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
+[![Repository Health](https://img.shields.io/badge/health-A%20(96%25)-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
+[![CodeQL](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg?event=schedule)](https://github.com/Alteriom/repository-metadata-manager/security/code-scanning)
 
-**🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations**
+## 🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations
 
 A comprehensive utility for managing GitHub repository metadata, security, documentation, CI/CD pipelines, and overall repository health to ensure compliance with organization standards.
 
@@ -245,6 +249,7 @@ node scripts/utility/repository-metadata-manager.js report
     ```
 
 3. **Run compliance check**:
+
     ```bash
     npm run metadata:validate
     ```
