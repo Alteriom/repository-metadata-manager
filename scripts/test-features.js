@@ -232,6 +232,19 @@ async function getRealSecurityScore() {
   }
 }
 
+// Get real branch protection score
+async function getRealBranchProtectionScore() {
+  try {
+    const LocalBranchProtectionAuditor = require('./branch-protection-local.js');
+    const branchAuditor = new LocalBranchProtectionAuditor();
+    const result = await branchAuditor.auditBranchProtection(true); // Silent mode
+    return Math.min(result.score, 100); // Cap at 100 for health score calculation
+  } catch (error) {
+    console.log(chalk.yellow(`⚠️ Could not get real branch protection score: ${error.message}`));
+    return 45; // Fallback to original simulated value
+  }
+}
+
 // Test the local documentation analyzer
 async function testDocumentationLocal() {
   console.log(chalk.blue('📚 Testing Documentation Analysis (Local Mode)...\n'));
@@ -352,11 +365,14 @@ async function testHealthScore() {
   // Get real security score from our local security audit
   const realSecurityScore = await getRealSecurityScore();
   
-  // Simulate other category scores (these would be real in production with GitHub API)
+  // Get real branch protection score from our local audit
+  const realBranchScore = await getRealBranchProtectionScore();
+  
+  // Simulate CI/CD score (would be real in production with GitHub API)
   const categories = {
     documentation: realDocScore,
     security: realSecurityScore,
-    branchProtection: 45,
+    branchProtection: realBranchScore,
     cicd: 80
   };
 

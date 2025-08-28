@@ -16,6 +16,7 @@
         "audit": "npm audit",
         "audit:fix": "npm audit fix",
         "branches": "node bin/enhanced-cli.js branches --audit",
+        "branches:local": "node scripts/branch-protection-local.js",
         "docs": "node bin/enhanced-cli.js docs --audit",
         "cicd": "node bin/enhanced-cli.js cicd --audit",
         "compliance": "node bin/enhanced-cli.js compliance",
