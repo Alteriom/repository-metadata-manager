@@ -8,7 +8,6 @@
 [![Security](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml)
 [![Release](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml/badge.svg)](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/release.yml)
 [![Repository Health](https://img.shields.io/badge/health-A%20(96%25)-brightgreen.svg)](https://github.com/Alteriom/repository-metadata-manager)
-[![CodeQL](https://github.com/Alteriom/repository-metadata-manager/actions/workflows/security.yml/badge.svg?event=schedule)](https://github.com/Alteriom/repository-metadata-manager/security/code-scanning)
 
 ## 🚀 Complete Repository Compliance and Health Management Suite for GitHub Organizations
 
