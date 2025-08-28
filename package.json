@@ -1,6 +1,6 @@
 {
     "name": "@alteriom/repository-metadata-manager",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Complete repository compliance and health management suite for GitHub repositories",
     "main": "index.js",
     "bin": {
