@@ -13,51 +13,55 @@ We love your input! We want to make contributing to this project as easy and tra
 To get started with local development:
 
 1. **Prerequisites**
-   - Node.js 18+ installed (supports 18.x, 20.x, 22.x)
-   - Git installed
-   - GitHub account
+    - Node.js 18+ installed (supports 18.x, 20.x, 22.x)
+    - Git installed
+    - GitHub account
 
 2. **Fork and Clone**
-   ```bash
-   # Fork the repository on GitHub, then clone your fork
-   git clone https://github.com/YOUR_USERNAME/repository-metadata-manager.git
-   cd repository-metadata-manager
-   ```
+
+    ```bash
+    # Fork the repository on GitHub, then clone your fork
+    git clone https://github.com/YOUR_USERNAME/repository-metadata-manager.git
+    cd repository-metadata-manager
+    ```
 
 3. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+
+    ```bash
+    npm install
+    ```
 
 4. **Configuration**
-   ```bash
-   # Copy the example configuration
-   cp config.example.json config.json
-   # Edit config.json with your settings
-   ```
+
+    ```bash
+    # Copy the example configuration
+    cp config.example.json config.json
+    # Edit config.json with your settings
+    ```
 
 5. **Run Tests**
-   ```bash
-   # Run all tests
-   npm test
-   
-   # Run comprehensive health assessment
-   npm run health
-   
-   # Run category-specific audits
-   npm run docs              # Documentation compliance
-   npm run security          # Security assessment  
-   npm run branchprotection  # Branch protection
-   npm run cicd             # CI/CD analysis
-   
-   # Run feature integration tests
-   npm run test:features
-   ```
+
+    ```bash
+    # Run all tests
+    npm test
+
+    # Run comprehensive health assessment
+    npm run health
+
+    # Run category-specific audits
+    npm run docs              # Documentation compliance
+    npm run security          # Security assessment
+    npm run branchprotection  # Branch protection
+    npm run cicd             # CI/CD analysis
+
+    # Run feature integration tests
+    npm run test:features
+    ```
 
 6. **Lint Your Code**
-   ```bash
-   npm run lint
-   ```
+    ```bash
+    npm run lint
+    ```
 
 ## We Develop with GitHub
 
@@ -88,13 +92,13 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 
 - A quick summary and/or background
 - Steps to reproduce
-  - Be specific!
-  - Give sample code if you can.
+    - Be specific!
+    - Give sample code if you can.
 - What you expected would happen
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
-People *love* thorough bug reports. I'm not even kidding.
+People _love_ thorough bug reports. I'm not even kidding.
 
 ## Use a Consistent Coding Style
 

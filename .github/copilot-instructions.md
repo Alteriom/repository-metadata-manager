@@ -5,8 +5,9 @@
 This is the **Repository Metadata Manager** - a comprehensive enterprise-grade tool for managing GitHub repository metadata, security, documentation, CI/CD pipelines, and overall repository health to ensure compliance with organization standards.
 
 ### Core Purpose
+
 - **📊 Repository Health Scoring**: Calculate weighted health scores across multiple categories
-- **🔒 Security Management**: Local security auditing without GitHub API dependencies  
+- **🔒 Security Management**: Local security auditing without GitHub API dependencies
 - **🛡️ Branch Protection**: Automated branch protection and policy management
 - **📚 Documentation Standards**: Quality analysis and auto-generation capabilities
 - **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
@@ -15,6 +16,7 @@ This is the **Repository Metadata Manager** - a comprehensive enterprise-grade t
 ## Architecture & Technology Stack
 
 ### **Core Technologies**
+
 - **Runtime**: Node.js 18+ (supports 18.x, 20.x, 22.x)
 - **Package Manager**: npm with package-lock.json
 - **CLI Framework**: Commander.js for command-line interface
@@ -23,12 +25,13 @@ This is the **Repository Metadata Manager** - a comprehensive enterprise-grade t
 - **Interactive Prompts**: Inquirer for user interaction
 
 ### **Project Structure**
+
 ```
 ├── bin/                     # CLI executables
 │   ├── cli.js              # Original metadata CLI
 │   └── enhanced-cli.js     # Main enhanced CLI interface
 ├── lib/                    # Core libraries
-│   ├── core/              
+│   ├── core/
 │   │   └── RepositoryManager.js  # Main repository management
 │   └── features/          # Feature modules
 │       ├── BranchProtectionManager.js
@@ -52,6 +55,7 @@ This is the **Repository Metadata Manager** - a comprehensive enterprise-grade t
 ## Development Guidelines
 
 ### **Code Style & Standards**
+
 - **ES6+ JavaScript**: Use modern JavaScript features
 - **Async/Await**: Prefer async/await over Promises and callbacks
 - **Error Handling**: Comprehensive try-catch blocks with meaningful error messages
@@ -60,29 +64,31 @@ This is the **Repository Metadata Manager** - a comprehensive enterprise-grade t
 - **Naming**: Descriptive names following camelCase convention
 
 ### **Function Patterns**
+
 ```javascript
 // Preferred function structure
 async function auditRepositoryHealth(options = {}) {
-  try {
-    console.log(chalk.blue('🔍 Starting repository health audit...'));
-    
-    const results = {
-      score: 0,
-      categories: {},
-      recommendations: []
-    };
-    
-    // Implementation logic
-    
-    return results;
-  } catch (error) {
-    console.error(chalk.red(`❌ Audit failed: ${error.message}`));
-    throw error;
-  }
+    try {
+        console.log(chalk.blue('🔍 Starting repository health audit...'));
+
+        const results = {
+            score: 0,
+            categories: {},
+            recommendations: [],
+        };
+
+        // Implementation logic
+
+        return results;
+    } catch (error) {
+        console.error(chalk.red(`❌ Audit failed: ${error.message}`));
+        throw error;
+    }
 }
 ```
 
 ### **CLI Command Structure**
+
 - Use Commander.js for command definition
 - Include comprehensive help text
 - Support both interactive and non-interactive modes
@@ -90,7 +96,9 @@ async function auditRepositoryHealth(options = {}) {
 - Include verbose/debug output options
 
 ### **Local Auditing Philosophy**
+
 This project emphasizes **local file system analysis** over GitHub API dependency:
+
 - Parse local files directly (package.json, README.md, etc.)
 - Analyze Git repository structure locally
 - Minimize GitHub API calls to reduce rate limiting
@@ -99,21 +107,24 @@ This project emphasizes **local file system analysis** over GitHub API dependenc
 ## Feature Implementation Guidelines
 
 ### **Health Score Calculation**
+
 - Use weighted scoring across 4 categories:
-  - Documentation (25% weight)
-  - Security (30% weight) 
-  - Branch Protection (20% weight)
-  - CI/CD (25% weight)
+    - Documentation (25% weight)
+    - Security (30% weight)
+    - Branch Protection (20% weight)
+    - CI/CD (25% weight)
 - Scores range from 0-100 with letter grades (A: 90+, B: 80+, C: 70+, etc.)
 - Provide detailed breakdown and actionable recommendations
 
 ### **Documentation Analysis**
+
 - Check for essential files: README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, etc.
 - Validate content quality and completeness
 - Auto-generate missing documentation when possible
 - Support multiple documentation formats and standards
 
 ### **Security Auditing**
+
 - Local npm audit integration
 - File permission analysis
 - Secrets scanning capabilities
@@ -121,6 +132,7 @@ This project emphasizes **local file system analysis** over GitHub API dependenc
 - Dependency vulnerability checking
 
 ### **CI/CD Management**
+
 - GitHub Actions workflow analysis
 - Template generation for common patterns
 - Security best practices validation
@@ -129,6 +141,7 @@ This project emphasizes **local file system analysis** over GitHub API dependenc
 ## CLI Usage Patterns
 
 ### **Primary Commands**
+
 ```bash
 # Health assessment
 repository-manager health                 # Overall health score
@@ -149,10 +162,11 @@ repository-manager compliance --fix     # Auto-fix issues
 ```
 
 ### **Local Auditing Scripts**
+
 ```bash
 # Direct script execution for local analysis
 npm run docs                           # Documentation audit
-npm run security                       # Security audit  
+npm run security                       # Security audit
 npm run branchprotection              # Branch protection audit
 npm run cicd                          # CI/CD audit
 npm run health                        # Overall health check
@@ -161,12 +175,14 @@ npm run health                        # Overall health check
 ## Testing & Quality Assurance
 
 ### **Testing Strategy**
+
 - **Unit Tests**: Jest for individual function testing
 - **Integration Tests**: End-to-end CLI testing
 - **Local Auditing**: Comprehensive feature validation
 - **Cross-Platform**: Windows, macOS, Linux compatibility
 
 ### **Quality Metrics**
+
 - Maintain 96+ overall health score
 - 100% documentation compliance
 - 90+ security score
@@ -176,6 +192,7 @@ npm run health                        # Overall health check
 ## Configuration Management
 
 ### **Environment Variables**
+
 ```bash
 # Optional GitHub API access
 GITHUB_TOKEN=ghp_your_token_here
@@ -187,6 +204,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 ```
 
 ### **Configuration Files**
+
 - **metadata-config.json**: Repository metadata configuration
 - **.env**: Environment variables (optional)
 - **package.json**: NPM scripts and project metadata
@@ -194,6 +212,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Common Development Tasks
 
 ### **Adding New Auditing Features**
+
 1. Create feature manager in `lib/features/`
 2. Implement local auditing logic in `scripts/`
 3. Add CLI command in `bin/enhanced-cli.js`
@@ -202,6 +221,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 6. Update documentation
 
 ### **Workflow Template Creation**
+
 1. Analyze common patterns in `lib/features/CICDManager.js`
 2. Create template with security best practices
 3. Include proper permissions and error handling
@@ -209,6 +229,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 5. Document usage and customization options
 
 ### **Issue Template Enhancement**
+
 - Use comprehensive forms with specific categories
 - Include environment collection commands
 - Provide clear reproduction steps
@@ -218,12 +239,14 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Error Handling & User Experience
 
 ### **Error Messages**
+
 - Provide clear, actionable error messages
 - Include suggestions for resolution
 - Use appropriate emoji and colors for visual clarity
 - Offer verbose mode for debugging
 
 ### **User Feedback**
+
 - Show progress indicators for long operations
 - Provide clear success/failure states
 - Include helpful tips and next steps
@@ -232,12 +255,14 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Security Considerations
 
 ### **API Token Handling**
+
 - Never log or expose GitHub tokens
 - Support multiple token sources (.env, environment, CLI)
 - Graceful degradation when tokens unavailable
 - Clear documentation about permission requirements
 
 ### **Local Processing**
+
 - Prefer local file analysis over API calls
 - Validate file paths to prevent directory traversal
 - Handle file permission errors gracefully
@@ -246,12 +271,14 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Documentation Standards
 
 ### **Code Documentation**
+
 - JSDoc comments for all public functions
 - Clear parameter and return type documentation
 - Usage examples in comments
 - Error conditions and handling notes
 
 ### **User Documentation**
+
 - Comprehensive README with quick start guide
 - Detailed CLI reference
 - Configuration examples
@@ -261,6 +288,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Performance Guidelines
 
 ### **Optimization Principles**
+
 - Cache results where appropriate
 - Use parallel processing for independent operations
 - Minimize file I/O operations
@@ -268,6 +296,7 @@ GITHUB_REPOSITORY_NAME=your-repo
 - Profile and optimize bottlenecks
 
 ### **Resource Management**
+
 - Handle large repositories efficiently
 - Implement memory-conscious processing
 - Provide progress feedback for long operations
@@ -276,12 +305,14 @@ GITHUB_REPOSITORY_NAME=your-repo
 ## Release Management
 
 ### **Versioning**
+
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
 - Maintain comprehensive CHANGELOG.md
 - Tag releases with detailed release notes
 - Support automated release workflows
 
 ### **Backward Compatibility**
+
 - Maintain API compatibility within major versions
 - Provide migration guides for breaking changes
 - Support gradual feature deprecation

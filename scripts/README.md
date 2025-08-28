@@ -12,6 +12,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run docs`
 
 **Features**:
+
 - Validates README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, and other essential files
 - Checks content quality and completeness (100/100 score achieved)
 - Auto-generates missing documentation templates
@@ -26,6 +27,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run security`
 
 **Features**:
+
 - Local npm audit integration without API dependencies
 - SECURITY.md policy validation and generation
 - Dependency vulnerability scanning
@@ -41,6 +43,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run branchprotection`
 
 **Features**:
+
 - Local Git workflow validation
 - CODEOWNERS file analysis
 - Dependabot configuration verification
@@ -55,6 +58,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run cicd`
 
 **Features**:
+
 - GitHub Actions workflow analysis
 - NPM scripts validation
 - Testing framework verification
@@ -69,6 +73,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run health`
 
 **Features**:
+
 - Integrates all local auditing tools
 - Calculates overall health score (96/100 Grade A achieved)
 - Weighted scoring across 4 categories
@@ -85,6 +90,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run docs:nav`
 
 **Features**:
+
 - Documentation directory organization
 - Link validation and structure checking
 - Navigation improvement suggestions
@@ -98,6 +104,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run env:check`
 
 **Features**:
+
 - Verifies required environment variables (NPM_TOKEN, GITHUB_TOKEN)
 - Checks optional environment variables
 - Tests NPM authentication
@@ -108,12 +115,14 @@ These scripts provide comprehensive repository health assessment without requiri
 
 **Purpose**: Release management and versioning helper  
 **Usage**:
+
 - `npm run release:status` - Show current version and git status
 - `npm run release:check` - Check if ready for release (lint + test)
 - `node scripts/release.js preview <type>` - Preview next version
 - `node scripts/release.js release <type>` - Create and publish release
 
 **Version Types**:
+
 - `patch` - Bug fixes (1.0.0 → 1.0.1)
 - `minor` - New features (1.0.0 → 1.1.0)
 - `major` - Breaking changes (1.0.0 → 2.0.0)
@@ -124,6 +133,7 @@ These scripts provide comprehensive repository health assessment without requiri
 **Usage**: `npm run env:setup`
 
 **Features**:
+
 - Opens GitHub secrets management page
 - Provides step-by-step instructions for adding NPM_TOKEN secret
 - Shows exact token value to copy
@@ -143,10 +153,12 @@ These scripts provide comprehensive repository health assessment without requiri
 All scripts automatically load environment variables from `.env` file using dotenv.
 
 **Required environment variables:**
+
 - `NPM_TOKEN` - NPM authentication token for publishing
 - `GITHUB_TOKEN` - GitHub API token for repository management (optional for local auditing)
 
 **Optional environment variables:**
+
 - `AGENT_ORG_TOKEN` - Alternative GitHub token for organization-wide operations
 - `GITHUB_REPOSITORY_OWNER` - Repository owner name (auto-detected from git)
 - `GITHUB_REPOSITORY_NAME` - Repository name (auto-detected from git)
@@ -154,6 +166,7 @@ All scripts automatically load environment variables from `.env` file using dote
 ## 🛠️ Development Workflow
 
 ### Complete Health Assessment
+
 ```bash
 # Run all auditing tools
 npm run docs           # Documentation compliance (100/100)
@@ -164,6 +177,7 @@ npm run health        # Overall health score (96/100)
 ```
 
 ### Development Cycle
+
 1. **Environment Setup**: `npm run env:check`
 2. **Health Assessment**: `npm run health`
 3. **Category-specific Audits**: Run individual audit scripts
@@ -172,6 +186,7 @@ npm run health        # Overall health score (96/100)
 6. **Release**: `npm run release:patch|minor|major`
 
 ### Local Auditing Benefits
+
 - **🚀 No API Dependencies**: Works without GitHub API access or admin permissions
 - **⚡ Fast Execution**: Local file system analysis
 - **🔒 Secure**: No token exposure or external calls required
@@ -197,24 +212,28 @@ scripts/
 ## 🎯 Usage Examples
 
 ### Quick Health Check
+
 ```bash
 npm run health
 # Output: 96/100 Grade A overall health score
 ```
 
 ### Detailed Category Analysis
+
 ```bash
 npm run docs && npm run security && npm run branchprotection && npm run cicd
 # Output: Detailed breakdown of all categories with specific recommendations
 ```
 
 ### Environment Verification
+
 ```bash
 npm run env:check
 # Output: Environment status and setup guidance
 ```
 
 ### Release Preparation
+
 ```bash
 npm run release:check
 # Output: Pre-release validation and readiness assessment

@@ -27,6 +27,7 @@ npx repository-manager health
 ### Health Management
 
 #### Overall Health Check
+
 ```bash
 # Comprehensive repository health analysis
 repository-manager health
@@ -39,6 +40,7 @@ repository-manager health --output health-report.json
 ```
 
 #### Documentation Audit
+
 ```bash
 # Audit documentation compliance
 repository-manager docs
@@ -51,6 +53,7 @@ repository-manager docs --generate
 ```
 
 #### Security Audit
+
 ```bash
 # Security compliance check
 repository-manager security
@@ -63,6 +66,7 @@ repository-manager security --audit --apply
 ```
 
 #### Branch Protection
+
 ```bash
 # Audit branch protection rules
 repository-manager branches
@@ -75,6 +79,7 @@ repository-manager branches --branch main --apply
 ```
 
 #### CI/CD Management
+
 ```bash
 # Audit CI/CD pipelines
 repository-manager cicd
@@ -89,6 +94,7 @@ repository-manager cicd --audit --apply
 ### Compliance Management
 
 #### Full Compliance Check
+
 ```bash
 # Run all compliance checks
 repository-manager compliance
@@ -101,6 +107,7 @@ repository-manager compliance --output compliance-report.json
 ```
 
 #### Interactive Mode
+
 ```bash
 # Guided interactive setup
 repository-manager interactive
@@ -118,13 +125,13 @@ Create `metadata-config.json`:
 
 ```json
 {
-  "organizationTag": "myorg",
-  "repositoryType": "library",
-  "customTopics": {
-    "api": ["api", "backend", "server"],
-    "frontend": ["frontend", "ui", "web"]
-  },
-  "organizationName": "My Organization"
+    "organizationTag": "myorg",
+    "repositoryType": "library",
+    "customTopics": {
+        "api": ["api", "backend", "server"],
+        "frontend": ["frontend", "ui", "web"]
+    },
+    "organizationName": "My Organization"
 }
 ```
 
@@ -169,13 +176,13 @@ export GITHUB_REPO=your-repo
 
 ```json
 {
-  "scripts": {
-    "health": "repository-manager health",
-    "docs:audit": "repository-manager docs --audit",
-    "security:check": "repository-manager security --audit",
-    "compliance": "repository-manager compliance --fix",
-    "setup:repo": "repository-manager interactive"
-  }
+    "scripts": {
+        "health": "repository-manager health",
+        "docs:audit": "repository-manager docs --audit",
+        "security:check": "repository-manager security --audit",
+        "compliance": "repository-manager compliance --fix",
+        "setup:repo": "repository-manager interactive"
+    }
 }
 ```
 
@@ -187,26 +194,26 @@ name: Repository Health Check
 on: [push, pull_request]
 
 jobs:
-  health-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      
-      - run: npm install @alteriom/repository-metadata-manager
-      
-      - name: Run Health Check
-        run: npx repository-manager health --output health-report.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Upload Health Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: health-report
-          path: health-report.json
+    health-check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: '18'
+
+            - run: npm install @alteriom/repository-metadata-manager
+
+            - name: Run Health Check
+              run: npx repository-manager health --output health-report.json
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload Health Report
+              uses: actions/upload-artifact@v3
+              with:
+                  name: health-report
+                  path: health-report.json
 ```
 
 ### Batch Operations
@@ -344,20 +351,20 @@ fi
 ```json
 // .vscode/tasks.json
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Repository Health Check",
-      "type": "shell",
-      "command": "npx",
-      "args": ["repository-manager", "health"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always"
-      }
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Repository Health Check",
+            "type": "shell",
+            "command": "npx",
+            "args": ["repository-manager", "health"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always"
+            }
+        }
+    ]
 }
 ```
 

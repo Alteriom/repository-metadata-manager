@@ -20,7 +20,7 @@ assignees: ''
 - [ ] 💡 Examples/Tutorials
 - [ ] 🤝 Contributing Guide
 - [ ] 📝 Code Comments
-- [ ] Other: ___________
+- [ ] Other: ****\_\_\_****
 
 ## 🎯 Current Issue
 
@@ -49,7 +49,8 @@ Describe exactly what's missing, confusing, or incorrect.
 ```
 
 **Structure Suggestions:**
-- [ ] Add new section: ___________
+
+- [ ] Add new section: ****\_\_\_****
 - [ ] Reorganize existing content
 - [ ] Add more examples
 - [ ] Include troubleshooting
@@ -67,6 +68,7 @@ Describe exactly what's missing, confusing, or incorrect.
 - [ ] 📊 End users of generated reports
 
 **Experience Level:**
+
 - [ ] Beginner (no prior experience)
 - [ ] Intermediate (some experience)
 - [ ] Advanced (expert users)
@@ -84,13 +86,14 @@ Describe exactly what's missing, confusing, or incorrect.
 - [ ] Website/wiki
 - [ ] Not sure
 
-**Suggested File:** ___________
+**Suggested File:** ****\_\_\_****
 
 ## 💼 Use Case
 
 **When would someone need this documentation?**
 
 **Scenario:**
+
 1. User is trying to...
 2. They look for documentation about...
 3. Current docs don't help because...
@@ -113,7 +116,7 @@ repository-manager command --option value
 
 ```json
 {
-  "configExample": "value"
+    "configExample": "value"
 }
 ```
 
@@ -131,11 +134,12 @@ repository-manager command --option value
 
 ## 🔗 Related
 
-**Related Issues/PRs:** #___
+**Related Issues/PRs:** #\_\_\_
 
 **Related Documentation:**
-- Current: ___________
-- Similar: ___________
+
+- Current: ****\_\_\_****
+- Similar: ****\_\_\_****
 
 ---
 

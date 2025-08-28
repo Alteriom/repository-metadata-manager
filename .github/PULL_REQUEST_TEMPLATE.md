@@ -3,7 +3,7 @@
 **Brief Description:**
 Provide a concise summary of the changes in this PR.
 
-**Related Issue:** 
+**Related Issue:**
 Closes #(issue_number) or Fixes #(issue_number)
 
 ## 🔄 Type of Change
@@ -11,7 +11,7 @@ Closes #(issue_number) or Fixes #(issue_number)
 **Primary Change Type:**
 
 - [ ] 🐛 **Bug Fix** - Non-breaking change that fixes an issue
-- [ ] ✨ **New Feature** - Non-breaking change that adds functionality  
+- [ ] ✨ **New Feature** - Non-breaking change that adds functionality
 - [ ] 💥 **Breaking Change** - Fix or feature causing existing functionality to break
 - [ ] 📚 **Documentation** - Documentation-only changes
 - [ ] 🎨 **Code Style** - Formatting, missing semicolons, etc (no functionality change)
@@ -39,12 +39,12 @@ Closes #(issue_number) or Fixes #(issue_number)
 **Detailed Changes:**
 
 1. **Change 1:** Description of specific change
-   - **Before:** What was the previous behavior?
-   - **After:** What is the new behavior?
+    - **Before:** What was the previous behavior?
+    - **After:** What is the new behavior?
 
 2. **Change 2:** Description of another change
-   - **Before:** Previous behavior
-   - **After:** New behavior
+    - **Before:** Previous behavior
+    - **After:** New behavior
 
 **Code Changes Summary:**
 
@@ -76,20 +76,20 @@ npm run health
 **Test Results:**
 
 - **Health Score Tests:** ✅ Passing
-- **Security Audit Tests:** ✅ Passing  
+- **Security Audit Tests:** ✅ Passing
 - **Branch Protection Tests:** ✅ Passing
 - **Documentation Tests:** ✅ Passing
 - **CI/CD Tests:** ✅ Passing
 
 **Manual Testing Scenarios:**
 
-1. **Scenario 1:** ___________
-   - **Steps:** ___________
-   - **Result:** ✅ Works as expected
+1. **Scenario 1:** ****\_\_\_****
+    - **Steps:** ****\_\_\_****
+    - **Result:** ✅ Works as expected
 
-2. **Scenario 2:** ___________
-   - **Steps:** ___________
-   - **Result:** ✅ Works as expected
+2. **Scenario 2:** ****\_\_\_****
+    - **Steps:** ****\_\_\_****
+    - **Result:** ✅ Works as expected
 
 ## 🔒 Security Considerations
 
@@ -113,8 +113,8 @@ npm run health
 **Performance Considerations:**
 
 - [ ] 🟢 **No Performance Impact**
-- [ ] ⚡ **Performance Improvement** - Estimated improvement: ____%
-- [ ] 🐌 **Potential Performance Impact** - Mitigation: ___________
+- [ ] ⚡ **Performance Improvement** - Estimated improvement: \_\_\_\_%
+- [ ] 🐌 **Potential Performance Impact** - Mitigation: ****\_\_\_****
 
 **Performance Testing:**
 
@@ -172,9 +172,9 @@ time repository-manager health
 
 **If Breaking Changes:**
 
-- **What breaks:** ___________
-- **Migration path:** ___________
-- **Deprecation timeline:** ___________
+- **What breaks:** ****\_\_\_****
+- **Migration path:** ****\_\_\_****
+- **Deprecation timeline:** ****\_\_\_****
 
 **Version Impact:**
 
@@ -186,10 +186,10 @@ time repository-manager health
 
 **Deployment Checklist:**
 
-- [ ] 🔧 **Configuration changes needed** (describe): ___________
+- [ ] 🔧 **Configuration changes needed** (describe): ****\_\_\_****
 - [ ] 📦 **Dependencies updated** in package.json
-- [ ] 🔄 **Database migrations** (if applicable): ___________
-- [ ] 🌐 **Environment variables** needed: ___________
+- [ ] 🔄 **Database migrations** (if applicable): ****\_\_\_****
+- [ ] 🌐 **Environment variables** needed: ****\_\_\_****
 - [ ] 📋 **Release notes** prepared
 
 **Post-Deployment:**
@@ -204,11 +204,13 @@ time repository-manager health
 (Include screenshots if this PR affects CLI output, help text, or visual elements)
 
 **Before:**
+
 ```
 # Paste "before" command output
 ```
 
 **After:**
+
 ```
 # Paste "after" command output
 ```
@@ -217,14 +219,14 @@ time repository-manager health
 
 **Related PRs/Issues:**
 
-- Related to: #___
-- Depends on: #___
-- Blocks: #___
-- Part of epic: #___
+- Related to: #\_\_\_
+- Depends on: #\_\_\_
+- Blocks: #\_\_\_
+- Part of epic: #\_\_\_
 
 **Follow-up Work:**
 
-- [ ] Issue #___ for ___________
+- [ ] Issue #**\_ for ****\_******
 - [ ] Documentation update needed
 - [ ] Performance optimization opportunity
 - [ ] Future enhancement idea
@@ -247,16 +249,17 @@ time repository-manager health
 1. Checkout this branch: `git checkout [branch-name]`
 2. Install dependencies: `npm install`
 3. Run tests: `npm test`
-4. Test specific functionality: ___________
+4. Test specific functionality: ****\_\_\_****
 
 **Questions for Reviewers:**
 
-- ___________
-- ___________
+- ***
+- ***
 
 ---
 
 **📋 Checklist Completion:**
+
 - [ ] All required sections completed
 - [ ] All tests passing
 - [ ] Documentation updated
