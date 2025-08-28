@@ -292,7 +292,7 @@ if (require.main === module) {
         const [endpoint, tokenName] = args;
         tester
             .testSpecificEndpoint(endpoint, tokenName)
-            .catch((error) => process.exit(1));
+            .catch((_error) => process.exit(1));
     } else {
         // Test all tokens
         tester.testAllTokens().catch((error) => {

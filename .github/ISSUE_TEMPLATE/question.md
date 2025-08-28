@@ -23,7 +23,7 @@ assignees: ''
 - [ ] 🏢 Organization-wide deployment
 - [ ] 🐛 Troubleshooting an issue
 - [ ] 💡 Best practices
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🎯 Your Question
 
@@ -69,7 +69,7 @@ repository-manager health
 - [ ] CLI help: `repository-manager --help`
 - [ ] GitHub issues/discussions
 - [ ] Stack Overflow
-- [ ] Other resources: ****\_\_\_****
+- [ ] Other resources: \***\*\_\_\_\*\***
 
 **Steps Attempted:**
 
@@ -131,7 +131,7 @@ Link to any related issues or discussions: #\_\_\_
 - [ ] Monitor repository health
 - [ ] Setup CI/CD best practices
 - [ ] Organization-wide governance
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🏃‍♂️ Urgency
 

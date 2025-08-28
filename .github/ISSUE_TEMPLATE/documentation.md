@@ -20,7 +20,7 @@ assignees: ''
 - [ ] 💡 Examples/Tutorials
 - [ ] 🤝 Contributing Guide
 - [ ] 📝 Code Comments
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🎯 Current Issue
 
@@ -50,7 +50,7 @@ Describe exactly what's missing, confusing, or incorrect.
 
 **Structure Suggestions:**
 
-- [ ] Add new section: ****\_\_\_****
+- [ ] Add new section: \***\*\_\_\_\*\***
 - [ ] Reorganize existing content
 - [ ] Add more examples
 - [ ] Include troubleshooting
@@ -86,7 +86,7 @@ Describe exactly what's missing, confusing, or incorrect.
 - [ ] Website/wiki
 - [ ] Not sure
 
-**Suggested File:** ****\_\_\_****
+**Suggested File:** \***\*\_\_\_\*\***
 
 ## 💼 Use Case
 
@@ -138,8 +138,8 @@ repository-manager command --option value
 
 **Related Documentation:**
 
-- Current: ****\_\_\_****
-- Similar: ****\_\_\_****
+- Current: \***\*\_\_\_\*\***
+- Similar: \***\*\_\_\_\*\***
 
 ---
 

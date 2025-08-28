@@ -18,7 +18,7 @@ assignees: ''
 - [ ] 🌐 Slow GitHub API calls
 - [ ] 💻 High CPU usage
 - [ ] 📈 Performance degradation over time
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 📊 Performance Metrics
 
@@ -135,7 +135,7 @@ Describe any patterns or insights you've discovered.
 - [ ] Memory management
 - [ ] API call reduction
 - [ ] File I/O optimization
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 **Implementation Ideas:**
 If you have specific technical suggestions.

@@ -22,7 +22,7 @@ A clear and concise description of the bug you encountered.
 - [ ] 📋 Interactive CLI
 - [ ] 📦 Package Installation
 - [ ] 🔧 Configuration
-- [ ] Other: ****\_\_\_****
+- [ ] Other: \***\*\_\_\_\*\***
 
 ## 🔄 Steps to Reproduce
 
@@ -112,7 +112,7 @@ repository-manager health --version
 - [ ] Related to organization settings
 - [ ] Related to GitHub API limitations
 
-**Previous Version that Worked:** ****\_\_\_****
+**Previous Version that Worked:** \***\*\_\_\_\*\***
 
 **Frequency:**
 
@@ -137,7 +137,7 @@ If you have suggestions or have identified the root cause, please share.
 
 **Workaround Available?**
 
-- [ ] Yes, I found a workaround: ****\_\_\_****
+- [ ] Yes, I found a workaround: \***\*\_\_\_\*\***
 - [ ] No workaround available
 
 ---
