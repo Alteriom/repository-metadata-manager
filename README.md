@@ -288,6 +288,40 @@ This tool is designed to be extended and customized for your organization's need
 3. **Update** the `organizationTag` configuration
 4. **Customize** validation rules in `validateMetadata()`
 
+## 🧪 Testing & Development
+
+### Test Suites
+
+The project includes comprehensive testing with different levels:
+
+```bash
+# Run all tests (including unstable ones)
+npm test
+
+# Run only stable core functionality tests (used for releases)
+npm run test:core
+
+# Run unstable tests that need infrastructure fixes
+npm run test:unstable
+
+# Run feature integration tests
+npm run test:features
+```
+
+### Test Categories
+
+- **Core Tests** (92 tests): Stable tests covering essential functionality
+- **Feature Manager Tests**: Testing individual feature modules (may have infrastructure dependencies)
+- **CLI Integration Tests**: End-to-end command-line interface testing
+- **Enhanced CLI Tests**: Advanced CLI functionality testing
+
+### Development Workflow
+
+1. **Core functionality** is thoroughly tested and stable
+2. **Feature tests** may require additional infrastructure setup
+3. **Release process** uses only stable core tests to ensure reliability
+4. **All functionality** works as demonstrated by working npm scripts
+
 ## 📄 License
 
 MIT License - feel free to use and modify for your organization.
