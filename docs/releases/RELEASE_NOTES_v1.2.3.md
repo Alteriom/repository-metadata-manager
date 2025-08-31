@@ -2,7 +2,7 @@
 
 **Release Date**: August 28, 2025  
 **NPM Status**: Not Published (Skipped)  
-**Branch**: release/v1.2.3  
+**Branch**: release/v1.2.3
 
 ## Overview
 

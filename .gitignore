@@ -59,3 +59,8 @@ Thumbs.db
 # Testing
 .jest/
 config.json
+
+# Generated files
+alteriom-dashboard.html
+dashboard.html
+*.dashboard.html
