@@ -12,6 +12,7 @@ const DocumentationManager = require('../lib/features/DocumentationManager');
 const CICDManager = require('../lib/features/CICDManager');
 const HealthScoreManager = require('../lib/features/HealthScoreManager');
 const MultiRepositoryManager = require('../lib/features/MultiRepositoryManager');
+const DashboardGenerator = require('../lib/features/DashboardGenerator');
 
 const program = new Command();
 
@@ -281,6 +282,42 @@ program
         if (options.template) {
             console.log(chalk.blue(`Generating ${options.template} IoT template...\n`));
             await generateIoTTemplate(options.template, config);
+        }
+    });
+
+// Dashboard Generation
+program
+    .command('dashboard')
+    .description('Generate interactive HTML dashboard for organization health')
+    .option('--output <file>', 'Output file name', 'alteriom-dashboard.html')
+    .option('--open', 'Open dashboard in browser after generation')
+    .action(async (options) => {
+        const config = await loadConfig();
+        console.log(chalk.blue('📊 Generating organization health dashboard...\n'));
+
+        const multiRepoManager = new MultiRepositoryManager(config);
+        const dashboardGenerator = new DashboardGenerator(config);
+
+        // Get organization health data
+        const results = await multiRepoManager.auditAllRepositories();
+        
+        // Generate and save dashboard
+        const filepath = await dashboardGenerator.saveDashboard(results, options.output);
+        
+        console.log(chalk.green(`✅ Dashboard generated successfully!`));
+        console.log(chalk.blue(`📂 File: ${filepath}`));
+        
+        if (options.open) {
+            const { spawn } = require('child_process');
+            const opener = process.platform === 'darwin' ? 'open' : 
+                          process.platform === 'win32' ? 'start' : 'xdg-open';
+            
+            try {
+                spawn(opener, [filepath], { detached: true, stdio: 'ignore' });
+                console.log(chalk.green('🌐 Opening dashboard in browser...'));
+            } catch (error) {
+                console.log(chalk.yellow(`⚠️  Could not open browser automatically. Please open: ${filepath}`));
+            }
         }
     });
 
