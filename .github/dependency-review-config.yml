@@ -6,15 +6,15 @@ fail-on-severity: critical
 
 # Allow these licenses (don't specify deny-licenses as they conflict)
 allow-licenses:
-  - MIT
-  - Apache-2.0
-  - BSD-3-Clause
-  - BSD-2-Clause
-  - ISC
-  - Python-2.0
-  - CC-BY-4.0
-  - 0BSD
-  - (MIT OR CC0-1.0)
+    - MIT
+    - Apache-2.0
+    - BSD-3-Clause
+    - BSD-2-Clause
+    - ISC
+    - Python-2.0
+    - CC-BY-4.0
+    - 0BSD
+    - (MIT OR CC0-1.0)
 
 # Allow these vulnerabilities (if any need to be temporarily allowed)
 allow-vulnerabilities: []
@@ -29,7 +29,6 @@ comment-summary-in-pr: always
 # Retry configuration
 retry-on-snapshot-warnings: true
 retry-on-snapshot-warnings-timeout: 120
-
 # Base and head references (defaults)
 # base-ref: auto-detected
 # head-ref: auto-detected
