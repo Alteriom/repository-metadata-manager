@@ -240,6 +240,88 @@ describe('RepositoryMetadataManager Comprehensive Tests', () => {
             expect(result).toContain('topic');
             expect(result).toContain('test');
         });
+
+        it('should detect IoT firmware repository', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'alteriom-firmware',
+                description: 'ESP32 IoT firmware for sensor networks',
+                keywords: ['iot', 'firmware', 'esp32', 'sensors'],
+            };
+
+            const result = manager.detectRepositoryType(packageMetadata);
+            expect(result).toBe('iot-firmware');
+        });
+
+        it('should detect IoT server repository', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'alteriom-iot-server',
+                description: 'IoT server with MQTT and sensor data processing',
+                keywords: ['iot', 'server', 'mqtt', 'telemetry'],
+            };
+
+            const result = manager.detectRepositoryType(packageMetadata);
+            expect(result).toBe('iot-server');
+        });
+
+        it('should detect IoT documentation repository', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'alteriom-documentation',
+                description: 'IoT platform documentation and guides',
+                keywords: ['documentation', 'iot', 'alteriom'],
+            };
+
+            const result = manager.detectRepositoryType(packageMetadata);
+            expect(result).toBe('iot-documentation');
+        });
+
+        it('should detect IoT infrastructure repository', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'alteriom-docker-images',
+                description: 'Docker containers for IoT platform deployment',
+                keywords: ['docker', 'iot', 'alteriom', 'infrastructure'],
+            };
+
+            const result = manager.detectRepositoryType(packageMetadata);
+            expect(result).toBe('iot-infrastructure');
+        });
+
+        it('should generate IoT firmware topics', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'esp32-firmware',
+                description: 'ESP32 firmware with LoRa support',
+                keywords: ['firmware', 'esp32', 'lora'],
+            };
+
+            const result = manager.generateRecommendedTopics(packageMetadata);
+            
+            expect(result).toContain('iot');
+            expect(result).toContain('firmware');
+            expect(result).toContain('embedded');
+            expect(result).toContain('esp32');
+            expect(result).toContain('lora');
+        });
+
+        it('should generate IoT server topics', () => {
+            manager = new RepositoryMetadataManager();
+            const packageMetadata = {
+                name: 'iot-backend',
+                description: 'IoT backend server with MQTT and InfluxDB',
+                keywords: ['iot', 'server', 'mqtt'],
+            };
+
+            const result = manager.generateRecommendedTopics(packageMetadata);
+            
+            expect(result).toContain('iot');
+            expect(result).toContain('server');
+            expect(result).toContain('backend');
+            expect(result).toContain('mqtt');
+            expect(result).toContain('telemetry');
+        });
     });
 
     describe('Metadata Validation', () => {
