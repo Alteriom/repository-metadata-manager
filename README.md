@@ -94,8 +94,94 @@ npm run interactive
 | `branches`    | Branch protection analysis and enforcement          |
 | `docs`        | Documentation quality assessment and generation     |
 | `cicd`        | CI/CD workflow analysis and template generation     |
+| `iot`         | IoT-specific compliance and template generation     |
 | `compliance`  | Full compliance check with auto-fix capabilities    |
 | `interactive` | Interactive wizard for guided repository management |
+
+## 🔌 IoT Repository Management
+
+Specialized features for IoT/embedded systems development, designed for organizations like Alteriom with extensive IoT portfolios.
+
+### IoT Repository Types
+
+The tool automatically detects and handles four types of IoT repositories:
+
+- **🔧 IoT Firmware** (`iot-firmware`): ESP32/ESP8266, Arduino, PlatformIO projects
+- **🖥️ IoT Server** (`iot-server`): MQTT backends, sensor data processing, telemetry
+- **📚 IoT Documentation** (`iot-documentation`): Hardware specs, API docs, setup guides
+- **🐳 IoT Infrastructure** (`iot-infrastructure`): Docker containers, deployment configs
+
+### IoT Commands
+
+```bash
+# Run IoT-specific compliance audit
+npm run iot
+
+# Generate IoT project templates
+repository-manager iot --template firmware    # ESP32/Arduino firmware
+repository-manager iot --template server      # Python/FastAPI MQTT server
+repository-manager iot --template infrastructure  # Docker deployment
+repository-manager iot --template documentation   # IoT project docs
+```
+
+### IoT Compliance Scoring
+
+IoT repositories get specialized scoring based on:
+
+- **Firmware Projects**: PlatformIO config, security headers, OTA updates, hardware docs
+- **Server Projects**: MQTT handlers, database schemas, API documentation, monitoring
+- **Documentation**: Hardware specs, setup guides, troubleshooting, examples
+- **Infrastructure**: Container configs, monitoring, security policies, deployment scripts
+
+### IoT Template Structures
+
+**Firmware Template Features:**
+- PlatformIO configuration for ESP32/ESP8266
+- Security and encryption modules
+- WiFi and MQTT connectivity
+- Sensor management and calibration
+- OTA update mechanisms
+- Hardware documentation templates
+
+**Server Template Features:**
+- FastAPI with MQTT integration
+- InfluxDB time-series data storage
+- Redis caching and session management
+- Grafana dashboard configurations
+- Docker containerization
+- API documentation and testing
+
+**Example IoT Audit Output:**
+```bash
+🔌 Starting IoT-Specific Compliance Audit...
+
+✅ IoT repository detected
+
+📊 IoT Compliance Score: 85/100
+🎯 Repository Type: iot-firmware
+
+🔧 IoT Files Detected:
+  • platformio.ini
+  • src/main.cpp
+  • include/config.h
+  • lib/sensors/
+
+✅ Compliance Findings:
+  ✅ PlatformIO configuration found
+  ✅ Main firmware file found
+  ✅ Header files directory found
+  ✅ Documentation found
+
+💡 Recommendations:
+  • Add security header file (include/security.h)
+  • Add OTA update configuration
+  • Include hardware compatibility matrix
+
+🔒 Security Recommendations:
+  • Consider adding cryptographic functions
+  • Implement WiFi credential security
+  • Add MQTT authentication
+```
 
 ### Original Metadata Commands
 
