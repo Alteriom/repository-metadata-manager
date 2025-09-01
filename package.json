@@ -82,7 +82,7 @@
         "chalk": "^4.1.2",
         "commander": "^14.0.0",
         "figlet": "^1.8.2",
-        "inquirer": "^8.2.6"
+        "inquirer": "^12.9.4"
     },
     "devDependencies": {
         "dotenv": "^17.2.1",
