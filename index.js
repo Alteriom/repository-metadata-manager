@@ -138,6 +138,52 @@ class RepositoryMetadataManager {
             .join(' ')
             .toLowerCase();
 
+        // IoT Server/Backend Detection (more specific, check first)
+        if (
+            (content.includes('iot') || content.includes('sensor')) &&
+            (content.includes('server') ||
+                content.includes('backend') ||
+                content.includes('mqtt') ||
+                content.includes('telemetry') ||
+                content.includes('influxdb') ||
+                content.includes('grafana'))
+        ) {
+            return 'iot-server';
+        }
+
+        // Documentation specific to IoT (check before general firmware)
+        if (
+            content.includes('documentation') &&
+            (content.includes('iot') || content.includes('alteriom'))
+        ) {
+            return 'iot-documentation';
+        }
+
+        // Docker/Infrastructure for IoT (check before general firmware)
+        if (
+            content.includes('docker') &&
+            (content.includes('iot') || content.includes('alteriom'))
+        ) {
+            return 'iot-infrastructure';
+        }
+
+        // IoT Firmware Detection (broader, check last among IoT types)
+        if (
+            content.includes('iot') ||
+            content.includes('firmware') ||
+            content.includes('embedded') ||
+            content.includes('esp32') ||
+            content.includes('esp8266') ||
+            content.includes('arduino') ||
+            content.includes('platformio') ||
+            content.includes('sensor') ||
+            content.includes('lora') ||
+            content.includes('mesh') ||
+            content.includes('microcontroller')
+        ) {
+            return 'iot-firmware';
+        }
+
         if (
             content.includes('ai') ||
             content.includes('agent') ||
@@ -266,6 +312,45 @@ class RepositoryMetadataManager {
 
         // Add type-specific topics
         const typeTopics = this.config.customTopics || {
+            'iot-firmware': [
+                'iot',
+                'firmware',
+                'embedded',
+                'esp32',
+                'esp8266',
+                'arduino',
+                'platformio',
+                'sensors',
+                'lora',
+                'wireless',
+                'microcontroller',
+            ],
+            'iot-server': [
+                'iot',
+                'server',
+                'backend',
+                'mqtt',
+                'telemetry',
+                'influxdb',
+                'grafana',
+                'sensor-network',
+                'monitoring',
+            ],
+            'iot-documentation': [
+                'iot',
+                'documentation',
+                'alteriom',
+                'sensor-network',
+                'embedded-docs',
+            ],
+            'iot-infrastructure': [
+                'iot',
+                'docker',
+                'infrastructure',
+                'deployment',
+                'containers',
+                'alteriom',
+            ],
             'ai-agent': ['automation', 'github-integration', 'compliance'],
             api: ['api', 'backend', 'server'],
             frontend: ['frontend', 'ui', 'web'],
