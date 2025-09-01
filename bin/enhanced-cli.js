@@ -638,40 +638,54 @@ function displayOrganizationSummary(results) {
 
 async function runIoTAudit(config) {
     console.log(chalk.blue('🔌 Starting IoT-Specific Compliance Audit...\n'));
-    
+
     const iotManager = new IoTManager(config);
-    
+
     try {
         const results = await iotManager.auditIoTCompliance();
-        
+
         if (results.isIoT) {
-            console.log(chalk.green('✅ IoT repository detected and audited successfully!'));
-            
+            console.log(
+                chalk.green(
+                    '✅ IoT repository detected and audited successfully!'
+                )
+            );
+
             // Display score with color coding
             const score = results.score;
             let scoreColor = chalk.red;
             if (score >= 80) scoreColor = chalk.green;
             else if (score >= 60) scoreColor = chalk.yellow;
-            
-            console.log(`📊 IoT Compliance Score: ${scoreColor(score + '/100')}`);
-            console.log(`🎯 Repository Type: ${chalk.cyan(results.repositoryType)}`);
-            
+
+            console.log(
+                `📊 IoT Compliance Score: ${scoreColor(score + '/100')}`
+            );
+            console.log(
+                `🎯 Repository Type: ${chalk.cyan(results.repositoryType)}`
+            );
+
             if (results.iotFiles.length > 0) {
                 console.log(chalk.blue('\n🔧 IoT Files Detected:'));
-                results.iotFiles.forEach(file => console.log(chalk.gray(`  • ${file}`)));
+                results.iotFiles.forEach((file) =>
+                    console.log(chalk.gray(`  • ${file}`))
+                );
             }
-            
+
             // Also run standard health check for comparison
             console.log(chalk.blue('\n🏥 Overall Repository Health:'));
             const healthManager = new HealthScoreManager(config);
             const health = await healthManager.calculateHealthScore();
             displayHealthSummary(health);
-            
         } else {
-            console.log(chalk.yellow('ℹ️  This repository does not appear to be IoT-related.'));
-            console.log('💡 To audit general repository health, use: npm run health');
+            console.log(
+                chalk.yellow(
+                    'ℹ️  This repository does not appear to be IoT-related.'
+                )
+            );
+            console.log(
+                '💡 To audit general repository health, use: npm run health'
+            );
         }
-        
     } catch (error) {
         console.error(chalk.red(`❌ IoT audit failed: ${error.message}`));
     }
@@ -679,39 +693,50 @@ async function runIoTAudit(config) {
 
 async function generateIoTTemplate(type, config) {
     console.log(chalk.blue(`🏗️  Generating IoT ${type} template...\n`));
-    
+
     const iotManager = new IoTManager(config);
-    
-    const validTypes = ['firmware', 'server', 'dashboard', 'infrastructure', 'documentation'];
-    
+
+    const validTypes = [
+        'firmware',
+        'server',
+        'dashboard',
+        'infrastructure',
+        'documentation',
+    ];
+
     // Map CLI names to internal names
     const typeMapping = {
-        'firmware': 'iot-firmware',
-        'server': 'iot-server',
-        'dashboard': 'iot-documentation', // For now, use documentation template
-        'infrastructure': 'iot-infrastructure',
-        'documentation': 'iot-documentation'
+        firmware: 'iot-firmware',
+        server: 'iot-server',
+        dashboard: 'iot-documentation', // For now, use documentation template
+        infrastructure: 'iot-infrastructure',
+        documentation: 'iot-documentation',
     };
-    
+
     if (!validTypes.includes(type)) {
         console.log(chalk.red(`❌ Unknown IoT template: ${type}`));
         console.log(chalk.yellow('Available templates:'));
-        validTypes.forEach(t => console.log(chalk.gray(`  • ${t}`)));
+        validTypes.forEach((t) => console.log(chalk.gray(`  • ${t}`)));
         return;
     }
-    
+
     try {
         const mappedType = typeMapping[type];
         await iotManager.generateIoTTemplate(mappedType);
-        
-        console.log(chalk.green(`✅ IoT ${type} template generated successfully!`));
+
+        console.log(
+            chalk.green(`✅ IoT ${type} template generated successfully!`)
+        );
         console.log(chalk.blue('\n💡 Next steps:'));
         console.log(chalk.gray('  1. Review the generated structure'));
         console.log(chalk.gray('  2. Customize configuration files'));
-        console.log(chalk.gray('  3. Follow the setup instructions in README.md'));
-        
+        console.log(
+            chalk.gray('  3. Follow the setup instructions in README.md')
+        );
     } catch (error) {
-        console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+        console.error(
+            chalk.red(`❌ Template generation failed: ${error.message}`)
+        );
     }
 }
 

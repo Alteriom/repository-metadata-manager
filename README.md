@@ -136,6 +136,7 @@ IoT repositories get specialized scoring based on:
 ### IoT Template Structures
 
 **Firmware Template Features:**
+
 - PlatformIO configuration for ESP32/ESP8266
 - Security and encryption modules
 - WiFi and MQTT connectivity
@@ -144,6 +145,7 @@ IoT repositories get specialized scoring based on:
 - Hardware documentation templates
 
 **Server Template Features:**
+
 - FastAPI with MQTT integration
 - InfluxDB time-series data storage
 - Redis caching and session management
@@ -152,6 +154,7 @@ IoT repositories get specialized scoring based on:
 - API documentation and testing
 
 **Example IoT Audit Output:**
+
 ```bash
 🔌 Starting IoT-Specific Compliance Audit...
 

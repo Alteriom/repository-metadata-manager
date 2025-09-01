@@ -298,7 +298,7 @@ describe('RepositoryMetadataManager Comprehensive Tests', () => {
             };
 
             const result = manager.generateRecommendedTopics(packageMetadata);
-            
+
             expect(result).toContain('iot');
             expect(result).toContain('firmware');
             expect(result).toContain('embedded');
@@ -315,7 +315,7 @@ describe('RepositoryMetadataManager Comprehensive Tests', () => {
             };
 
             const result = manager.generateRecommendedTopics(packageMetadata);
-            
+
             expect(result).toContain('iot');
             expect(result).toContain('server');
             expect(result).toContain('backend');

@@ -141,9 +141,12 @@ class RepositoryMetadataManager {
         // IoT Server/Backend Detection (more specific, check first)
         if (
             (content.includes('iot') || content.includes('sensor')) &&
-            (content.includes('server') || content.includes('backend') || 
-             content.includes('mqtt') || content.includes('telemetry') ||
-             content.includes('influxdb') || content.includes('grafana'))
+            (content.includes('server') ||
+                content.includes('backend') ||
+                content.includes('mqtt') ||
+                content.includes('telemetry') ||
+                content.includes('influxdb') ||
+                content.includes('grafana'))
         ) {
             return 'iot-server';
         }
@@ -156,7 +159,7 @@ class RepositoryMetadataManager {
             return 'iot-documentation';
         }
 
-        // Docker/Infrastructure for IoT (check before general firmware) 
+        // Docker/Infrastructure for IoT (check before general firmware)
         if (
             content.includes('docker') &&
             (content.includes('iot') || content.includes('alteriom'))
@@ -309,10 +312,45 @@ class RepositoryMetadataManager {
 
         // Add type-specific topics
         const typeTopics = this.config.customTopics || {
-            'iot-firmware': ['iot', 'firmware', 'embedded', 'esp32', 'esp8266', 'arduino', 'platformio', 'sensors', 'lora', 'wireless', 'microcontroller'],
-            'iot-server': ['iot', 'server', 'backend', 'mqtt', 'telemetry', 'influxdb', 'grafana', 'sensor-network', 'monitoring'],
-            'iot-documentation': ['iot', 'documentation', 'alteriom', 'sensor-network', 'embedded-docs'],
-            'iot-infrastructure': ['iot', 'docker', 'infrastructure', 'deployment', 'containers', 'alteriom'],
+            'iot-firmware': [
+                'iot',
+                'firmware',
+                'embedded',
+                'esp32',
+                'esp8266',
+                'arduino',
+                'platformio',
+                'sensors',
+                'lora',
+                'wireless',
+                'microcontroller',
+            ],
+            'iot-server': [
+                'iot',
+                'server',
+                'backend',
+                'mqtt',
+                'telemetry',
+                'influxdb',
+                'grafana',
+                'sensor-network',
+                'monitoring',
+            ],
+            'iot-documentation': [
+                'iot',
+                'documentation',
+                'alteriom',
+                'sensor-network',
+                'embedded-docs',
+            ],
+            'iot-infrastructure': [
+                'iot',
+                'docker',
+                'infrastructure',
+                'deployment',
+                'containers',
+                'alteriom',
+            ],
             'ai-agent': ['automation', 'github-integration', 'compliance'],
             api: ['api', 'backend', 'server'],
             frontend: ['frontend', 'ui', 'web'],
