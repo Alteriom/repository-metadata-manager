@@ -11,6 +11,9 @@ const BranchProtectionManager = require('../lib/features/BranchProtectionManager
 const DocumentationManager = require('../lib/features/DocumentationManager');
 const CICDManager = require('../lib/features/CICDManager');
 const HealthScoreManager = require('../lib/features/HealthScoreManager');
+const MultiRepositoryManager = require('../lib/features/MultiRepositoryManager');
+const DashboardGenerator = require('../lib/features/DashboardGenerator');
+const IoTManager = require('../lib/features/IoTManager');
 
 const program = new Command();
 
@@ -207,6 +210,164 @@ program
         }
     });
 
+// Multi-Repository Management Commands
+program
+    .command('org')
+    .description('Organization-wide repository management')
+    .option('--audit', 'Audit all repositories in organization')
+    .option('--fix', 'Apply fixes across all repositories')
+    .option('--report', 'Generate organization health report')
+    .option('--json', 'Output as JSON')
+    .action(async (options) => {
+        const config = await loadConfig();
+        const multiRepoManager = new MultiRepositoryManager(config);
+
+        if (options.audit) {
+            console.log(
+                chalk.blue('🏥 Running organization-wide health audit...\n')
+            );
+            const results = await multiRepoManager.auditAllRepositories();
+
+            if (options.json) {
+                console.log(JSON.stringify(results, null, 2));
+            } else {
+                displayOrganizationSummary(results);
+            }
+
+            if (options.report) {
+                const report = multiRepoManager.generateHealthReport(results);
+                console.log('\n' + chalk.cyan('📋 ORGANIZATION HEALTH REPORT'));
+                console.log(chalk.cyan('='.repeat(50)));
+                console.log(`Organization: ${report.organization}`);
+                console.log(
+                    `Total Repositories: ${report.summary.total_repositories}`
+                );
+                console.log(
+                    `Average Score: ${report.summary.average_score}/100 (${report.grade})`
+                );
+                console.log(`Healthy: ${report.summary.healthy_repositories}`);
+                console.log(
+                    `Needs Attention: ${report.summary.unhealthy_repositories}`
+                );
+
+                if (report.recommendations.length > 0) {
+                    console.log(
+                        '\n' + chalk.yellow('🎯 Organization Recommendations:')
+                    );
+                    report.recommendations.forEach((rec, i) => {
+                        console.log(
+                            `${i + 1}. ${rec.message} (${rec.priority} priority)`
+                        );
+                    });
+                }
+            }
+        }
+
+        if (options.fix) {
+            console.log(chalk.blue('🔧 Applying organization-wide fixes...\n'));
+            const fixResults = await multiRepoManager.applyOrganizationFixes({
+                apply: true,
+            });
+
+            console.log(
+                chalk.green(
+                    `✅ Applied fixes to ${fixResults.applied.length} repositories`
+                )
+            );
+            if (fixResults.failed.length > 0) {
+                console.log(
+                    chalk.red(
+                        `❌ Failed to fix ${fixResults.failed.length} repositories`
+                    )
+                );
+            }
+            if (fixResults.skipped.length > 0) {
+                console.log(
+                    chalk.yellow(
+                        `⏭️  Skipped ${fixResults.skipped.length} repositories`
+                    )
+                );
+            }
+        }
+    });
+
+// IoT-Specific Commands
+program
+    .command('iot')
+    .description('IoT-specific repository management for Alteriom projects')
+    .option('--audit', 'Run IoT-specific compliance checks')
+    .option(
+        '--template <type>',
+        'Generate IoT project template (firmware|server|dashboard)'
+    )
+    .action(async (options) => {
+        const config = await loadConfig();
+        console.log(chalk.blue('🔌 IoT Repository Management\n'));
+
+        if (options.audit) {
+            console.log(
+                chalk.blue('Running IoT-specific compliance checks...\n')
+            );
+            await runIoTAudit(config);
+        }
+
+        if (options.template) {
+            console.log(
+                chalk.blue(`Generating ${options.template} IoT template...\n`)
+            );
+            await generateIoTTemplate(options.template, config);
+        }
+    });
+
+// Dashboard Generation
+program
+    .command('dashboard')
+    .description('Generate interactive HTML dashboard for organization health')
+    .option('--output <file>', 'Output file name', 'alteriom-dashboard.html')
+    .option('--open', 'Open dashboard in browser after generation')
+    .action(async (options) => {
+        const config = await loadConfig();
+        console.log(
+            chalk.blue('📊 Generating organization health dashboard...\n')
+        );
+
+        const multiRepoManager = new MultiRepositoryManager(config);
+        const dashboardGenerator = new DashboardGenerator(config);
+
+        // Get organization health data
+        const results = await multiRepoManager.auditAllRepositories();
+
+        // Generate and save dashboard
+        const filepath = await dashboardGenerator.saveDashboard(
+            results,
+            options.output
+        );
+
+        console.log(chalk.green(`✅ Dashboard generated successfully!`));
+        console.log(chalk.blue(`📂 File: ${filepath}`));
+
+        if (options.open) {
+            const { spawn } = require('child_process');
+            const opener =
+                process.platform === 'darwin'
+                    ? 'open'
+                    : process.platform === 'win32'
+                      ? 'start'
+                      : 'xdg-open';
+
+            try {
+                spawn(opener, [filepath], { detached: true, stdio: 'ignore' });
+                console.log(chalk.green('🌐 Opening dashboard in browser...'));
+            } catch (error) {
+                console.log(
+                    chalk.yellow(
+                        `⚠️  Could not open browser automatically. Please open: ${filepath}`
+                    )
+                );
+            }
+        }
+    });
+
 // Helper Functions
 async function loadConfig() {
     require('dotenv').config();
@@ -225,7 +386,7 @@ async function loadConfig() {
 
 function displayHealthSummary(health) {
     console.log(
-        chalk.bold(`\n📊 Repository Health Score: ${health.overallScore}/100`)
+        chalk.bold(`\n📊 Repository Health Score: ${health.score}/100`)
     );
 
     const gradeColor = getGradeColor(health.grade);
@@ -353,6 +514,7 @@ async function runInteractiveMode() {
                 { name: '🌿 Branch Protection', value: 'branches' },
                 { name: '📚 Documentation Check', value: 'docs' },
                 { name: '⚙️ CI/CD Audit', value: 'cicd' },
+                { name: '🔌 IoT Compliance Check', value: 'iot' },
                 { name: '🎯 Full Compliance Check', value: 'compliance' },
             ],
         },
@@ -397,6 +559,10 @@ async function runInteractiveMode() {
                 displayCICDResults(cicdResults);
                 break;
             }
+            case 'iot': {
+                await runIoTAudit(config);
+                break;
+            }
             case 'compliance': {
                 const complianceManager = new HealthScoreManager(config);
                 const complianceHealth =
@@ -430,6 +596,147 @@ async function applyAutomaticFixes(config) {
         fixes.forEach((fix) => console.log(`  - ${fix}`));
     } catch (error) {
         console.log(chalk.red(`❌ Error applying fixes: ${error.message}`));
+    }
+}
+
+function displayOrganizationSummary(results) {
+    console.log(chalk.cyan('\n🏢 ORGANIZATION HEALTH SUMMARY'));
+    console.log(chalk.cyan('='.repeat(50)));
+
+    console.log(`Total Repositories: ${results.summary.total_repositories}`);
+    console.log(`Average Health Score: ${results.summary.average_score}/100`);
+    console.log(
+        `Healthy Repositories: ${chalk.green(results.summary.healthy_repositories)}`
+    );
+    console.log(
+        `Needs Attention: ${chalk.red(results.summary.unhealthy_repositories)}`
+    );
+
+    if (results.repositories.length > 0) {
+        console.log('\n📊 Repository Breakdown:');
+        results.repositories.forEach((repo) => {
+            const gradeColor = getGradeColor(repo.grade);
+            const icon =
+                repo.health_score >= 70
+                    ? '✅'
+                    : repo.health_score >= 50
+                      ? '⚠️'
+                      : '❌';
+            console.log(
+                `  ${icon} ${repo.name}: ${repo.health_score}/100 (${gradeColor(repo.grade)})`
+            );
+        });
+    }
+
+    if (results.recommendations.length > 0) {
+        console.log('\n🎯 Organization Recommendations:');
+        results.recommendations.forEach((rec, i) => {
+            console.log(`  ${i + 1}. ${rec.message}`);
+        });
+    }
+}
+
+async function runIoTAudit(config) {
+    console.log(chalk.blue('🔌 Starting IoT-Specific Compliance Audit...\n'));
+
+    const iotManager = new IoTManager(config);
+
+    try {
+        const results = await iotManager.auditIoTCompliance();
+
+        if (results.isIoT) {
+            console.log(
+                chalk.green(
+                    '✅ IoT repository detected and audited successfully!'
+                )
+            );
+
+            // Display score with color coding
+            const score = results.score;
+            let scoreColor = chalk.red;
+            if (score >= 80) scoreColor = chalk.green;
+            else if (score >= 60) scoreColor = chalk.yellow;
+
+            console.log(
+                `📊 IoT Compliance Score: ${scoreColor(score + '/100')}`
+            );
+            console.log(
+                `🎯 Repository Type: ${chalk.cyan(results.repositoryType)}`
+            );
+
+            if (results.iotFiles.length > 0) {
+                console.log(chalk.blue('\n🔧 IoT Files Detected:'));
+                results.iotFiles.forEach((file) =>
+                    console.log(chalk.gray(`  • ${file}`))
+                );
+            }
+
+            // Also run standard health check for comparison
+            console.log(chalk.blue('\n🏥 Overall Repository Health:'));
+            const healthManager = new HealthScoreManager(config);
+            const health = await healthManager.calculateHealthScore();
+            displayHealthSummary(health);
+        } else {
+            console.log(
+                chalk.yellow(
+                    'ℹ️  This repository does not appear to be IoT-related.'
+                )
+            );
+            console.log(
+                '💡 To audit general repository health, use: npm run health'
+            );
+        }
+    } catch (error) {
+        console.error(chalk.red(`❌ IoT audit failed: ${error.message}`));
+    }
+}
+
+async function generateIoTTemplate(type, config) {
+    console.log(chalk.blue(`🏗️  Generating IoT ${type} template...\n`));
+
+    const iotManager = new IoTManager(config);
+
+    const validTypes = [
+        'firmware',
+        'server',
+        'dashboard',
+        'infrastructure',
+        'documentation',
+    ];
+
+    // Map CLI names to internal names
+    const typeMapping = {
+        firmware: 'iot-firmware',
+        server: 'iot-server',
+        dashboard: 'iot-documentation', // For now, use documentation template
+        infrastructure: 'iot-infrastructure',
+        documentation: 'iot-documentation',
+    };
+
+    if (!validTypes.includes(type)) {
+        console.log(chalk.red(`❌ Unknown IoT template: ${type}`));
+        console.log(chalk.yellow('Available templates:'));
+        validTypes.forEach((t) => console.log(chalk.gray(`  • ${t}`)));
+        return;
+    }
+
+    try {
+        const mappedType = typeMapping[type];
+        await iotManager.generateIoTTemplate(mappedType);
+
+        console.log(
+            chalk.green(`✅ IoT ${type} template generated successfully!`)
+        );
+        console.log(chalk.blue('\n💡 Next steps:'));
+        console.log(chalk.gray('  1. Review the generated structure'));
+        console.log(chalk.gray('  2. Customize configuration files'));
+        console.log(
+            chalk.gray('  3. Follow the setup instructions in README.md')
+        );
+    } catch (error) {
+        console.error(
+            chalk.red(`❌ Template generation failed: ${error.message}`)
+        );
     }
 }
 
