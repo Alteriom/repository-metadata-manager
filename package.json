@@ -78,8 +78,9 @@
     "author": "Alteriom Organization",
     "license": "MIT",
     "dependencies": {
-        "@octokit/rest": "^20.0.0",
+        "@octokit/rest": "^22.0.0",
         "chalk": "^5.6.0",
+
         "commander": "^14.0.0",
         "figlet": "^1.8.2",
         "inquirer": "^12.9.4"
