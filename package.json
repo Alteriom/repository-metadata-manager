@@ -23,6 +23,9 @@
         "iot": "node bin/enhanced-cli.js iot --audit",
         "compliance": "node bin/enhanced-cli.js compliance",
         "interactive": "node bin/enhanced-cli.js interactive",
+        "analytics": "node bin/enhanced-cli.js analytics",
+        "template": "node bin/enhanced-cli.js template",
+        "security-policy": "node bin/enhanced-cli.js security-policy",
         "test:features": "node scripts/test-features.js",
         "test:core": "jest tests/RepositoryMetadataManager.test.js tests/cli.test.js tests/integration.test.js tests/index.test.js tests/index-comprehensive.test.js",
         "test:unstable": "jest tests/feature-managers.test.js tests/repository-manager.test.js tests/enhanced-cli.test.js",
@@ -79,8 +82,7 @@
     "license": "MIT",
     "dependencies": {
         "@octokit/rest": "^22.0.0",
-        "chalk": "^5.6.0",
-
+        "chalk": "^4.1.2",
         "commander": "^14.0.0",
         "figlet": "^1.8.2",
         "inquirer": "^12.9.4"
