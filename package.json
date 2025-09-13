@@ -23,6 +23,8 @@
         "iot": "node bin/enhanced-cli.js iot --audit",
         "compliance": "node bin/enhanced-cli.js compliance",
         "interactive": "node bin/enhanced-cli.js interactive",
+        "analytics": "node bin/enhanced-cli.js analytics",
+        "template": "node bin/enhanced-cli.js template",
         "test:features": "node scripts/test-features.js",
         "test:core": "jest tests/RepositoryMetadataManager.test.js tests/cli.test.js tests/integration.test.js tests/index.test.js tests/index-comprehensive.test.js",
         "test:unstable": "jest tests/feature-managers.test.js tests/repository-manager.test.js tests/enhanced-cli.test.js",

@@ -14,6 +14,8 @@ const HealthScoreManager = require('../lib/features/HealthScoreManager');
 const MultiRepositoryManager = require('../lib/features/MultiRepositoryManager');
 const DashboardGenerator = require('../lib/features/DashboardGenerator');
 const IoTManager = require('../lib/features/IoTManager');
+const TemplateEngine = require('../lib/features/TemplateEngine');
+const OrganizationAnalytics = require('../lib/features/OrganizationAnalytics');
 
 const program = new Command();
 
@@ -368,6 +370,84 @@ program
         }
     });
 
+// Organization Analytics
+program
+    .command('analytics')
+    .description('Generate comprehensive organization analytics and insights')
+    .option('--export <format>', 'Export report (json|csv)', 'json')
+    .option('--save <file>', 'Save report to file')
+    .action(async (options) => {
+        const config = await loadConfig();
+        console.log(chalk.blue('📊 Organization Analytics\n'));
+
+        const analytics = new OrganizationAnalytics(config);
+        
+        try {
+            const insights = await analytics.generateOrganizationReport();
+            
+            if (options.save) {
+                const fs = require('fs').promises;
+                const filename = options.save;
+                
+                if (options.export === 'json') {
+                    await fs.writeFile(filename, JSON.stringify(insights, null, 2));
+                } else if (options.export === 'csv') {
+                    // Convert to CSV format
+                    const csv = convertInsightsToCSV(insights);
+                    await fs.writeFile(filename, csv);
+                }
+                
+                console.log(chalk.green(`\n💾 Report saved to: ${filename}`));
+            }
+            
+        } catch (error) {
+            console.error(chalk.red(`❌ Analytics failed: ${error.message}`));
+        }
+    });
+
+// Template Generation
+program
+    .command('template')
+    .description('Generate new projects from templates')
+    .option('--list', 'List available templates')
+    .option('--type <type>', 'Template type (iot-firmware|ai-agent|iot-platform|cli-tool)')
+    .option('--name <name>', 'Project name')
+    .option('--output <path>', 'Output directory')
+    .action(async (options) => {
+        const config = await loadConfig();
+        const templateEngine = new TemplateEngine(config);
+
+        if (options.list) {
+            templateEngine.listTemplates();
+            return;
+        }
+
+        if (!options.type || !options.name) {
+            console.log(chalk.red('❌ Both --type and --name are required'));
+            console.log(chalk.blue('💡 Use --list to see available templates'));
+            console.log(chalk.blue('💡 Example: repository-manager template --type iot-firmware --name my-sensor-project'));
+            return;
+        }
+
+        try {
+            const result = await templateEngine.generateProject(
+                options.type,
+                options.name,
+                {
+                    outputPath: options.output,
+                    organizationTag: config.organizationTag || 'alteriom'
+                }
+            );
+
+            console.log(chalk.green(`\n🎉 Successfully created ${options.type} project!`));
+            console.log(chalk.blue(`📁 Location: ${result.path}`));
+            console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
+
+        } catch (error) {
+            console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+        }
+    });
+
 // Helper Functions
 async function loadConfig() {
     require('dotenv').config();
@@ -516,6 +596,8 @@ async function runInteractiveMode() {
                 { name: '⚙️ CI/CD Audit', value: 'cicd' },
                 { name: '🔌 IoT Compliance Check', value: 'iot' },
                 { name: '🎯 Full Compliance Check', value: 'compliance' },
+                { name: '🎨 Generate New Project', value: 'template' },
+                { name: '📈 Organization Analytics', value: 'analytics' },
             ],
         },
     ]);
@@ -568,6 +650,15 @@ async function runInteractiveMode() {
                 const complianceHealth =
                     await complianceManager.calculateHealthScore();
                 displayHealthSummary(complianceHealth);
+                break;
+            }
+            case 'template': {
+                await runTemplateWizard(config);
+                break;
+            }
+            case 'analytics': {
+                const analytics = new OrganizationAnalytics(config);
+                await analytics.generateOrganizationReport();
                 break;
             }
         }
@@ -738,6 +829,83 @@ async function generateIoTTemplate(type, config) {
             chalk.red(`❌ Template generation failed: ${error.message}`)
         );
     }
+}
+
+async function runTemplateWizard(config) {
+    const templateEngine = new TemplateEngine(config);
+    
+    console.log(chalk.blue('🎨 Project Template Generator\n'));
+    
+    const answers = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'templateType',
+            message: 'What type of project would you like to create?',
+            choices: [
+                { name: '🔧 IoT Firmware (ESP32/ESP8266, Arduino, PlatformIO)', value: 'iot-firmware' },
+                { name: '🤖 AI Agent (GitHub automation, compliance)', value: 'ai-agent' },
+                { name: '🌐 IoT Platform (React frontend + Python backend)', value: 'iot-platform' },
+                { name: '⚡ CLI Tool (Command line utility)', value: 'cli-tool' }
+            ]
+        },
+        {
+            type: 'input',
+            name: 'projectName',
+            message: 'Project name:',
+            validate: (input) => {
+                if (!input.trim()) return 'Project name is required';
+                if (!/^[a-z0-9-]+$/.test(input)) return 'Use lowercase letters, numbers, and hyphens only';
+                return true;
+            }
+        },
+        {
+            type: 'input',
+            name: 'outputPath',
+            message: 'Output directory (optional):',
+            default: (answers) => `./${answers.projectName}`
+        }
+    ]);
+    
+    try {
+        const result = await templateEngine.generateProject(
+            answers.templateType,
+            answers.projectName,
+            {
+                outputPath: answers.outputPath,
+                organizationTag: config.organizationTag || 'alteriom'
+            }
+        );
+        
+        console.log(chalk.green(`\n🎉 Successfully created ${answers.templateType} project!`));
+        console.log(chalk.blue(`📁 Location: ${result.path}`));
+        console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
+        
+    } catch (error) {
+        console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+    }
+}
+
+function convertInsightsToCSV(insights) {
+    // Convert key insights to CSV format
+    let csv = 'Category,Metric,Value\n';
+    
+    // Overview
+    csv += `Overview,Total Repositories,${insights.overview.totalRepositories}\n`;
+    csv += `Overview,Average Health Score,${insights.overview.averageHealthScore}\n`;
+    csv += `Overview,Total Stars,${insights.overview.totalStars}\n`;
+    csv += `Overview,Total Forks,${insights.overview.totalForks}\n`;
+    
+    // Languages
+    insights.languages.forEach(lang => {
+        csv += `Languages,${lang.language},${lang.count}\n`;
+    });
+    
+    // Repository Types
+    insights.repoTypes.forEach(type => {
+        csv += `Repository Types,${type.type},${type.count}\n`;
+    });
+    
+    return csv;
 }
 
 program.parse();

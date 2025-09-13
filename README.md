@@ -85,6 +85,29 @@ npm run compliance --fix
 npm run interactive
 ```
 
+### 6. Organization Analytics
+
+```bash
+# Generate comprehensive organization report
+npm run analytics
+
+# Export analytics to file
+repository-manager analytics --save organization-report.json
+```
+
+### 7. Project Templates
+
+```bash
+# List available templates
+npm run template -- --list
+
+# Generate IoT firmware project
+npm run template -- --type iot-firmware --name my-sensor-project
+
+# Generate AI agent project
+npm run template -- --type ai-agent --name my-automation-agent
+```
+
 ## 📋 Enhanced Commands
 
 | Command       | Description                                         |
@@ -94,6 +117,70 @@ npm run interactive
 | `branches`    | Branch protection analysis and enforcement          |
 | `docs`        | Documentation quality assessment and generation     |
 | `cicd`        | CI/CD workflow analysis and template generation     |
+| `iot`         | IoT-specific compliance and template generation     |
+| `compliance`  | Full compliance check with auto-fix capabilities    |
+| `interactive` | Interactive wizard for guided repository management |
+| `analytics`   | Organization-wide analytics and insights           |
+| `template`    | Generate new projects from comprehensive templates  |
+
+## 🎨 Project Template Engine
+
+The Repository Metadata Manager now includes a comprehensive template engine for rapid project scaffolding, specifically designed for Alteriom organization patterns.
+
+### Available Templates
+
+| Template Type    | Language   | Description |
+| ---------------- | ---------- | ----------- |
+| `iot-firmware`   | C++        | ESP32/ESP8266 firmware with sensors, LoRa, WiFi mesh |
+| `ai-agent`       | JavaScript | AI-powered automation and repository management |
+| `iot-platform`   | TypeScript | Multi-tenant IoT platform with React + FastAPI |
+| `cli-tool`       | JavaScript | Command-line tools with comprehensive features |
+
+### Template Features
+
+**IoT Firmware Template:**
+- Complete PlatformIO configuration for ESP32/ESP8266
+- Sensor management (DHT22, BMP280, custom sensors)
+- WiFi connectivity with automatic reconnection
+- MQTT communication for telemetry
+- LoRa mesh networking support
+- OTA update capabilities
+- Hardware documentation templates
+- Security and encryption modules
+
+**AI Agent Template:**
+- GitHub API integration with Octokit
+- Automated compliance monitoring
+- Issue and PR creation capabilities
+- Configurable automation workflows
+- Comprehensive test suite
+- Docker deployment configuration
+
+**IoT Platform Template:**
+- React TypeScript frontend with modern UI
+- FastAPI Python backend with async support
+- MQTT integration for real-time data
+- InfluxDB time-series data storage
+- Redis caching and session management
+- Multi-tenant architecture
+- Grafana dashboard configurations
+- Docker Compose for local development
+
+### Usage Examples
+
+```bash
+# Interactive template generation
+npm run interactive
+# Select "🎨 Generate New Project"
+
+# Command line usage
+npm run template -- --type iot-firmware --name weather-station
+npm run template -- --type ai-agent --name compliance-bot
+npm run template -- --type iot-platform --name sensor-dashboard
+
+# List all available templates
+npm run template -- --list
+```
 | `iot`         | IoT-specific compliance and template generation     |
 | `compliance`  | Full compliance check with auto-fix capabilities    |
 | `interactive` | Interactive wizard for guided repository management |
@@ -184,6 +271,67 @@ IoT repositories get specialized scoring based on:
   • Consider adding cryptographic functions
   • Implement WiFi credential security
   • Add MQTT authentication
+```
+
+## 📊 Organization Analytics
+
+Comprehensive analytics and insights across all repositories in your organization, providing detailed visibility into health, compliance, and technology adoption patterns.
+
+### Analytics Features
+
+- **Repository Health Overview**: Aggregated health scores and grade distribution
+- **Language & Technology Analysis**: Usage patterns and technology adoption
+- **IoT Portfolio Insights**: Specialized analysis for IoT/embedded projects
+- **Security Posture Assessment**: Organization-wide security metrics
+- **Compliance Trends**: Tracking compliance improvements over time
+- **Actionable Recommendations**: Prioritized suggestions for improvement
+
+### Analytics Commands
+
+```bash
+# Generate comprehensive organization report
+npm run analytics
+
+# Export analytics to JSON
+repository-manager analytics --export json --save org-report.json
+
+# Export analytics to CSV for spreadsheet analysis
+repository-manager analytics --export csv --save org-metrics.csv
+```
+
+### Sample Analytics Output
+
+```
+🏢 ALTERIOM ORGANIZATION ANALYTICS REPORT
+============================================================
+
+📊 ORGANIZATION OVERVIEW
+Total Repositories: 12
+Private/Public: 8/4
+Average Health Score: 87/100
+Total Stars: 156
+Total Forks: 23
+Open Issues: 14
+
+💻 LANGUAGE DISTRIBUTION
+  JavaScript: 5 repositories (42%)
+  C++: 4 repositories (33%)
+  TypeScript: 2 repositories (17%)
+  Python: 1 repositories (8%)
+
+🔌 IOT PORTFOLIO ANALYSIS
+Total IoT Repositories: 6
+Average IoT Health: 92/100
+Top IoT Technologies:
+  • esp32: 4 projects
+  • mqtt: 4 projects
+  • platformio: 3 projects
+  • sensors: 3 projects
+
+🎯 KEY RECOMMENDATIONS
+  1. 🔴 [Security] Implement organization-wide security policies
+  2. 🟡 [Documentation] 3 repositories missing descriptions
+  3. 🟡 [IoT] Consider creating shared IoT libraries
 ```
 
 ### Original Metadata Commands
