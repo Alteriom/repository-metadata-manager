@@ -122,6 +122,7 @@ npm run template -- --type ai-agent --name my-automation-agent
 | `interactive` | Interactive wizard for guided repository management |
 | `analytics`   | Organization-wide analytics and insights           |
 | `template`    | Generate new projects from comprehensive templates  |
+| `security-policy` | Generate and manage security policies          |
 
 ## 🎨 Project Template Engine
 
@@ -332,6 +333,105 @@ Top IoT Technologies:
   1. 🔴 [Security] Implement organization-wide security policies
   2. 🟡 [Documentation] 3 repositories missing descriptions
   3. 🟡 [IoT] Consider creating shared IoT libraries
+```
+
+## 🛡️ Security Policy Management
+
+Comprehensive security policy generation and management for enterprise-grade security standards across all repository types.
+
+### Security Policy Types
+
+| Policy Type      | Description | Use Case |
+| ---------------- | ----------- | -------- |
+| `organization`   | Standard organizational security policy | All repositories |
+| `iot`           | Enhanced IoT device and firmware security | IoT/embedded projects |
+| `ai-agent`      | AI agent and automation security | AI/automation systems |
+| `web-platform`  | Web application security policy | Web applications |
+
+### Security Policy Features
+
+**Organization Policy:**
+- Vulnerability disclosure procedures
+- Incident response planning
+- Security contact information
+- Compliance guidelines
+- Supported versions matrix
+
+**IoT Policy:**
+- Hardware security requirements
+- Firmware security standards
+- Device authentication protocols
+- Secure communication guidelines
+- OTA update security
+
+**AI Agent Policy:**
+- API security standards
+- Data privacy protection
+- Automation security controls
+- GitHub integration security
+
+**Web Platform Policy:**
+- Authentication and authorization
+- Data protection standards
+- Web application security
+- HTTPS/TLS requirements
+
+### Security Commands
+
+```bash
+# Audit existing security policies
+npm run security-policy -- --audit
+
+# Generate organization security policy
+npm run security-policy -- --generate --type organization
+
+# Generate IoT-specific security policy
+npm run security-policy -- --generate --type iot --contact security@yourorg.com
+```
+
+### Generated Security Files
+
+**Standard Organization Policy:**
+- `SECURITY.md` - Main security policy
+- `.github/SECURITY.md` - GitHub security integration
+- `docs/security/SECURITY_GUIDELINES.md` - Detailed guidelines
+- `docs/security/VULNERABILITY_DISCLOSURE.md` - Disclosure procedures
+- `docs/security/INCIDENT_RESPONSE.md` - Response procedures
+
+**IoT-Specific Policy:**
+- Enhanced device security requirements
+- Firmware security standards
+- Hardware security guidelines
+- Secure communication protocols
+
+### Usage Examples
+
+```bash
+# Interactive security policy management
+npm run interactive
+# Select "🛡️ Security Policy Management"
+
+# Command line usage
+repository-manager security-policy --audit
+repository-manager security-policy --generate --type iot
+repository-manager security-policy --generate --type organization --contact security@alteriom.com
+```
+
+### Sample Security Audit Output
+
+```
+🔒 Security Policy Score: 85/100
+
+✅ SECURITY.md file
+✅ GitHub security policy
+✅ Security documentation
+❌ Security workflow
+   Fix: Add automated security scanning workflow
+
+💡 Recommendations:
+  1. Add vulnerability disclosure timeline section
+  2. Include emergency contact procedures
+  3. Implement automated security scanning
 ```
 
 ### Original Metadata Commands

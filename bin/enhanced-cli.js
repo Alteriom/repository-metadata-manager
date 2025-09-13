@@ -16,6 +16,7 @@ const DashboardGenerator = require('../lib/features/DashboardGenerator');
 const IoTManager = require('../lib/features/IoTManager');
 const TemplateEngine = require('../lib/features/TemplateEngine');
 const OrganizationAnalytics = require('../lib/features/OrganizationAnalytics');
+const SecurityPolicyManager = require('../lib/features/SecurityPolicyManager');
 
 const program = new Command();
 
@@ -405,6 +406,87 @@ program
         }
     });
 
+// Security Policy Management
+program
+    .command('security-policy')
+    .description('Generate and manage security policies for repositories')
+    .option('--type <type>', 'Policy type (organization|iot|ai-agent|web-platform)', 'organization')
+    .option('--audit', 'Audit existing security policies')
+    .option('--generate', 'Generate security policy files')
+    .option('--contact <email>', 'Security contact email', 'security@alteriom.com')
+    .action(async (options) => {
+        const config = await loadConfig();
+        const securityPolicyManager = new SecurityPolicyManager(config);
+
+        if (options.audit) {
+            console.log(chalk.blue('🔍 Auditing security policies...\n'));
+            
+            try {
+                const audit = await securityPolicyManager.auditSecurityPolicies();
+                
+                console.log(chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`));
+                
+                audit.checks.forEach(check => {
+                    const icon = check.status ? '✅' : '❌';
+                    console.log(`${icon} ${check.name}`);
+                    if (!check.status && check.fix) {
+                        console.log(chalk.gray(`   Fix: ${check.fix}`));
+                    }
+                });
+                
+                if (audit.recommendations.length > 0) {
+                    console.log(chalk.yellow('\n💡 Recommendations:'));
+                    audit.recommendations.forEach((rec, i) => {
+                        console.log(`  ${i + 1}. ${rec}`);
+                    });
+                }
+                
+            } catch (error) {
+                console.error(chalk.red(`❌ Security audit failed: ${error.message}`));
+            }
+        }
+
+        if (options.generate) {
+            console.log(chalk.blue(`🔒 Generating ${options.type} security policy...\n`));
+            
+            try {
+                const result = await securityPolicyManager.generateSecurityPolicy(
+                    options.type,
+                    {
+                        contactEmail: options.contact,
+                        organizationName: config.organizationName || 'Alteriom',
+                        organizationTag: config.organizationTag || 'alteriom'
+                    }
+                );
+                
+                console.log(chalk.green(`✅ Security policy generated successfully!`));
+                console.log(chalk.blue(`📁 Policy Type: ${result.policy}`));
+                console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
+                
+                console.log(chalk.yellow('\n📝 Next Steps:'));
+                console.log('  1. Review generated security policy files');
+                console.log('  2. Customize contact information and procedures');
+                console.log('  3. Commit files to your repository');
+                console.log('  4. Enable GitHub security features');
+                
+            } catch (error) {
+                console.error(chalk.red(`❌ Security policy generation failed: ${error.message}`));
+            }
+        }
+
+        if (!options.audit && !options.generate) {
+            console.log(chalk.blue('🔒 Security Policy Management\n'));
+            console.log('Available policy types:');
+            console.log('  • organization - Standard organizational security policy');
+            console.log('  • iot - Enhanced policy for IoT devices and firmware');
+            console.log('  • ai-agent - Security policy for AI agents and automation');
+            console.log('  • web-platform - Security policy for web applications');
+            console.log('\nUsage:');
+            console.log('  repository-manager security-policy --audit');
+            console.log('  repository-manager security-policy --generate --type iot');
+        }
+    });
+
 // Template Generation
 program
     .command('template')
@@ -598,6 +680,7 @@ async function runInteractiveMode() {
                 { name: '🎯 Full Compliance Check', value: 'compliance' },
                 { name: '🎨 Generate New Project', value: 'template' },
                 { name: '📈 Organization Analytics', value: 'analytics' },
+                { name: '🛡️ Security Policy Management', value: 'security-policy' },
             ],
         },
     ]);
@@ -659,6 +742,10 @@ async function runInteractiveMode() {
             case 'analytics': {
                 const analytics = new OrganizationAnalytics(config);
                 await analytics.generateOrganizationReport();
+                break;
+            }
+            case 'security-policy': {
+                await runSecurityPolicyWizard(config);
                 break;
             }
         }
@@ -882,6 +969,103 @@ async function runTemplateWizard(config) {
         
     } catch (error) {
         console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+    }
+}
+
+async function runSecurityPolicyWizard(config) {
+    const securityPolicyManager = new SecurityPolicyManager(config);
+    
+    console.log(chalk.blue('🛡️ Security Policy Management\n'));
+    
+    const answers = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+                { name: '🔍 Audit existing security policies', value: 'audit' },
+                { name: '📝 Generate new security policies', value: 'generate' }
+            ]
+        }
+    ]);
+    
+    if (answers.action === 'audit') {
+        console.log(chalk.blue('🔍 Auditing security policies...\n'));
+        
+        try {
+            const audit = await securityPolicyManager.auditSecurityPolicies();
+            
+            console.log(chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`));
+            
+            audit.checks.forEach(check => {
+                const icon = check.status ? '✅' : '❌';
+                console.log(`${icon} ${check.name}`);
+                if (!check.status && check.fix) {
+                    console.log(chalk.gray(`   Fix: ${check.fix}`));
+                }
+            });
+            
+            if (audit.recommendations.length > 0) {
+                console.log(chalk.yellow('\n💡 Recommendations:'));
+                audit.recommendations.forEach((rec, i) => {
+                    console.log(`  ${i + 1}. ${rec}`);
+                });
+            }
+            
+        } catch (error) {
+            console.error(chalk.red(`❌ Security audit failed: ${error.message}`));
+        }
+        
+    } else if (answers.action === 'generate') {
+        const generateAnswers = await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'policyType',
+                message: 'What type of security policy?',
+                choices: [
+                    { name: '🏢 Organization - Standard organizational security policy', value: 'organization' },
+                    { name: '🔌 IoT - Enhanced policy for IoT devices and firmware', value: 'iot' },
+                    { name: '🤖 AI Agent - Security policy for AI agents and automation', value: 'ai-agent' },
+                    { name: '🌐 Web Platform - Security policy for web applications', value: 'web-platform' }
+                ]
+            },
+            {
+                type: 'input',
+                name: 'contactEmail',
+                message: 'Security contact email:',
+                default: 'security@alteriom.com',
+                validate: (input) => {
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
+                        return 'Please enter a valid email address';
+                    }
+                    return true;
+                }
+            }
+        ]);
+        
+        try {
+            const result = await securityPolicyManager.generateSecurityPolicy(
+                generateAnswers.policyType,
+                {
+                    contactEmail: generateAnswers.contactEmail,
+                    organizationName: config.organizationName || 'Alteriom',
+                    organizationTag: config.organizationTag || 'alteriom'
+                }
+            );
+            
+            console.log(chalk.green(`\n✅ Security policy generated successfully!`));
+            console.log(chalk.blue(`📁 Policy Type: ${result.policy}`));
+            console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
+            
+            console.log(chalk.yellow('\n📝 Next Steps:'));
+            console.log('  1. Review generated security policy files');
+            console.log('  2. Customize contact information and procedures');
+            console.log('  3. Commit files to your repository');
+            console.log('  4. Enable GitHub security features');
+            
+        } catch (error) {
+            console.error(chalk.red(`❌ Security policy generation failed: ${error.message}`));
+        }
     }
 }
 
