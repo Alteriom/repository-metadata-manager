@@ -538,12 +538,17 @@ program
     .option('--detect-workflows', 'Detect missing workflows across repositories')
     .option('--track-deps', 'Track dependencies across organization')
     .option('--auto-fix', 'Auto-fix compliance issues')
+    .option('--categorize', 'Categorize repositories by type')
+    .option('--prioritize', 'Prioritize fixes based on impact and effort')
     .option('--dry-run', 'Dry run mode (show what would be done)')
     .option('--report', 'Show detailed report')
     .option('--json', 'Output as JSON')
     .option('--trending', 'Show trend analysis compared to historical data')
     .option('--sequential', 'Process repositories sequentially (slower but uses less memory)')
     .option('--concurrency <number>', 'Number of repositories to process in parallel (default: 5)', parseInt)
+    .option('--top-n <number>', 'Number of top priority items to show (default: 10)', parseInt)
+    .option('--batch-suggestions', 'Show batch fix suggestions')
+    .option('--group-by-similarity', 'Group similar issues for batch operations')
     .action(async (options) => {
         const config = await loadConfig();
         const AutomationManager = require('../lib/features/AutomationManager');
@@ -593,11 +598,52 @@ program
             }
         }
 
+        if (options.categorize) {
+            const repositories = await automation.multiRepoManager.discoverRepositories();
+            const categories = await automation.categorizeRepositories(repositories);
+
+            if (options.json) {
+                console.log(JSON.stringify(categories, null, 2));
+            }
+        }
+
+        if (options.prioritize) {
+            // Run health audit first if not already done
+            let auditResults;
+            if (options.orgHealth) {
+                // Already have results
+                auditResults = await automation.runOrganizationHealthAudit({
+                    report: false,
+                    parallel: !options.sequential,
+                    concurrency: options.concurrency || 5,
+                });
+            } else {
+                console.log(chalk.gray('Running health audit for prioritization...\n'));
+                auditResults = await automation.runOrganizationHealthAudit({
+                    report: false,
+                    parallel: !options.sequential,
+                    concurrency: options.concurrency || 5,
+                });
+            }
+
+            const priorities = await automation.prioritizeFixes(auditResults, {
+                topN: options.topN || 10,
+                batchSuggestions: options.batchSuggestions,
+                groupBySimilarity: options.groupBySimilarity,
+            });
+
+            if (options.json) {
+                console.log(JSON.stringify(priorities, null, 2));
+            }
+        }
+
         if (
             !options.orgHealth &&
             !options.detectWorkflows &&
             !options.trackDeps &&
-            !options.autoFix
+            !options.autoFix &&
+            !options.categorize &&
+            !options.prioritize
         ) {
             console.log(chalk.blue('🤖 Enhanced Automation Features\n'));
             console.log('Available commands:');
@@ -611,20 +657,24 @@ program
                 '  --track-deps        Track dependency versions across repos'
             );
             console.log('  --auto-fix          Auto-fix compliance issues');
+            console.log('  --categorize        Categorize repositories by type');
+            console.log('  --prioritize        Prioritize fixes by impact and effort');
             console.log('\nOptions:');
-            console.log('  --dry-run           Show what would be done without applying changes');
-            console.log('  --report            Show detailed report');
-            console.log('  --json              Output results as JSON');
-            console.log('  --trending          Show trend analysis vs. historical data');
-            console.log('  --sequential        Process repos sequentially (slower, less memory)');
-            console.log('  --concurrency <n>   Parallel processing limit (default: 5)');
+            console.log('  --dry-run               Show what would be done without applying changes');
+            console.log('  --report                Show detailed report');
+            console.log('  --json                  Output results as JSON');
+            console.log('  --trending              Show trend analysis vs. historical data');
+            console.log('  --sequential            Process repos sequentially (slower, less memory)');
+            console.log('  --concurrency <n>       Parallel processing limit (default: 5)');
+            console.log('  --top-n <n>             Number of top priorities to show (default: 10)');
+            console.log('  --batch-suggestions     Show batch fix suggestions');
+            console.log('  --group-by-similarity   Group similar issues across repos');
             console.log('\nExamples:');
             console.log('  repository-manager automation --org-health --report --trending');
-            console.log(
-                '  repository-manager automation --detect-workflows --json'
-            );
+            console.log('  repository-manager automation --prioritize --top-n 15');
+            console.log('  repository-manager automation --categorize --json');
+            console.log('  repository-manager automation --prioritize --batch-suggestions');
             console.log('  repository-manager automation --auto-fix --dry-run');
-            console.log('  repository-manager automation --org-health --concurrency 10');
         }
     });
 

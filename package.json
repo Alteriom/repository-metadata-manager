@@ -65,7 +65,9 @@
         "automation:detect-workflows": "node bin/enhanced-cli.js automation --detect-workflows --report",
         "automation:track-deps": "node bin/enhanced-cli.js automation --track-deps --report",
         "automation:auto-fix": "node bin/enhanced-cli.js automation --auto-fix",
-        "automation:dry-run": "node bin/enhanced-cli.js automation --auto-fix --dry-run"
+        "automation:dry-run": "node bin/enhanced-cli.js automation --auto-fix --dry-run",
+        "automation:categorize": "node bin/enhanced-cli.js automation --categorize",
+        "automation:prioritize": "node bin/enhanced-cli.js automation --prioritize --batch-suggestions"
     },
     "keywords": [
         "alteriom",

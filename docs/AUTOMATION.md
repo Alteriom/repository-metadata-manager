@@ -197,6 +197,135 @@ npm run automation:auto-fix
 -   **Rollback Support**: All changes are tracked and reversible
 -   **Review Required**: Critical changes require PR approval
 
+### 5. Repository Categorization ✨ NEW
+
+Automatically categorize repositories by type and characteristics for better organization and targeted management.
+
+#### Usage
+
+```bash
+# Categorize all repositories
+npm run automation:categorize
+
+# Export as JSON
+repository-manager automation --categorize --json
+```
+
+#### Categories
+
+The system detects and categorizes repositories into:
+
+-   **🎨 Frontend**: Web UIs, React/Vue/Angular applications
+-   **⚙️ Backend**: Servers, APIs, backend services
+-   **🔌 IoT**: IoT platforms, sensor networks
+-   **💾 Firmware**: Embedded systems, ESP32/Arduino code
+-   **📚 Library**: SDKs, utilities, schemas
+-   **📖 Documentation**: Documentation repositories
+-   **🏗️ Infrastructure**: Configuration, deployment tools
+-   **🔧 Tools**: Automation, CLI tools, managers
+-   **📦 Other**: Miscellaneous repositories
+
+#### Example Output
+
+```
+🏷️  Categorizing Repositories...
+
+🔧 TOOLS: 3 repos
+  - repository-metadata-manager
+  - alteriom-ai-agent
+  - alteriom-webhook-server
+
+💾 FIRMWARE: 2 repos
+  - alteriom-firmware
+  - painlessMesh
+
+🔌 IOT: 4 repos
+  - alteriom-IoT-server
+  - alteriom-mqtt-schema
+  - EByte_LoRa_E220_Series_Library
+  - alteriom-pcb
+```
+
+### 6. Smart Prioritization ✨ NEW
+
+Automatically prioritize fixes based on impact, effort, and repository health to maximize efficiency.
+
+#### Usage
+
+```bash
+# Show prioritized fixes
+npm run automation:prioritize
+
+# With batch suggestions
+repository-manager automation --prioritize --batch-suggestions
+
+# Group similar issues
+repository-manager automation --prioritize --group-by-similarity
+
+# Show top 20 priorities
+repository-manager automation --prioritize --top-n 20
+```
+
+#### Priority Calculation
+
+Fixes are prioritized using the formula:
+```
+Priority = (Impact × 2 - Effort) × Score Multiplier
+```
+
+**Impact Factors** (0-10):
+-   Security vulnerabilities: 10
+-   Missing critical docs: 9
+-   Branch protection: 8
+-   Missing CI/CD: 8
+-   Documentation quality: 6
+-   Code quality: 4
+
+**Effort Factors** (0-10):
+-   Low effort (1-3): Quick wins like adding files
+-   Medium effort (4-6): Configuration changes
+-   High effort (7-10): Major refactoring or security fixes
+
+**Score Multiplier**:
+-   Repositories < 50: 1.5x
+-   Repositories < 60: 1.2x
+-   Repositories ≥ 60: 1.0x
+
+#### Example Output
+
+```
+🎯 Prioritizing Fixes...
+
+Found 5 repositories needing attention
+
+🔝 Top 10 Priority Fixes:
+
+alteriom-data-analytics [F] (45/100)
+  1. [P:22.5] 🟢 Missing LICENSE file
+     Impact: 9/10, Effort: 3/10, Category: documentation
+  2. [P:18.0] 🟡 No branch protection configured
+     Impact: 8/10, Effort: 2/10, Category: branch-protection
+  3. [P:15.0] 🟡 Missing CI/CD workflows
+     Impact: 8/10, Effort: 5/10, Category: cicd
+
+📊 Issues Grouped by Category (for batch fixes):
+
+📖 DOCUMENTATION
+   12 issues across 5 repositories
+   Avg Priority: 18.3
+   Repos: alteriom-data-analytics, alteriom-config-manager...
+
+💡 Batch Fix Suggestions:
+
+1. Generate missing documentation files across repositories
+   Affects: 5 repositories
+   Command: repository-manager automation --auto-fix
+
+2. Enable branch protection rules across repositories
+   Affects: 4 repositories
+   Command: repository-manager branches --enforce
+```
+
 ## Workflow Integration
 
 ### Organization Health Monitor
