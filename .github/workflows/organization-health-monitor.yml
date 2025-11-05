@@ -1,0 +1,376 @@
+name: Organization Health Monitor
+
+on:
+    schedule:
+        # Run daily at 6 AM UTC
+        - cron: '0 6 * * *'
+    workflow_dispatch:
+        inputs:
+            report_format:
+                description: 'Report format'
+                required: false
+                default: 'summary'
+                type: choice
+                options:
+                    - summary
+                    - detailed
+            auto_fix:
+                description: 'Auto-fix compliance issues'
+                required: false
+                default: false
+                type: boolean
+
+permissions:
+    contents: write
+    issues: write
+    pull-requests: write
+
+jobs:
+    health-audit:
+        name: Organization Health Audit
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '20.x'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Download Previous Health Data
+              uses: actions/download-artifact@v5
+              continue-on-error: true
+              with:
+                  name: health-history
+                  path: .health-history
+
+            - name: Run Organization Health Audit
+              id: health-audit
+              run: |
+                  echo "Running organization-wide health audit with parallel processing..."
+                  node -e "
+                    const AutomationManager = require('./lib/features/AutomationManager');
+                    const fs = require('fs').promises;
+                    
+                    (async () => {
+                      try {
+                        const config = {
+                          owner: process.env.GITHUB_REPOSITORY_OWNER || 'Alteriom',
+                          token: process.env.GITHUB_TOKEN
+                        };
+                        
+                        const automation = new AutomationManager(config);
+                        const results = await automation.runOrganizationHealthAudit({ 
+                          report: true,
+                          parallel: true,
+                          concurrency: 5,
+                          trending: true,
+                          saveHistory: true
+                        });
+                        
+                        // Save results
+                        await fs.writeFile(
+                          'health-audit-results.json',
+                          JSON.stringify(results, null, 2)
+                        );
+                        
+                        console.log('\\n✓ Health audit completed successfully');
+                        process.exit(0);
+                      } catch (error) {
+                        console.error('Health audit failed:', error);
+                        process.exit(1);
+                      }
+                    })();
+                  "
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Detect Missing Workflows
+              id: detect-workflows
+              run: |
+                  echo "Detecting missing workflows..."
+                  node -e "
+                    const AutomationManager = require('./lib/features/AutomationManager');
+                    const fs = require('fs').promises;
+                    
+                    (async () => {
+                      try {
+                        const config = {
+                          owner: process.env.GITHUB_REPOSITORY_OWNER || 'Alteriom',
+                          token: process.env.GITHUB_TOKEN
+                        };
+                        
+                        const automation = new AutomationManager(config);
+                        const results = await automation.detectMissingWorkflows({ report: true });
+                        
+                        // Save results
+                        await fs.writeFile(
+                          'missing-workflows.json',
+                          JSON.stringify(results, null, 2)
+                        );
+                        
+                        console.log('\\n✓ Workflow detection completed');
+                        process.exit(0);
+                      } catch (error) {
+                        console.error('Workflow detection failed:', error);
+                        process.exit(1);
+                      }
+                    })();
+                  "
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Track Dependencies
+              id: track-deps
+              run: |
+                  echo "Tracking dependencies across organization..."
+                  node -e "
+                    const AutomationManager = require('./lib/features/AutomationManager');
+                    const fs = require('fs').promises;
+                    
+                    (async () => {
+                      try {
+                        const config = {
+                          owner: process.env.GITHUB_REPOSITORY_OWNER || 'Alteriom',
+                          token: process.env.GITHUB_TOKEN
+                        };
+                        
+                        const automation = new AutomationManager(config);
+                        const results = await automation.trackDependencies({ report: true });
+                        
+                        // Save results
+                        await fs.writeFile(
+                          'dependency-tracking.json',
+                          JSON.stringify(results, null, 2)
+                        );
+                        
+                        console.log('\\n✓ Dependency tracking completed');
+                        process.exit(0);
+                      } catch (error) {
+                        console.error('Dependency tracking failed:', error);
+                        process.exit(1);
+                      }
+                    })();
+                  "
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Auto-Fix Compliance Issues
+              if: github.event.inputs.auto_fix == 'true'
+              run: |
+                  echo "Auto-fixing compliance issues..."
+                  node -e "
+                    const AutomationManager = require('./lib/features/AutomationManager');
+                    
+                    (async () => {
+                      try {
+                        const config = {
+                          owner: process.env.GITHUB_REPOSITORY_OWNER || 'Alteriom',
+                          token: process.env.GITHUB_TOKEN
+                        };
+                        
+                        const automation = new AutomationManager(config);
+                        const results = await automation.autoFixComplianceIssues({
+                          dryRun: false,
+                          target: 'current'
+                        });
+                        
+                        console.log('\\n✓ Compliance fixes applied');
+                        process.exit(0);
+                      } catch (error) {
+                        console.error('Auto-fix failed:', error);
+                        process.exit(1);
+                      }
+                    })();
+                  "
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Upload Health Audit Results
+              uses: actions/upload-artifact@v5
+              if: always()
+              with:
+                  name: health-audit-results
+                  path: |
+                      health-audit-results.json
+                      missing-workflows.json
+                      dependency-tracking.json
+                  retention-days: 30
+
+            - name: Upload Health History
+              uses: actions/upload-artifact@v5
+              if: always()
+              with:
+                  name: health-history
+                  path: .health-history/
+                  retention-days: 90
+
+            - name: Generate Summary Report
+              if: always()
+              run: |
+                  echo "# Organization Health Monitor Report" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  
+                  if [ -f health-audit-results.json ]; then
+                    echo "## Health Audit Results" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    node -e "
+                      const fs = require('fs');
+                      const data = JSON.parse(fs.readFileSync('health-audit-results.json', 'utf8'));
+                      console.log(\`- **Total Repositories:** \${data.results.length}\`);
+                      console.log(\`- **Average Health Score:** \${data.avgScore.toFixed(1)}/100\`);
+                      console.log(\`- **Unhealthy Repos (< 70):** \${data.unhealthyRepos.length}\`);
+                    " >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  
+                  if [ -f missing-workflows.json ]; then
+                    echo "## Missing Workflows" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    node -e "
+                      const fs = require('fs');
+                      const data = JSON.parse(fs.readFileSync('missing-workflows.json', 'utf8'));
+                      console.log(\`- **Repositories Analyzed:** \${data.repositories}\`);
+                      console.log(\`- **Needing Workflows:** \${data.missingWorkflows.length}\`);
+                    " >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  
+                  if [ -f dependency-tracking.json ]; then
+                    echo "## Dependency Tracking" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    node -e "
+                      const fs = require('fs');
+                      const data = JSON.parse(fs.readFileSync('dependency-tracking.json', 'utf8'));
+                      console.log(\`- **Repositories Analyzed:** \${data.results.length}\`);
+                      console.log(\`- **Version Conflicts:** \${data.conflicts.length}\`);
+                    " >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  
+                  echo "✓ Summary report generated"
+
+            - name: Manage Health Alert Issue
+              if: always() && hashFiles('health-audit-results.json') != ''
+              run: |
+                  node -e "
+                    const fs = require('fs');
+                    const { Octokit } = require('@octokit/rest');
+                    
+                    (async () => {
+                      try {
+                        const data = JSON.parse(fs.readFileSync('health-audit-results.json', 'utf8'));
+                        
+                        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+                        const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+                        
+                        // Check for existing open issue with automation labels
+                        const { data: issues } = await octokit.rest.issues.listForRepo({
+                          owner,
+                          repo,
+                          state: 'open',
+                          labels: 'automation,health-monitor',
+                          per_page: 1
+                        });
+                        
+                        // If no unhealthy repos, close existing issue if present
+                        if (data.unhealthyRepos.length === 0) {
+                          if (issues.length > 0) {
+                            await octokit.rest.issues.update({
+                              owner,
+                              repo,
+                              issue_number: issues[0].number,
+                              state: 'closed',
+                              state_reason: 'completed'
+                            });
+                            await octokit.rest.issues.createComment({
+                              owner,
+                              repo,
+                              issue_number: issues[0].number,
+                              body: '✅ All repositories are now healthy! Closing this issue.'
+                            });
+                            console.log(\`Closed issue #\${issues[0].number} - all repositories healthy\`);
+                          } else {
+                            console.log('No unhealthy repositories found and no open issue to close');
+                          }
+                          return;
+                        }
+                        
+                        // Build issue body
+                        const body = \`## Organization Health Alert
+                  
+                  **Date:** \${new Date().toISOString().split('T')[0]}
+                  **Unhealthy Repositories:** \${data.unhealthyRepos.length}
+                  
+                  ### Repositories Below Health Threshold (< 70)
+                  
+                  \${data.unhealthyRepos.map(r => \`- **\${r.name}** [\${r.grade}] (\${r.score}/100)\n  \${r.issues.slice(0, 3).map(i => \`  - \${i}\`).join('\\n')}\`).join('\\n\\n')}
+                  
+                  ### Recommended Actions
+                  1. Review repositories with failing health checks
+                  2. Address critical compliance issues
+                  3. Update missing documentation
+                  4. Configure required CI/CD workflows
+                  
+                  ---
+                  *Last updated: \${new Date().toISOString()}*
+                  *This issue is automatically managed by the Organization Health Monitor workflow.*
+                  \`;
+                        
+                        if (issues.length > 0) {
+                          // Update existing issue to avoid duplicates
+                          await octokit.rest.issues.update({
+                            owner,
+                            repo,
+                            issue_number: issues[0].number,
+                            title: \`🔍 Health Alert: \${data.unhealthyRepos.length} Repositories Below Threshold\`,
+                            body
+                          });
+                          console.log(\`✓ Updated existing issue #\${issues[0].number} (avoiding duplicate)\`);
+                        } else {
+                          // Create new issue only if none exists
+                          const { data: issue } = await octokit.rest.issues.create({
+                            owner,
+                            repo,
+                            title: \`🔍 Health Alert: \${data.unhealthyRepos.length} Repositories Below Threshold\`,
+                            body,
+                            labels: ['automation', 'health-monitor', 'needs-attention']
+                          });
+                          console.log(\`✓ Created new issue #\${issue.number}\`);
+                        }
+                      } catch (error) {
+                        console.error('Failed to manage health alert issue:', error);
+                      }
+                    })();
+                  "
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    notify-completion:
+        name: Notify Completion
+        runs-on: ubuntu-latest
+        needs: health-audit
+        if: always()
+
+        steps:
+            - name: Check health-audit status
+              run: |
+                  echo "Health Audit Status: ${{ needs.health-audit.result }}"
+                  
+                  if [[ "${{ needs.health-audit.result }}" == "success" ]]; then
+                    echo "✅ Organization health monitoring completed successfully"
+                  else
+                    echo "⚠️ Organization health monitoring completed with warnings"
+                  fi

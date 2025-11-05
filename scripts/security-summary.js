@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const chalk = require('chalk');
+const chalk = require('../lib/utils/colors');
 
 console.log(chalk.cyan('🔒 SECURITY SCAN SUMMARY'));
 console.log(chalk.cyan('========================'));

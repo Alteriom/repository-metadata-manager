@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk');
+const chalk = require('../lib/utils/colors');
 require('dotenv').config();
 
 class DocumentationTokenTester {

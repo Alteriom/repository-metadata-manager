@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
+const chalk = require('../lib/utils/colors');
 
 console.log(chalk.blue('🏥 Local Health Check Summary'));
 console.log(chalk.blue('====================================='));
