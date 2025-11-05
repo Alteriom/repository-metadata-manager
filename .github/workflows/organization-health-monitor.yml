@@ -43,10 +43,17 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Download Previous Health Data
+              uses: actions/download-artifact@v5
+              continue-on-error: true
+              with:
+                  name: health-history
+                  path: .health-history
+
             - name: Run Organization Health Audit
               id: health-audit
               run: |
-                  echo "Running organization-wide health audit..."
+                  echo "Running organization-wide health audit with parallel processing..."
                   node -e "
                     const AutomationManager = require('./lib/features/AutomationManager');
                     const fs = require('fs').promises;
@@ -59,7 +66,13 @@ jobs:
                         };
                         
                         const automation = new AutomationManager(config);
-                        const results = await automation.runOrganizationHealthAudit({ report: true });
+                        const results = await automation.runOrganizationHealthAudit({ 
+                          report: true,
+                          parallel: true,
+                          concurrency: 5,
+                          trending: true,
+                          saveHistory: true
+                        });
                         
                         // Save results
                         await fs.writeFile(
@@ -193,6 +206,14 @@ jobs:
                       missing-workflows.json
                       dependency-tracking.json
                   retention-days: 30
+
+            - name: Upload Health History
+              uses: actions/upload-artifact@v5
+              if: always()
+              with:
+                  name: health-history
+                  path: .health-history/
+                  retention-days: 90
 
             - name: Generate Summary Report
               if: always()

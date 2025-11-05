@@ -64,3 +64,6 @@ config.json
 alteriom-dashboard.html
 dashboard.html
 *.dashboard.html
+
+# Health history data (stored as artifacts)
+.health-history/

@@ -61,6 +61,7 @@
         "docs:nav": "node scripts/docs-navigator.js",
         "docs:validate": "node scripts/docs-navigator.js validate",
         "automation:org-health": "node bin/enhanced-cli.js automation --org-health --report",
+        "automation:org-health-trending": "node bin/enhanced-cli.js automation --org-health --report --trending",
         "automation:detect-workflows": "node bin/enhanced-cli.js automation --detect-workflows --report",
         "automation:track-deps": "node bin/enhanced-cli.js automation --track-deps --report",
         "automation:auto-fix": "node bin/enhanced-cli.js automation --auto-fix",
