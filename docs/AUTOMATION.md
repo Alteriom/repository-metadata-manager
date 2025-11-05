@@ -368,11 +368,44 @@ repository-manager automation --auto-fix --dry-run
 
 ## Configuration
 
+### GitHub App Integration ✨ NEW
+
+The automation features now support **GitHub App integration** for enhanced security and access:
+
+#### GitHub App vs Personal Access Token
+
+**GitHub App (Recommended)**:
+- ✅ Fine-grained permissions per repository
+- ✅ Higher rate limits (5,000 requests/hour)
+- ✅ Organization-wide access without individual PATs
+- ✅ Automatic token rotation
+- ✅ Audit logging
+
+**Personal Access Token (Legacy)**:
+- ⚠️ Broad permissions
+- ⚠️ Lower rate limits
+- ⚠️ Manual token management
+
+#### Using GitHub App
+
+The automation automatically detects and uses GitHub App installation tokens:
+
+1. **Priority**: Tries GitHub App installation API first
+2. **Fallback**: Uses organization API if GitHub App unavailable
+3. **Detection**: Automatic - no configuration needed
+
+The system uses `apps.listReposAccessibleToInstallation()` to fetch all repositories the GitHub App can access.
+
 ### Environment Variables
 
 ```bash
 # Required for GitHub API access
+# Use GitHub App installation token or personal access token
 GITHUB_TOKEN=ghp_your_token_here
+
+# Alternative token names (automatically detected)
+# ORG_ACCESS_TOKEN=ghp_your_token_here
+# AGENT_ORG_TOKEN=ghp_your_token_here
 
 # Organization configuration
 GITHUB_REPOSITORY_OWNER=Alteriom
