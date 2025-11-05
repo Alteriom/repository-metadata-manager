@@ -23,6 +23,7 @@ This enterprise-grade tool addresses comprehensive repository management needs:
 - **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
 - **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
 - **🎯 Compliance Automation**: Full compliance checking with auto-fix capabilities
+- **🤖 Cross-Repository Automation**: Organization-wide health monitoring and dependency tracking ✨ NEW
 - **📋 Interactive Management**: User-friendly CLI with guided workflows
 
 ## 📦 Installation
@@ -108,6 +109,25 @@ npm run template -- --type iot-firmware --name my-sensor-project
 npm run template -- --type ai-agent --name my-automation-agent
 ```
 
+### 8. Enhanced Automation ✨ NEW
+
+```bash
+# Run organization-wide health audit
+npm run automation:org-health
+
+# Detect missing workflows across all repos
+npm run automation:detect-workflows
+
+# Track dependencies across organization
+npm run automation:track-deps
+
+# Auto-fix compliance issues (dry-run)
+npm run automation:dry-run
+
+# Auto-fix compliance issues (apply changes)
+npm run automation:auto-fix
+```
+
 ## 📋 Enhanced Commands
 
 | Command       | Description                                         |
@@ -119,6 +139,7 @@ npm run template -- --type ai-agent --name my-automation-agent
 | `cicd`        | CI/CD workflow analysis and template generation     |
 | `iot`         | IoT-specific compliance and template generation     |
 | `compliance`  | Full compliance check with auto-fix capabilities    |
+| `automation`  | Cross-repository operations and organization-wide automation ✨ NEW |
 | `interactive` | Interactive wizard for guided repository management |
 | `analytics`   | Organization-wide analytics and insights           |
 | `template`    | Generate new projects from comprehensive templates  |
@@ -334,6 +355,70 @@ Top IoT Technologies:
   2. 🟡 [Documentation] 3 repositories missing descriptions
   3. 🟡 [IoT] Consider creating shared IoT libraries
 ```
+
+## 🤖 Enhanced Automation ✨ NEW
+
+Powerful cross-repository automation features for organization-wide management and monitoring.
+
+### Automation Features
+
+- **Organization Health Monitoring**: Daily automated health audits across all repositories
+- **Workflow Detection**: Automatically detect repositories missing critical CI/CD workflows
+- **Dependency Tracking**: Monitor and coordinate dependency versions across all repositories
+- **Compliance Auto-Fix**: Automatically fix common compliance issues
+- **Automated Reporting**: Generate comprehensive reports and create GitHub issues for issues needing attention
+
+### Automation Commands
+
+```bash
+# Run organization-wide health audit
+npm run automation:org-health
+
+# Detect missing workflows across all repositories
+npm run automation:detect-workflows
+
+# Track dependencies and identify version conflicts
+npm run automation:track-deps
+
+# Auto-fix compliance issues (preview mode)
+npm run automation:dry-run
+
+# Auto-fix compliance issues (apply changes)
+npm run automation:auto-fix
+```
+
+### Automated Workflow
+
+The organization health monitor runs automatically via GitHub Actions:
+
+- **Schedule**: Daily at 6 AM UTC
+- **Monitors**: All repositories in the organization
+- **Reports**: Health scores, missing workflows, dependency conflicts
+- **Alerts**: Automatic GitHub issues for repositories below health threshold
+
+### Automation Output Example
+
+```
+🔍 Running Organization-Wide Health Audit...
+
+Found 27 repositories
+
+[A] repository-metadata-manager: 96/100
+[B] alteriom-mqtt-schema: 88/100
+[C] alteriom-firmware: 72/100
+[F] alteriom-data-analytics: 45/100
+
+📊 Health Audit Summary:
+Total Repositories: 27
+Unhealthy (< 70): 5
+Average Health Score: 82.3
+
+⚠️  Unhealthy Repositories:
+  - alteriom-data-analytics (45/100): 8 issues
+  - alteriom-config-manager (52/100): 6 issues
+```
+
+For complete automation documentation, see [AUTOMATION.md](docs/AUTOMATION.md).
 
 ## 🛡️ Security Policy Management
 
