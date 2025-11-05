@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
+const chalk = require('../lib/utils/colors');
 
 class LocalCICDAuditor {
     constructor(basePath = process.cwd()) {

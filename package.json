@@ -59,7 +59,12 @@
         "docs:check": "node scripts/docs-compliance-check.js",
         "docs:fix": "node scripts/docs-compliance-check.js --fix",
         "docs:nav": "node scripts/docs-navigator.js",
-        "docs:validate": "node scripts/docs-navigator.js validate"
+        "docs:validate": "node scripts/docs-navigator.js validate",
+        "automation:org-health": "node bin/enhanced-cli.js automation --org-health --report",
+        "automation:detect-workflows": "node bin/enhanced-cli.js automation --detect-workflows --report",
+        "automation:track-deps": "node bin/enhanced-cli.js automation --track-deps --report",
+        "automation:auto-fix": "node bin/enhanced-cli.js automation --auto-fix",
+        "automation:dry-run": "node bin/enhanced-cli.js automation --auto-fix --dry-run"
     },
     "keywords": [
         "alteriom",
