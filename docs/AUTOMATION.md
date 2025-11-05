@@ -26,7 +26,16 @@ The health monitor runs automatically via GitHub Actions:
 
 -   **Schedule**: Daily at 6 AM UTC
 -   **Workflow**: `.github/workflows/organization-health-monitor.yml`
--   **Outputs**: Health reports, artifact uploads, and issue creation for unhealthy repositories
+-   **Outputs**: Health reports, artifact uploads, and intelligent issue management
+
+#### Issue Management
+
+The workflow intelligently manages GitHub issues to avoid duplicates:
+
+-   **Single Issue**: Only one health alert issue is maintained at a time (identified by `automation` and `health-monitor` labels)
+-   **Updates**: If unhealthy repositories are found and an issue exists, it updates the existing issue with current data
+-   **Auto-Creation**: If no issue exists, creates a new one with unhealthy repository details
+-   **Auto-Closure**: When all repositories become healthy, automatically closes the existing issue with a success comment
 
 #### Health Criteria
 
