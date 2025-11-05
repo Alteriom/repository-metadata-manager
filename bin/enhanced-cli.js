@@ -578,7 +578,7 @@ program
 
         if (options.autoFix) {
             const results = await automation.autoFixComplianceIssues({
-                dryRun: options.dryRun !== false,
+                dryRun: !!options.dryRun,
                 target: 'current',
             });
 
