@@ -43,7 +43,7 @@ jobs:
               run: npm test
               env:
                   CI: true
-              continue-on-error: true
+              continue-on-error: false
 
     build:
         name: Build & Package

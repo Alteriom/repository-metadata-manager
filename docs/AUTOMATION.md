@@ -250,7 +250,7 @@ for (const repo of missing.missingWorkflows) {
 const deps = await automation.trackDependencies({ report: true });
 
 // Find repos using old version
-const oudatedRepos = deps.conflicts
+const outdatedRepos = deps.conflicts
     .find((c) => c.dependency === '@octokit/rest')
     .repos.filter((r) => r.version === '21.0.0');
 
