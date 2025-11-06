@@ -65,5 +65,9 @@ alteriom-dashboard.html
 dashboard.html
 *.dashboard.html
 
+# Generated reports (saved locally)
+compliance-report-*.json
+security-dashboard-*.json
+
 # Health history data (stored as artifacts)
 .health-history/
