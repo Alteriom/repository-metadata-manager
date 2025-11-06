@@ -33,39 +33,40 @@ repository-manager automation --org-health --concurrency 10
 
 The health monitor runs automatically via GitHub Actions:
 
--   **Schedule**: Daily at 6 AM UTC
--   **Workflow**: `.github/workflows/organization-health-monitor.yml`
--   **Outputs**: Health reports, artifact uploads, and intelligent issue management
--   **Performance**: Parallel processing with concurrency control (5 repos at a time by default)
--   **Historical Tracking**: Automatically saves and compares health data over time
+- **Schedule**: Daily at 6 AM UTC
+- **Workflow**: `.github/workflows/organization-health-monitor.yml`
+- **Outputs**: Health reports, artifact uploads, and intelligent issue management
+- **Performance**: Parallel processing with concurrency control (5 repos at a time by default)
+- **Historical Tracking**: Automatically saves and compares health data over time
 
 #### Issue Management
 
 The workflow intelligently manages GitHub issues to avoid duplicates:
 
--   **Single Issue**: Only one health alert issue is maintained at a time (identified by `automation` and `health-monitor` labels)
--   **Updates**: If unhealthy repositories are found and an issue exists, it updates the existing issue with current data
--   **Auto-Creation**: If no issue exists, creates a new one with unhealthy repository details
--   **Auto-Closure**: When all repositories become healthy, automatically closes the existing issue with a success comment
+- **Single Issue**: Only one health alert issue is maintained at a time (identified by `automation` and `health-monitor` labels)
+- **Updates**: If unhealthy repositories are found and an issue exists, it updates the existing issue with current data
+- **Auto-Creation**: If no issue exists, creates a new one with unhealthy repository details
+- **Auto-Closure**: When all repositories become healthy, automatically closes the existing issue with a success comment
 
 #### Health Criteria
 
--   **Documentation** (25% weight): README, CHANGELOG, LICENSE, CONTRIBUTING
--   **Security** (30% weight): Security policies, vulnerability scans, secrets detection
--   **Branch Protection** (20% weight): Protected branches, review requirements
--   **CI/CD** (25% weight): Active workflows, test coverage, build status
+- **Documentation** (25% weight): README, CHANGELOG, LICENSE, CONTRIBUTING
+- **Security** (30% weight): Security policies, vulnerability scans, secrets detection
+- **Branch Protection** (20% weight): Protected branches, review requirements
+- **CI/CD** (25% weight): Active workflows, test coverage, build status
 
 #### Trend Analysis & Historical Tracking ✨ NEW
 
 Track repository health over time with automatic trend analysis:
 
--   **Historical Data**: Automatically saved to `.health-history/` directory
--   **Trend Indicators**: Shows improvement (📈), decline (📉), or stable (➡️) trends
--   **Comparison Period**: Compares with the most recent previous audit
--   **Repository-Level Trends**: Individual repository score changes
--   **Organization-Level Trends**: Overall average score and unhealthy repo count changes
+- **Historical Data**: Automatically saved to `.health-history/` directory
+- **Trend Indicators**: Shows improvement (📈), decline (📉), or stable (➡️) trends
+- **Comparison Period**: Compares with the most recent previous audit
+- **Repository-Level Trends**: Individual repository score changes
+- **Organization-Level Trends**: Overall average score and unhealthy repo count changes
 
 **Example Output**:
+
 ```
 📈 Trend Analysis:
 Comparing with data from 1 days ago (2025-11-04)
@@ -88,12 +89,13 @@ Comparing with data from 1 days ago (2025-11-04)
 
 Parallel processing dramatically improves audit speed for large organizations:
 
--   **Parallel Mode**: Process multiple repositories simultaneously (default)
--   **Concurrency Control**: Limit parallel operations to avoid rate limiting (default: 5)
--   **Sequential Mode**: Available via `--sequential` flag for constrained environments
--   **Speed Improvement**: Up to 5x faster for organizations with 20+ repositories
+- **Parallel Mode**: Process multiple repositories simultaneously (default)
+- **Concurrency Control**: Limit parallel operations to avoid rate limiting (default: 5)
+- **Sequential Mode**: Available via `--sequential` flag for constrained environments
+- **Speed Improvement**: Up to 5x faster for organizations with 20+ repositories
 
 **Performance Example**:
+
 - 27 repositories, sequential: ~3-4 minutes
 - 27 repositories, parallel (concurrency=5): ~45-60 seconds
 - 27 repositories, parallel (concurrency=10): ~30-45 seconds
@@ -114,18 +116,18 @@ repository-manager automation --detect-workflows --report --json
 
 #### Features
 
--   Analyzes existing workflows across all repositories
--   Identifies missing CI, security scanning, and release workflows
--   Recommends templates based on repository language and type
--   Provides actionable suggestions for each repository
+- Analyzes existing workflows across all repositories
+- Identifies missing CI, security scanning, and release workflows
+- Recommends templates based on repository language and type
+- Provides actionable suggestions for each repository
 
 #### Template Recommendations
 
 The system automatically suggests appropriate templates based on:
 
--   **Language**: JavaScript/TypeScript → `node-ci.yml`, Python → `python-ci.yml`, C++ → `cpp-ci.yml`
--   **IoT Projects**: Enhanced templates with firmware-specific checks
--   **AI Agents**: Specialized workflows for automation projects
+- **Language**: JavaScript/TypeScript → `node-ci.yml`, Python → `python-ci.yml`, C++ → `cpp-ci.yml`
+- **IoT Projects**: Enhanced templates with firmware-specific checks
+- **AI Agents**: Specialized workflows for automation projects
 
 ### 3. Dependency Version Tracking
 
@@ -143,11 +145,11 @@ repository-manager automation --track-deps --json > dependencies.json
 
 #### Capabilities
 
--   Discovers all dependencies in JavaScript/TypeScript projects
--   Identifies version conflicts across repositories
--   Tracks dependency usage patterns
--   Generates compatibility reports
--   Helps coordinate breaking change rollouts
+- Discovers all dependencies in JavaScript/TypeScript projects
+- Identifies version conflicts across repositories
+- Tracks dependency usage patterns
+- Generates compatibility reports
+- Helps coordinate breaking change rollouts
 
 #### Output Example
 
@@ -185,17 +187,17 @@ npm run automation:auto-fix
 
 #### Auto-Fix Capabilities
 
--   **Documentation**: Generate missing README, LICENSE, SECURITY.md
--   **Configuration**: Add .gitignore, .editorconfig, .prettierrc
--   **CI/CD**: Create basic workflow templates
--   **Security**: Add SECURITY.md policy files
+- **Documentation**: Generate missing README, LICENSE, SECURITY.md
+- **Configuration**: Add .gitignore, .editorconfig, .prettierrc
+- **CI/CD**: Create basic workflow templates
+- **Security**: Add SECURITY.md policy files
 
 #### Safety Features
 
--   **Dry Run Mode**: Preview all changes before applying
--   **Selective Application**: Target specific repositories or apply organization-wide
--   **Rollback Support**: All changes are tracked and reversible
--   **Review Required**: Critical changes require PR approval
+- **Dry Run Mode**: Preview all changes before applying
+- **Selective Application**: Target specific repositories or apply organization-wide
+- **Rollback Support**: All changes are tracked and reversible
+- **Review Required**: Critical changes require PR approval
 
 ### 5. Repository Categorization ✨ NEW
 
@@ -215,15 +217,15 @@ repository-manager automation --categorize --json
 
 The system detects and categorizes repositories into:
 
--   **🎨 Frontend**: Web UIs, React/Vue/Angular applications
--   **⚙️ Backend**: Servers, APIs, backend services
--   **🔌 IoT**: IoT platforms, sensor networks
--   **💾 Firmware**: Embedded systems, ESP32/Arduino code
--   **📚 Library**: SDKs, utilities, schemas
--   **📖 Documentation**: Documentation repositories
--   **🏗️ Infrastructure**: Configuration, deployment tools
--   **🔧 Tools**: Automation, CLI tools, managers
--   **📦 Other**: Miscellaneous repositories
+- **🎨 Frontend**: Web UIs, React/Vue/Angular applications
+- **⚙️ Backend**: Servers, APIs, backend services
+- **🔌 IoT**: IoT platforms, sensor networks
+- **💾 Firmware**: Embedded systems, ESP32/Arduino code
+- **📚 Library**: SDKs, utilities, schemas
+- **📖 Documentation**: Documentation repositories
+- **🏗️ Infrastructure**: Configuration, deployment tools
+- **🔧 Tools**: Automation, CLI tools, managers
+- **📦 Other**: Miscellaneous repositories
 
 #### Example Output
 
@@ -269,27 +271,31 @@ repository-manager automation --prioritize --top-n 20
 #### Priority Calculation
 
 Fixes are prioritized using the formula:
+
 ```
 Priority = (Impact × 2 - Effort) × Score Multiplier
 ```
 
 **Impact Factors** (0-10):
--   Security vulnerabilities: 10
--   Missing critical docs: 9
--   Branch protection: 8
--   Missing CI/CD: 8
--   Documentation quality: 6
--   Code quality: 4
+
+- Security vulnerabilities: 10
+- Missing critical docs: 9
+- Branch protection: 8
+- Missing CI/CD: 8
+- Documentation quality: 6
+- Code quality: 4
 
 **Effort Factors** (0-10):
--   Low effort (1-3): Quick wins like adding files
--   Medium effort (4-6): Configuration changes
--   High effort (7-10): Major refactoring or security fixes
+
+- Low effort (1-3): Quick wins like adding files
+- Medium effort (4-6): Configuration changes
+- High effort (7-10): Major refactoring or security fixes
 
 **Score Multiplier**:
--   Repositories < 50: 1.5x
--   Repositories < 60: 1.2x
--   Repositories ≥ 60: 1.0x
+
+- Repositories < 50: 1.5x
+- Repositories < 60: 1.2x
+- Repositories ≥ 60: 1.0x
 
 #### Example Output
 
@@ -375,6 +381,7 @@ The automation features now support **GitHub App integration** for enhanced secu
 #### GitHub App vs Personal Access Token
 
 **GitHub App (Recommended)**:
+
 - ✅ Fine-grained permissions per repository
 - ✅ Higher rate limits (5,000 requests/hour)
 - ✅ Organization-wide access without individual PATs
@@ -382,6 +389,7 @@ The automation features now support **GitHub App integration** for enhanced secu
 - ✅ Audit logging
 
 **Personal Access Token (Legacy)**:
+
 - ⚠️ Broad permissions
 - ⚠️ Lower rate limits
 - ⚠️ Manual token management
@@ -522,9 +530,9 @@ const outdatedRepos = deps.conflicts
 
 **Solutions**:
 
--   Verify `GITHUB_TOKEN` has correct permissions
--   Check organization access in GitHub Apps settings
--   Ensure token has `repo` and `read:org` scopes
+- Verify `GITHUB_TOKEN` has correct permissions
+- Check organization access in GitHub Apps settings
+- Ensure token has `repo` and `read:org` scopes
 
 #### Health Audit Failures
 
@@ -532,9 +540,9 @@ const outdatedRepos = deps.conflicts
 
 **Solutions**:
 
--   Check repository permissions (may be private or archived)
--   Verify API rate limits (GitHub provides 5000 requests/hour)
--   Run with `--report` flag for detailed error information
+- Check repository permissions (may be private or archived)
+- Verify API rate limits (GitHub provides 5000 requests/hour)
+- Run with `--report` flag for detailed error information
 
 #### Auto-Fix Not Working
 
@@ -542,9 +550,9 @@ const outdatedRepos = deps.conflicts
 
 **Solutions**:
 
--   Ensure not in dry-run mode (`--dry-run` flag)
--   Verify write permissions on target repositories
--   Check branch protection rules (may block automated commits)
+- Ensure not in dry-run mode (`--dry-run` flag)
+- Verify write permissions on target repositories
+- Check branch protection rules (may block automated commits)
 
 ## API Reference
 
@@ -552,17 +560,17 @@ const outdatedRepos = deps.conflicts
 
 #### Methods
 
--   `runOrganizationHealthAudit(options)`: Run health audit across all repos
--   `detectMissingWorkflows(options)`: Find repos without CI/CD
--   `trackDependencies(options)`: Analyze dependency versions
--   `autoFixComplianceIssues(options)`: Fix common compliance issues
+- `runOrganizationHealthAudit(options)`: Run health audit across all repos
+- `detectMissingWorkflows(options)`: Find repos without CI/CD
+- `trackDependencies(options)`: Analyze dependency versions
+- `autoFixComplianceIssues(options)`: Fix common compliance issues
 
 #### Options
 
--   `report`: boolean - Show detailed report
--   `dryRun`: boolean - Preview changes without applying
--   `target`: string - 'all' or 'current' repository
--   `json`: boolean - Output as JSON
+- `report`: boolean - Show detailed report
+- `dryRun`: boolean - Preview changes without applying
+- `target`: string - 'all' or 'current' repository
+- `json`: boolean - Output as JSON
 
 ## Examples
 
@@ -635,27 +643,27 @@ autoFix().catch(console.error);
 
 ### Planned Features
 
--   **Automated PR Creation**: Create PRs for workflow templates
--   **Cross-Repository CI/CD**: Coordinate CI/CD across dependent repos
--   **IoT-Specific Automation**: Firmware version tracking, MQTT schema validation
--   **AI-Powered Recommendations**: ML-based suggestions for repository improvements
--   **Real-Time Monitoring**: Dashboard with live health metrics
--   **Custom Rules Engine**: Define custom compliance rules
+- **Automated PR Creation**: Create PRs for workflow templates
+- **Cross-Repository CI/CD**: Coordinate CI/CD across dependent repos
+- **IoT-Specific Automation**: Firmware version tracking, MQTT schema validation
+- **AI-Powered Recommendations**: ML-based suggestions for repository improvements
+- **Real-Time Monitoring**: Dashboard with live health metrics
+- **Custom Rules Engine**: Define custom compliance rules
 
 ### Integration Plans
 
--   Slack/Discord notifications
--   Email alerts for critical issues
--   Jira integration for issue tracking
--   Custom webhook endpoints
+- Slack/Discord notifications
+- Email alerts for critical issues
+- Jira integration for issue tracking
+- Custom webhook endpoints
 
 ## Support
 
 For issues or questions:
 
--   **GitHub Issues**: <https://github.com/Alteriom/repository-metadata-manager/issues>
--   **Documentation**: <https://github.com/Alteriom/repository-metadata-manager/blob/main/README.md>
--   **Examples**: See `examples/` directory
+- **GitHub Issues**: <https://github.com/Alteriom/repository-metadata-manager/issues>
+- **Documentation**: <https://github.com/Alteriom/repository-metadata-manager/blob/main/README.md>
+- **Examples**: See `examples/` directory
 
 ## License
 
