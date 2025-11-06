@@ -595,8 +595,12 @@ program
     .option('--auto-fix', 'Auto-fix compliance issues')
     .option('--categorize', 'Categorize repositories by type')
     .option('--prioritize', 'Prioritize fixes based on impact and effort')
+    .option('--compliance-report', 'Generate comprehensive compliance report')
+    .option('--security-dashboard', 'Generate security vulnerability dashboard')
+    .option('--maintenance', 'Run automated maintenance tasks')
     .option('--dry-run', 'Dry run mode (show what would be done)')
     .option('--report', 'Show detailed report')
+    .option('--save', 'Save report to file')
     .option('--json', 'Output as JSON')
     .option('--trending', 'Show trend analysis compared to historical data')
     .option(
@@ -617,6 +621,10 @@ program
     .option(
         '--group-by-similarity',
         'Group similar issues for batch operations'
+    )
+    .option(
+        '--tasks <tasks>',
+        'Comma-separated maintenance tasks: stale-issues,outdated-deps,unused-workflows'
     )
     .action(async (options) => {
         const config = await loadConfig();
@@ -707,6 +715,41 @@ program
 
             if (options.json) {
                 console.log(JSON.stringify(priorities, null, 2));
+            }
+        }
+
+        if (options.complianceReport) {
+            const report = await automation.generateComplianceReport({
+                save: options.save,
+            });
+
+            if (options.json) {
+                console.log(JSON.stringify(report, null, 2));
+            }
+        }
+
+        if (options.securityDashboard) {
+            const dashboard = await automation.generateSecurityDashboard({
+                save: options.save,
+            });
+
+            if (options.json) {
+                console.log(JSON.stringify(dashboard, null, 2));
+            }
+        }
+
+        if (options.maintenance) {
+            const tasks = options.tasks
+                ? options.tasks.split(',').map((t) => t.trim())
+                : ['stale-issues', 'outdated-deps', 'unused-workflows'];
+
+            const results = await automation.performMaintenance({
+                tasks,
+                dryRun: !!options.dryRun,
+            });
+
+            if (options.json) {
+                console.log(JSON.stringify(results, null, 2));
             }
         }
 

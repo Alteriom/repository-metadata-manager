@@ -67,7 +67,10 @@
         "automation:auto-fix": "node bin/enhanced-cli.js automation --auto-fix",
         "automation:dry-run": "node bin/enhanced-cli.js automation --auto-fix --dry-run",
         "automation:categorize": "node bin/enhanced-cli.js automation --categorize",
-        "automation:prioritize": "node bin/enhanced-cli.js automation --prioritize --batch-suggestions"
+        "automation:prioritize": "node bin/enhanced-cli.js automation --prioritize --batch-suggestions",
+        "automation:compliance": "node bin/enhanced-cli.js automation --compliance-report --save",
+        "automation:security": "node bin/enhanced-cli.js automation --security-dashboard --save",
+        "automation:maintenance": "node bin/enhanced-cli.js automation --maintenance"
     },
     "keywords": [
         "alteriom",
