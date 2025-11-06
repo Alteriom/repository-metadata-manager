@@ -121,6 +121,15 @@ npm run automation:detect-workflows
 # Track dependencies across organization
 npm run automation:track-deps
 
+# Generate compliance report with auto-save
+npm run automation:compliance
+
+# Generate security vulnerability dashboard
+npm run automation:security
+
+# Run automated maintenance tasks
+npm run automation:maintenance
+
 # Auto-fix compliance issues (dry-run)
 npm run automation:dry-run
 
@@ -369,6 +378,9 @@ Powerful cross-repository automation features for organization-wide management a
 - **Organization Health Monitoring**: Daily automated health audits across all repositories
 - **Workflow Detection**: Automatically detect repositories missing critical CI/CD workflows
 - **Dependency Tracking**: Monitor and coordinate dependency versions across all repositories
+- **Compliance Reporting**: Generate org-wide compliance reports with critical issue tracking ✨ NEW
+- **Security Dashboard**: Track security vulnerabilities across all repositories ✨ NEW
+- **Automated Maintenance**: Run scheduled maintenance tasks (stale issues, outdated deps, unused workflows) ✨ NEW
 - **Compliance Auto-Fix**: Automatically fix common compliance issues
 - **Automated Reporting**: Generate comprehensive reports and create GitHub issues for issues needing attention
 
@@ -384,11 +396,95 @@ npm run automation:detect-workflows
 # Track dependencies and identify version conflicts
 npm run automation:track-deps
 
+# Generate compliance report (saved to compliance-report-YYYY-MM-DD.json)
+npm run automation:compliance
+
+# Generate security vulnerability dashboard (saved to security-dashboard-YYYY-MM-DD.json)
+npm run automation:security
+
+# Run automated maintenance tasks (stale issues, outdated deps, unused workflows)
+npm run automation:maintenance
+
 # Auto-fix compliance issues (preview mode)
 npm run automation:dry-run
 
 # Auto-fix compliance issues (apply changes)
 npm run automation:auto-fix
+```
+
+### New Automation Features ✨
+
+#### 📋 Compliance Report Generation
+
+Generate comprehensive organization-wide compliance reports with:
+
+- **Health Score Analysis**: Average health scores across all repositories
+- **Compliance Status**: Count of compliant (≥80) vs non-compliant (<80) repositories
+- **Critical Issue Tracking**: Identifies repositories with critical security issues
+- **Auto-Save Reports**: Reports saved to `compliance-report-YYYY-MM-DD.json`
+
+**Example Output:**
+```
+📊 Compliance Summary:
+Total Repositories: 29
+Compliant (≥80): 1
+Non-Compliant (<80): 28
+Average Health Score: 38.7
+Critical Security Issues: 25
+```
+
+#### 🔒 Security Dashboard
+
+Generate security vulnerability dashboards tracking:
+
+- **Security Scoring**: Categorize repositories by security level (secure ≥80, critical <50)
+- **Vulnerability Count**: Track total vulnerable repositories
+- **Priority Levels**: High priority (<70) and critical (<50) repositories
+- **Actionable Recommendations**: Specific security improvements needed
+- **Auto-Save Dashboards**: Saved to `security-dashboard-YYYY-MM-DD.json`
+
+**Example Output:**
+```
+🔒 Security Overview:
+Total Repositories: 29
+Secure (≥80): 3
+Vulnerable (<80): 26
+Critical Issues (<50): 22
+
+💡 Recommendations:
+  1. Immediate action required for repositories with critical security issues
+  2. Review and update security policies for vulnerable repositories
+```
+
+#### 🔧 Automated Maintenance Tasks
+
+Run scheduled maintenance tasks across all repositories:
+
+- **Stale Issue Detection**: Find issues inactive for 90+ days
+- **Outdated Dependency Tracking**: Identify repositories with outdated dependencies
+- **Unused Workflow Detection**: Find unused or obsolete CI/CD workflows
+- **Configurable Tasks**: Run specific tasks with `--tasks` parameter
+
+**Task Options:**
+```bash
+# Run all maintenance tasks (default)
+npm run automation:maintenance
+
+# Run specific tasks only
+repository-manager automation --maintenance --tasks stale-issues,outdated-deps
+repository-manager automation --maintenance --tasks unused-workflows
+```
+
+**Example Output:**
+```
+📌 Running task: stale-issues
+Found 0 stale issues
+
+📌 Running task: outdated-deps
+Checked 5 repositories for outdated dependencies
+
+📌 Running task: unused-workflows
+Found 31 workflows across repositories
 ```
 
 ### Automated Workflow
@@ -397,7 +493,7 @@ The organization health monitor runs automatically via GitHub Actions:
 
 - **Schedule**: Daily at 6 AM UTC
 - **Monitors**: All repositories in the organization
-- **Reports**: Health scores, missing workflows, dependency conflicts
+- **Reports**: Health scores, missing workflows, dependency conflicts, compliance status
 - **Alerts**: Automatic GitHub issues for repositories below health threshold
 
 ### Automation Output Example
