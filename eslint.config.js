@@ -21,7 +21,7 @@ module.exports = [
                 setInterval: 'readonly',
                 clearTimeout: 'readonly',
                 clearInterval: 'readonly',
-                
+
                 // Jest globals
                 describe: 'readonly',
                 it: 'readonly',
@@ -36,18 +36,16 @@ module.exports = [
         },
         rules: {
             'no-console': 'off',
-            'no-unused-vars': ['error', { 
-                argsIgnorePattern: '^_',
-                caughtErrors: 'none'
-            }],
+            'no-unused-vars': [
+                'error',
+                {
+                    argsIgnorePattern: '^_',
+                    caughtErrors: 'none',
+                },
+            ],
         },
     },
     {
-        ignores: [
-            'node_modules/',
-            'coverage/',
-            'dist/',
-            '*.min.js',
-        ],
+        ignores: ['node_modules/', 'coverage/', 'dist/', '*.min.js'],
     },
 ];

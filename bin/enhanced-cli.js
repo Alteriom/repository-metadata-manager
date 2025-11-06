@@ -382,25 +382,27 @@ program
         console.log(chalk.blue('📊 Organization Analytics\n'));
 
         const analytics = new OrganizationAnalytics(config);
-        
+
         try {
             const insights = await analytics.generateOrganizationReport();
-            
+
             if (options.save) {
                 const fs = require('fs').promises;
                 const filename = options.save;
-                
+
                 if (options.export === 'json') {
-                    await fs.writeFile(filename, JSON.stringify(insights, null, 2));
+                    await fs.writeFile(
+                        filename,
+                        JSON.stringify(insights, null, 2)
+                    );
                 } else if (options.export === 'csv') {
                     // Convert to CSV format
                     const csv = convertInsightsToCSV(insights);
                     await fs.writeFile(filename, csv);
                 }
-                
+
                 console.log(chalk.green(`\n💾 Report saved to: ${filename}`));
             }
-            
         } catch (error) {
             console.error(chalk.red(`❌ Analytics failed: ${error.message}`));
         }
@@ -410,80 +412,116 @@ program
 program
     .command('security-policy')
     .description('Generate and manage security policies for repositories')
-    .option('--type <type>', 'Policy type (organization|iot|ai-agent|web-platform)', 'organization')
+    .option(
+        '--type <type>',
+        'Policy type (organization|iot|ai-agent|web-platform)',
+        'organization'
+    )
     .option('--audit', 'Audit existing security policies')
     .option('--generate', 'Generate security policy files')
-    .option('--contact <email>', 'Security contact email', 'security@alteriom.com')
+    .option(
+        '--contact <email>',
+        'Security contact email',
+        'security@alteriom.com'
+    )
     .action(async (options) => {
         const config = await loadConfig();
         const securityPolicyManager = new SecurityPolicyManager(config);
 
         if (options.audit) {
             console.log(chalk.blue('🔍 Auditing security policies...\n'));
-            
+
             try {
-                const audit = await securityPolicyManager.auditSecurityPolicies();
-                
-                console.log(chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`));
-                
-                audit.checks.forEach(check => {
+                const audit =
+                    await securityPolicyManager.auditSecurityPolicies();
+
+                console.log(
+                    chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`)
+                );
+
+                audit.checks.forEach((check) => {
                     const icon = check.status ? '✅' : '❌';
                     console.log(`${icon} ${check.name}`);
                     if (!check.status && check.fix) {
                         console.log(chalk.gray(`   Fix: ${check.fix}`));
                     }
                 });
-                
+
                 if (audit.recommendations.length > 0) {
                     console.log(chalk.yellow('\n💡 Recommendations:'));
                     audit.recommendations.forEach((rec, i) => {
                         console.log(`  ${i + 1}. ${rec}`);
                     });
                 }
-                
             } catch (error) {
-                console.error(chalk.red(`❌ Security audit failed: ${error.message}`));
+                console.error(
+                    chalk.red(`❌ Security audit failed: ${error.message}`)
+                );
             }
         }
 
         if (options.generate) {
-            console.log(chalk.blue(`🔒 Generating ${options.type} security policy...\n`));
-            
+            console.log(
+                chalk.blue(`🔒 Generating ${options.type} security policy...\n`)
+            );
+
             try {
-                const result = await securityPolicyManager.generateSecurityPolicy(
-                    options.type,
-                    {
-                        contactEmail: options.contact,
-                        organizationName: config.organizationName || 'Alteriom',
-                        organizationTag: config.organizationTag || 'alteriom'
-                    }
+                const result =
+                    await securityPolicyManager.generateSecurityPolicy(
+                        options.type,
+                        {
+                            contactEmail: options.contact,
+                            organizationName:
+                                config.organizationName || 'Alteriom',
+                            organizationTag:
+                                config.organizationTag || 'alteriom',
+                        }
+                    );
+
+                console.log(
+                    chalk.green(`✅ Security policy generated successfully!`)
                 );
-                
-                console.log(chalk.green(`✅ Security policy generated successfully!`));
                 console.log(chalk.blue(`📁 Policy Type: ${result.policy}`));
-                console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
-                
+                console.log(
+                    chalk.blue(`📄 Files: ${result.files.length} files created`)
+                );
+
                 console.log(chalk.yellow('\n📝 Next Steps:'));
                 console.log('  1. Review generated security policy files');
-                console.log('  2. Customize contact information and procedures');
+                console.log(
+                    '  2. Customize contact information and procedures'
+                );
                 console.log('  3. Commit files to your repository');
                 console.log('  4. Enable GitHub security features');
-                
             } catch (error) {
-                console.error(chalk.red(`❌ Security policy generation failed: ${error.message}`));
+                console.error(
+                    chalk.red(
+                        `❌ Security policy generation failed: ${error.message}`
+                    )
+                );
             }
         }
 
         if (!options.audit && !options.generate) {
             console.log(chalk.blue('🔒 Security Policy Management\n'));
             console.log('Available policy types:');
-            console.log('  • organization - Standard organizational security policy');
-            console.log('  • iot - Enhanced policy for IoT devices and firmware');
-            console.log('  • ai-agent - Security policy for AI agents and automation');
-            console.log('  • web-platform - Security policy for web applications');
+            console.log(
+                '  • organization - Standard organizational security policy'
+            );
+            console.log(
+                '  • iot - Enhanced policy for IoT devices and firmware'
+            );
+            console.log(
+                '  • ai-agent - Security policy for AI agents and automation'
+            );
+            console.log(
+                '  • web-platform - Security policy for web applications'
+            );
             console.log('\nUsage:');
             console.log('  repository-manager security-policy --audit');
-            console.log('  repository-manager security-policy --generate --type iot');
+            console.log(
+                '  repository-manager security-policy --generate --type iot'
+            );
         }
     });
 
@@ -492,7 +530,10 @@ program
     .command('template')
     .description('Generate new projects from templates')
     .option('--list', 'List available templates')
-    .option('--type <type>', 'Template type (iot-firmware|ai-agent|iot-platform|cli-tool)')
+    .option(
+        '--type <type>',
+        'Template type (iot-firmware|ai-agent|iot-platform|cli-tool)'
+    )
     .option('--name <name>', 'Project name')
     .option('--output <path>', 'Output directory')
     .action(async (options) => {
@@ -507,7 +548,11 @@ program
         if (!options.type || !options.name) {
             console.log(chalk.red('❌ Both --type and --name are required'));
             console.log(chalk.blue('💡 Use --list to see available templates'));
-            console.log(chalk.blue('💡 Example: repository-manager template --type iot-firmware --name my-sensor-project'));
+            console.log(
+                chalk.blue(
+                    '💡 Example: repository-manager template --type iot-firmware --name my-sensor-project'
+                )
+            );
             return;
         }
 
@@ -517,16 +562,23 @@ program
                 options.name,
                 {
                     outputPath: options.output,
-                    organizationTag: config.organizationTag || 'alteriom'
+                    organizationTag: config.organizationTag || 'alteriom',
                 }
             );
 
-            console.log(chalk.green(`\n🎉 Successfully created ${options.type} project!`));
+            console.log(
+                chalk.green(
+                    `\n🎉 Successfully created ${options.type} project!`
+                )
+            );
             console.log(chalk.blue(`📁 Location: ${result.path}`));
-            console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
-
+            console.log(
+                chalk.blue(`📄 Files: ${result.files.length} files created`)
+            );
         } catch (error) {
-            console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+            console.error(
+                chalk.red(`❌ Template generation failed: ${error.message}`)
+            );
         }
     });
 
@@ -535,7 +587,10 @@ program
     .command('automation')
     .description('Enhanced automation features for cross-repository operations')
     .option('--org-health', 'Run organization-wide health audit')
-    .option('--detect-workflows', 'Detect missing workflows across repositories')
+    .option(
+        '--detect-workflows',
+        'Detect missing workflows across repositories'
+    )
     .option('--track-deps', 'Track dependencies across organization')
     .option('--auto-fix', 'Auto-fix compliance issues')
     .option('--categorize', 'Categorize repositories by type')
@@ -544,11 +599,25 @@ program
     .option('--report', 'Show detailed report')
     .option('--json', 'Output as JSON')
     .option('--trending', 'Show trend analysis compared to historical data')
-    .option('--sequential', 'Process repositories sequentially (slower but uses less memory)')
-    .option('--concurrency <number>', 'Number of repositories to process in parallel (default: 5)', parseInt)
-    .option('--top-n <number>', 'Number of top priority items to show (default: 10)', parseInt)
+    .option(
+        '--sequential',
+        'Process repositories sequentially (slower but uses less memory)'
+    )
+    .option(
+        '--concurrency <number>',
+        'Number of repositories to process in parallel (default: 5)',
+        parseInt
+    )
+    .option(
+        '--top-n <number>',
+        'Number of top priority items to show (default: 10)',
+        parseInt
+    )
     .option('--batch-suggestions', 'Show batch fix suggestions')
-    .option('--group-by-similarity', 'Group similar issues for batch operations')
+    .option(
+        '--group-by-similarity',
+        'Group similar issues for batch operations'
+    )
     .action(async (options) => {
         const config = await loadConfig();
         const AutomationManager = require('../lib/features/AutomationManager');
@@ -599,8 +668,10 @@ program
         }
 
         if (options.categorize) {
-            const repositories = await automation.multiRepoManager.discoverRepositories();
-            const categories = await automation.categorizeRepositories(repositories);
+            const repositories =
+                await automation.multiRepoManager.discoverRepositories();
+            const categories =
+                await automation.categorizeRepositories(repositories);
 
             if (options.json) {
                 console.log(JSON.stringify(categories, null, 2));
@@ -618,7 +689,9 @@ program
                     concurrency: options.concurrency || 5,
                 });
             } else {
-                console.log(chalk.gray('Running health audit for prioritization...\n'));
+                console.log(
+                    chalk.gray('Running health audit for prioritization...\n')
+                );
                 auditResults = await automation.runOrganizationHealthAudit({
                     report: false,
                     parallel: !options.sequential,
@@ -650,30 +723,50 @@ program
             console.log(
                 '  --org-health        Run organization-wide health audit'
             );
-            console.log(
-                '  --detect-workflows  Detect missing CI/CD workflows'
-            );
+            console.log('  --detect-workflows  Detect missing CI/CD workflows');
             console.log(
                 '  --track-deps        Track dependency versions across repos'
             );
             console.log('  --auto-fix          Auto-fix compliance issues');
-            console.log('  --categorize        Categorize repositories by type');
-            console.log('  --prioritize        Prioritize fixes by impact and effort');
+            console.log(
+                '  --categorize        Categorize repositories by type'
+            );
+            console.log(
+                '  --prioritize        Prioritize fixes by impact and effort'
+            );
             console.log('\nOptions:');
-            console.log('  --dry-run               Show what would be done without applying changes');
+            console.log(
+                '  --dry-run               Show what would be done without applying changes'
+            );
             console.log('  --report                Show detailed report');
             console.log('  --json                  Output results as JSON');
-            console.log('  --trending              Show trend analysis vs. historical data');
-            console.log('  --sequential            Process repos sequentially (slower, less memory)');
-            console.log('  --concurrency <n>       Parallel processing limit (default: 5)');
-            console.log('  --top-n <n>             Number of top priorities to show (default: 10)');
+            console.log(
+                '  --trending              Show trend analysis vs. historical data'
+            );
+            console.log(
+                '  --sequential            Process repos sequentially (slower, less memory)'
+            );
+            console.log(
+                '  --concurrency <n>       Parallel processing limit (default: 5)'
+            );
+            console.log(
+                '  --top-n <n>             Number of top priorities to show (default: 10)'
+            );
             console.log('  --batch-suggestions     Show batch fix suggestions');
-            console.log('  --group-by-similarity   Group similar issues across repos');
+            console.log(
+                '  --group-by-similarity   Group similar issues across repos'
+            );
             console.log('\nExamples:');
-            console.log('  repository-manager automation --org-health --report --trending');
-            console.log('  repository-manager automation --prioritize --top-n 15');
+            console.log(
+                '  repository-manager automation --org-health --report --trending'
+            );
+            console.log(
+                '  repository-manager automation --prioritize --top-n 15'
+            );
             console.log('  repository-manager automation --categorize --json');
-            console.log('  repository-manager automation --prioritize --batch-suggestions');
+            console.log(
+                '  repository-manager automation --prioritize --batch-suggestions'
+            );
             console.log('  repository-manager automation --auto-fix --dry-run');
         }
     });
@@ -828,7 +921,10 @@ async function runInteractiveMode() {
                 { name: '🎯 Full Compliance Check', value: 'compliance' },
                 { name: '🎨 Generate New Project', value: 'template' },
                 { name: '📈 Organization Analytics', value: 'analytics' },
-                { name: '🛡️ Security Policy Management', value: 'security-policy' },
+                {
+                    name: '🛡️ Security Policy Management',
+                    value: 'security-policy',
+                },
             ],
         },
     ]);
@@ -1068,20 +1164,32 @@ async function generateIoTTemplate(type, config) {
 
 async function runTemplateWizard(config) {
     const templateEngine = new TemplateEngine(config);
-    
+
     console.log(chalk.blue('🎨 Project Template Generator\n'));
-    
+
     const answers = await inquirer.prompt([
         {
             type: 'list',
             name: 'templateType',
             message: 'What type of project would you like to create?',
             choices: [
-                { name: '🔧 IoT Firmware (ESP32/ESP8266, Arduino, PlatformIO)', value: 'iot-firmware' },
-                { name: '🤖 AI Agent (GitHub automation, compliance)', value: 'ai-agent' },
-                { name: '🌐 IoT Platform (React frontend + Python backend)', value: 'iot-platform' },
-                { name: '⚡ CLI Tool (Command line utility)', value: 'cli-tool' }
-            ]
+                {
+                    name: '🔧 IoT Firmware (ESP32/ESP8266, Arduino, PlatformIO)',
+                    value: 'iot-firmware',
+                },
+                {
+                    name: '🤖 AI Agent (GitHub automation, compliance)',
+                    value: 'ai-agent',
+                },
+                {
+                    name: '🌐 IoT Platform (React frontend + Python backend)',
+                    value: 'iot-platform',
+                },
+                {
+                    name: '⚡ CLI Tool (Command line utility)',
+                    value: 'cli-tool',
+                },
+            ],
         },
         {
             type: 'input',
@@ -1089,42 +1197,50 @@ async function runTemplateWizard(config) {
             message: 'Project name:',
             validate: (input) => {
                 if (!input.trim()) return 'Project name is required';
-                if (!/^[a-z0-9-]+$/.test(input)) return 'Use lowercase letters, numbers, and hyphens only';
+                if (!/^[a-z0-9-]+$/.test(input))
+                    return 'Use lowercase letters, numbers, and hyphens only';
                 return true;
-            }
+            },
         },
         {
             type: 'input',
             name: 'outputPath',
             message: 'Output directory (optional):',
-            default: (answers) => `./${answers.projectName}`
-        }
+            default: (answers) => `./${answers.projectName}`,
+        },
     ]);
-    
+
     try {
         const result = await templateEngine.generateProject(
             answers.templateType,
             answers.projectName,
             {
                 outputPath: answers.outputPath,
-                organizationTag: config.organizationTag || 'alteriom'
+                organizationTag: config.organizationTag || 'alteriom',
             }
         );
-        
-        console.log(chalk.green(`\n🎉 Successfully created ${answers.templateType} project!`));
+
+        console.log(
+            chalk.green(
+                `\n🎉 Successfully created ${answers.templateType} project!`
+            )
+        );
         console.log(chalk.blue(`📁 Location: ${result.path}`));
-        console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
-        
+        console.log(
+            chalk.blue(`📄 Files: ${result.files.length} files created`)
+        );
     } catch (error) {
-        console.error(chalk.red(`❌ Template generation failed: ${error.message}`));
+        console.error(
+            chalk.red(`❌ Template generation failed: ${error.message}`)
+        );
     }
 }
 
 async function runSecurityPolicyWizard(config) {
     const securityPolicyManager = new SecurityPolicyManager(config);
-    
+
     console.log(chalk.blue('🛡️ Security Policy Management\n'));
-    
+
     const answers = await inquirer.prompt([
         {
             type: 'list',
@@ -1132,38 +1248,43 @@ async function runSecurityPolicyWizard(config) {
             message: 'What would you like to do?',
             choices: [
                 { name: '🔍 Audit existing security policies', value: 'audit' },
-                { name: '📝 Generate new security policies', value: 'generate' }
-            ]
-        }
+                {
+                    name: '📝 Generate new security policies',
+                    value: 'generate',
+                },
+            ],
+        },
     ]);
-    
+
     if (answers.action === 'audit') {
         console.log(chalk.blue('🔍 Auditing security policies...\n'));
-        
+
         try {
             const audit = await securityPolicyManager.auditSecurityPolicies();
-            
-            console.log(chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`));
-            
-            audit.checks.forEach(check => {
+
+            console.log(
+                chalk.bold(`🔒 Security Policy Score: ${audit.score}/100\n`)
+            );
+
+            audit.checks.forEach((check) => {
                 const icon = check.status ? '✅' : '❌';
                 console.log(`${icon} ${check.name}`);
                 if (!check.status && check.fix) {
                     console.log(chalk.gray(`   Fix: ${check.fix}`));
                 }
             });
-            
+
             if (audit.recommendations.length > 0) {
                 console.log(chalk.yellow('\n💡 Recommendations:'));
                 audit.recommendations.forEach((rec, i) => {
                     console.log(`  ${i + 1}. ${rec}`);
                 });
             }
-            
         } catch (error) {
-            console.error(chalk.red(`❌ Security audit failed: ${error.message}`));
+            console.error(
+                chalk.red(`❌ Security audit failed: ${error.message}`)
+            );
         }
-        
     } else if (answers.action === 'generate') {
         const generateAnswers = await inquirer.prompt([
             {
@@ -1171,11 +1292,23 @@ async function runSecurityPolicyWizard(config) {
                 name: 'policyType',
                 message: 'What type of security policy?',
                 choices: [
-                    { name: '🏢 Organization - Standard organizational security policy', value: 'organization' },
-                    { name: '🔌 IoT - Enhanced policy for IoT devices and firmware', value: 'iot' },
-                    { name: '🤖 AI Agent - Security policy for AI agents and automation', value: 'ai-agent' },
-                    { name: '🌐 Web Platform - Security policy for web applications', value: 'web-platform' }
-                ]
+                    {
+                        name: '🏢 Organization - Standard organizational security policy',
+                        value: 'organization',
+                    },
+                    {
+                        name: '🔌 IoT - Enhanced policy for IoT devices and firmware',
+                        value: 'iot',
+                    },
+                    {
+                        name: '🤖 AI Agent - Security policy for AI agents and automation',
+                        value: 'ai-agent',
+                    },
+                    {
+                        name: '🌐 Web Platform - Security policy for web applications',
+                        value: 'web-platform',
+                    },
+                ],
             },
             {
                 type: 'input',
@@ -1187,32 +1320,39 @@ async function runSecurityPolicyWizard(config) {
                         return 'Please enter a valid email address';
                     }
                     return true;
-                }
-            }
+                },
+            },
         ]);
-        
+
         try {
             const result = await securityPolicyManager.generateSecurityPolicy(
                 generateAnswers.policyType,
                 {
                     contactEmail: generateAnswers.contactEmail,
                     organizationName: config.organizationName || 'Alteriom',
-                    organizationTag: config.organizationTag || 'alteriom'
+                    organizationTag: config.organizationTag || 'alteriom',
                 }
             );
-            
-            console.log(chalk.green(`\n✅ Security policy generated successfully!`));
+
+            console.log(
+                chalk.green(`\n✅ Security policy generated successfully!`)
+            );
             console.log(chalk.blue(`📁 Policy Type: ${result.policy}`));
-            console.log(chalk.blue(`📄 Files: ${result.files.length} files created`));
-            
+            console.log(
+                chalk.blue(`📄 Files: ${result.files.length} files created`)
+            );
+
             console.log(chalk.yellow('\n📝 Next Steps:'));
             console.log('  1. Review generated security policy files');
             console.log('  2. Customize contact information and procedures');
             console.log('  3. Commit files to your repository');
             console.log('  4. Enable GitHub security features');
-            
         } catch (error) {
-            console.error(chalk.red(`❌ Security policy generation failed: ${error.message}`));
+            console.error(
+                chalk.red(
+                    `❌ Security policy generation failed: ${error.message}`
+                )
+            );
         }
     }
 }
@@ -1220,23 +1360,23 @@ async function runSecurityPolicyWizard(config) {
 function convertInsightsToCSV(insights) {
     // Convert key insights to CSV format
     let csv = 'Category,Metric,Value\n';
-    
+
     // Overview
     csv += `Overview,Total Repositories,${insights.overview.totalRepositories}\n`;
     csv += `Overview,Average Health Score,${insights.overview.averageHealthScore}\n`;
     csv += `Overview,Total Stars,${insights.overview.totalStars}\n`;
     csv += `Overview,Total Forks,${insights.overview.totalForks}\n`;
-    
+
     // Languages
-    insights.languages.forEach(lang => {
+    insights.languages.forEach((lang) => {
         csv += `Languages,${lang.language},${lang.count}\n`;
     });
-    
+
     // Repository Types
-    insights.repoTypes.forEach(type => {
+    insights.repoTypes.forEach((type) => {
         csv += `Repository Types,${type.type},${type.count}\n`;
     });
-    
+
     return csv;
 }
 

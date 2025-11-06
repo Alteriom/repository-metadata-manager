@@ -222,7 +222,7 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  
+
                   if [ -f health-audit-results.json ]; then
                     echo "## Health Audit Results" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
@@ -235,7 +235,7 @@ jobs:
                     " >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ -f missing-workflows.json ]; then
                     echo "## Missing Workflows" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
@@ -247,7 +247,7 @@ jobs:
                     " >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   if [ -f dependency-tracking.json ]; then
                     echo "## Dependency Tracking" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
@@ -259,7 +259,7 @@ jobs:
                     " >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                   fi
-                  
+
                   echo "✓ Summary report generated"
 
             - name: Manage Health Alert Issue
@@ -310,20 +310,20 @@ jobs:
                         
                         // Build issue body
                         const body = \`## Organization Health Alert
-                  
+
                   **Date:** \${new Date().toISOString().split('T')[0]}
                   **Unhealthy Repositories:** \${data.unhealthyRepos.length}
-                  
+
                   ### Repositories Below Health Threshold (< 70)
-                  
+
                   \${data.unhealthyRepos.map(r => \`- **\${r.name}** [\${r.grade}] (\${r.score}/100)\n  \${r.issues.slice(0, 3).map(i => \`  - \${i}\`).join('\\n')}\`).join('\\n\\n')}
-                  
+
                   ### Recommended Actions
                   1. Review repositories with failing health checks
                   2. Address critical compliance issues
                   3. Update missing documentation
                   4. Configure required CI/CD workflows
-                  
+
                   ---
                   *Last updated: \${new Date().toISOString()}*
                   *This issue is automatically managed by the Organization Health Monitor workflow.*
@@ -368,7 +368,7 @@ jobs:
             - name: Check health-audit status
               run: |
                   echo "Health Audit Status: ${{ needs.health-audit.result }}"
-                  
+
                   if [[ "${{ needs.health-audit.result }}" == "success" ]]; then
                     echo "✅ Organization health monitoring completed successfully"
                   else
