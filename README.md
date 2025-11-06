@@ -130,20 +130,20 @@ npm run automation:auto-fix
 
 ## 📋 Enhanced Commands
 
-| Command       | Description                                         |
-| ------------- | --------------------------------------------------- |
-| `health`      | Calculate overall repository health score (0-100)   |
-| `security`    | Security audit and vulnerability detection          |
-| `branches`    | Branch protection analysis and enforcement          |
-| `docs`        | Documentation quality assessment and generation     |
-| `cicd`        | CI/CD workflow analysis and template generation     |
-| `iot`         | IoT-specific compliance and template generation     |
-| `compliance`  | Full compliance check with auto-fix capabilities    |
-| `automation`  | Cross-repository operations and organization-wide automation ✨ NEW |
-| `interactive` | Interactive wizard for guided repository management |
-| `analytics`   | Organization-wide analytics and insights           |
-| `template`    | Generate new projects from comprehensive templates  |
-| `security-policy` | Generate and manage security policies          |
+| Command           | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `health`          | Calculate overall repository health score (0-100)                   |
+| `security`        | Security audit and vulnerability detection                          |
+| `branches`        | Branch protection analysis and enforcement                          |
+| `docs`            | Documentation quality assessment and generation                     |
+| `cicd`            | CI/CD workflow analysis and template generation                     |
+| `iot`             | IoT-specific compliance and template generation                     |
+| `compliance`      | Full compliance check with auto-fix capabilities                    |
+| `automation`      | Cross-repository operations and organization-wide automation ✨ NEW |
+| `interactive`     | Interactive wizard for guided repository management                 |
+| `analytics`       | Organization-wide analytics and insights                            |
+| `template`        | Generate new projects from comprehensive templates                  |
+| `security-policy` | Generate and manage security policies                               |
 
 ## 🎨 Project Template Engine
 
@@ -151,16 +151,17 @@ The Repository Metadata Manager now includes a comprehensive template engine for
 
 ### Available Templates
 
-| Template Type    | Language   | Description |
-| ---------------- | ---------- | ----------- |
-| `iot-firmware`   | C++        | ESP32/ESP8266 firmware with sensors, LoRa, WiFi mesh |
-| `ai-agent`       | JavaScript | AI-powered automation and repository management |
-| `iot-platform`   | TypeScript | Multi-tenant IoT platform with React + FastAPI |
-| `cli-tool`       | JavaScript | Command-line tools with comprehensive features |
+| Template Type  | Language   | Description                                          |
+| -------------- | ---------- | ---------------------------------------------------- |
+| `iot-firmware` | C++        | ESP32/ESP8266 firmware with sensors, LoRa, WiFi mesh |
+| `ai-agent`     | JavaScript | AI-powered automation and repository management      |
+| `iot-platform` | TypeScript | Multi-tenant IoT platform with React + FastAPI       |
+| `cli-tool`     | JavaScript | Command-line tools with comprehensive features       |
 
 ### Template Features
 
 **IoT Firmware Template:**
+
 - Complete PlatformIO configuration for ESP32/ESP8266
 - Sensor management (DHT22, BMP280, custom sensors)
 - WiFi connectivity with automatic reconnection
@@ -171,6 +172,7 @@ The Repository Metadata Manager now includes a comprehensive template engine for
 - Security and encryption modules
 
 **AI Agent Template:**
+
 - GitHub API integration with Octokit
 - Automated compliance monitoring
 - Issue and PR creation capabilities
@@ -179,6 +181,7 @@ The Repository Metadata Manager now includes a comprehensive template engine for
 - Docker deployment configuration
 
 **IoT Platform Template:**
+
 - React TypeScript frontend with modern UI
 - FastAPI Python backend with async support
 - MQTT integration for real-time data
@@ -203,8 +206,9 @@ npm run template -- --type iot-platform --name sensor-dashboard
 # List all available templates
 npm run template -- --list
 ```
-| `iot`         | IoT-specific compliance and template generation     |
-| `compliance`  | Full compliance check with auto-fix capabilities    |
+
+| `iot` | IoT-specific compliance and template generation |
+| `compliance` | Full compliance check with auto-fix capabilities |
 | `interactive` | Interactive wizard for guided repository management |
 
 ## 🔌 IoT Repository Management
@@ -426,16 +430,17 @@ Comprehensive security policy generation and management for enterprise-grade sec
 
 ### Security Policy Types
 
-| Policy Type      | Description | Use Case |
-| ---------------- | ----------- | -------- |
-| `organization`   | Standard organizational security policy | All repositories |
-| `iot`           | Enhanced IoT device and firmware security | IoT/embedded projects |
-| `ai-agent`      | AI agent and automation security | AI/automation systems |
-| `web-platform`  | Web application security policy | Web applications |
+| Policy Type    | Description                               | Use Case              |
+| -------------- | ----------------------------------------- | --------------------- |
+| `organization` | Standard organizational security policy   | All repositories      |
+| `iot`          | Enhanced IoT device and firmware security | IoT/embedded projects |
+| `ai-agent`     | AI agent and automation security          | AI/automation systems |
+| `web-platform` | Web application security policy           | Web applications      |
 
 ### Security Policy Features
 
 **Organization Policy:**
+
 - Vulnerability disclosure procedures
 - Incident response planning
 - Security contact information
@@ -443,6 +448,7 @@ Comprehensive security policy generation and management for enterprise-grade sec
 - Supported versions matrix
 
 **IoT Policy:**
+
 - Hardware security requirements
 - Firmware security standards
 - Device authentication protocols
@@ -450,12 +456,14 @@ Comprehensive security policy generation and management for enterprise-grade sec
 - OTA update security
 
 **AI Agent Policy:**
+
 - API security standards
 - Data privacy protection
 - Automation security controls
 - GitHub integration security
 
 **Web Platform Policy:**
+
 - Authentication and authorization
 - Data protection standards
 - Web application security
@@ -477,6 +485,7 @@ npm run security-policy -- --generate --type iot --contact security@yourorg.com
 ### Generated Security Files
 
 **Standard Organization Policy:**
+
 - `SECURITY.md` - Main security policy
 - `.github/SECURITY.md` - GitHub security integration
 - `docs/security/SECURITY_GUIDELINES.md` - Detailed guidelines
@@ -484,6 +493,7 @@ npm run security-policy -- --generate --type iot --contact security@yourorg.com
 - `docs/security/INCIDENT_RESPONSE.md` - Response procedures
 
 **IoT-Specific Policy:**
+
 - Enhanced device security requirements
 - Firmware security standards
 - Hardware security guidelines
