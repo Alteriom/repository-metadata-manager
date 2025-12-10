@@ -276,7 +276,7 @@ program
             repoPath: process.cwd(),
         });
 
-        const results = await autoFixManager.runAllFixes();
+        await autoFixManager.runAllFixes();
         autoFixManager.displaySummary();
 
         // If not local-only and token is available, run API-based checks

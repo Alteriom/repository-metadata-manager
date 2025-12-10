@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **AI Agent Mode**: Zero-configuration automation for CI/CD and AI agents
+  - `TokenManager`: Hierarchical GitHub token detection (Environment → GitHub Actions → .env)
+  - `EnvironmentDetector`: Automatic CI/CD environment detection
+  - `AutoFixManager`: Local file-based compliance fixes without API access
+  - New `ai-agent` CLI command with `--auto-fix`, `--local-only`, `--dry-run`, `--detect` flags
+  - GitHub Actions workflow for automated compliance checking
+  - Graceful degradation when GitHub token is unavailable
+  
+- **Local-Only Mode**: Run compliance checks without GitHub API access
+  - Automatic creation of missing documentation (SECURITY.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md)
+  - Issue and PR templates generation
+  - .gitignore improvements
+  - Branch protection auditing without API
+
+### Changed
+
+- **RepositoryManager**: Enhanced to support local-only mode with intelligent token management
+- **Documentation**: Updated README with AI agent usage examples and GitHub Actions workflow
+- **CLI**: Added comprehensive help text for new ai-agent command
+
+### Fixed
+
+- Graceful handling of missing GitHub tokens in automated environments
+- Proper error messages when API is unavailable
+
 ## [1.2.1] - 2025-08-27
 
 ### Fixed
