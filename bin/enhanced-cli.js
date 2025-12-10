@@ -17,6 +17,11 @@ const IoTManager = require('../lib/features/IoTManager');
 const TemplateEngine = require('../lib/features/TemplateEngine');
 const OrganizationAnalytics = require('../lib/features/OrganizationAnalytics');
 const SecurityPolicyManager = require('../lib/features/SecurityPolicyManager');
+const AutoFixManager = require('../lib/features/AutoFixManager');
+
+// Import utilities
+const TokenManager = require('../lib/utils/TokenManager');
+const EnvironmentDetector = require('../lib/utils/EnvironmentDetector');
 
 const program = new Command();
 
@@ -210,6 +215,96 @@ program
         if (options.fix) {
             console.log(chalk.blue('\n🔧 Applying automatic fixes...\n'));
             await applyAutomaticFixes(config);
+        }
+    });
+
+// AI Agent Auto-Fix Command
+program
+    .command('ai-agent')
+    .description('AI agent mode with automatic token detection and local fixes')
+    .option('--auto-fix', 'Automatically fix compliance issues without prompting')
+    .option('--local-only', 'Only perform local file-based fixes (no GitHub API)')
+    .option('--dry-run', 'Show what would be fixed without making changes')
+    .option('--detect', 'Show environment detection information')
+    .action(async (options) => {
+        console.log(chalk.blue('🤖 AI Agent Mode\n'));
+
+        // Detect environment
+        const envDetector = new EnvironmentDetector();
+        const envSummary = envDetector.getEnvironmentSummary();
+
+        if (options.detect) {
+            console.log(chalk.cyan('🔍 Environment Detection:\n'));
+            console.log(`  Platform: ${envSummary.environment}`);
+            console.log(`  Type: ${envSummary.type}`);
+            console.log(`  CI Environment: ${envSummary.isCI ? '✓' : '✗'}`);
+            console.log(`  GitHub Actions: ${envSummary.isGitHubActions ? '✓' : '✗'}`);
+            console.log(`  GitHub Token Available: ${envSummary.hasToken ? '✓' : '✗'}`);
+            console.log(`  AI Agent Mode: ${envSummary.aiAgentMode ? '✓' : '✗'}`);
+            
+            const repoContext = envDetector.getRepositoryContext();
+            if (repoContext.owner && repoContext.repo) {
+                console.log(chalk.cyan('\n📦 Repository Context:\n'));
+                console.log(`  Owner: ${repoContext.owner}`);
+                console.log(`  Repo: ${repoContext.repo}`);
+                console.log(`  Branch: ${repoContext.branch || 'N/A'}`);
+                console.log(`  SHA: ${repoContext.sha ? repoContext.sha.substring(0, 7) : 'N/A'}`);
+            }
+
+            const tokenManager = new TokenManager();
+            const tokenInfo = tokenManager.detectToken();
+            console.log(chalk.cyan('\n🔑 Token Detection:\n'));
+            console.log(`  Source: ${tokenManager.getTokenSourceDescription()}`);
+            console.log(`  Available: ${tokenInfo.isAvailable ? '✓' : '✗'}`);
+            console.log(`  Local-only Mode: ${tokenInfo.localOnlyMode ? '✓' : '✗'}`);
+
+            console.log('');
+            return;
+        }
+
+        // Determine execution mode
+        const recommendedMode = envDetector.getRecommendedMode();
+        const localOnly = options.localOnly || recommendedMode.localOnly;
+        const autoFix = options.autoFix !== undefined ? options.autoFix : recommendedMode.autoFix;
+        const dryRun = options.dryRun || false;
+
+        console.log(chalk.gray(`Mode: ${localOnly ? 'Local-only' : 'API-enabled'} | Auto-fix: ${autoFix ? 'On' : 'Off'} | Dry-run: ${dryRun ? 'Yes' : 'No'}\n`));
+
+        // Run auto-fix manager for local fixes
+        const autoFixManager = new AutoFixManager({
+            dryRun,
+            repoPath: process.cwd(),
+        });
+
+        const results = await autoFixManager.runAllFixes();
+        autoFixManager.displaySummary();
+
+        // If not local-only and token is available, run API-based checks
+        if (!localOnly) {
+            try {
+                const config = await loadConfig();
+                if (config.token) {
+                    console.log(chalk.blue('\n🔍 Running API-based compliance checks...\n'));
+                    const healthManager = new HealthScoreManager(config);
+                    const { health } = await healthManager.generateHealthReport();
+                    displayHealthSummary(health);
+                } else {
+                    console.log(chalk.yellow('\n⚠️  No GitHub token available for API-based checks'));
+                    console.log(chalk.gray('   Use --local-only flag to skip this warning\n'));
+                }
+            } catch (error) {
+                if (error.message.includes('local-only mode')) {
+                    console.log(chalk.yellow('\n⚠️  API checks skipped (no token available)'));
+                } else {
+                    console.error(chalk.red(`\n❌ API checks failed: ${error.message}`));
+                }
+            }
+        }
+
+        // Summary
+        console.log(chalk.blue('\n✅ AI Agent run complete\n'));
+        if (dryRun) {
+            console.log(chalk.yellow('💡 This was a dry run. Use without --dry-run to apply changes.\n'));
         }
     });
 
