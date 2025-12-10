@@ -1,0 +1,34 @@
+{
+  "name": "@alteriom/repository-manager-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for GitHub repository metadata management, health scoring, and compliance automation",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "repository-manager-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "github",
+    "repository",
+    "metadata",
+    "health-scoring",
+    "compliance",
+    "automation"
+  ],
+  "author": "Alteriom",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@octokit/rest": "^22.0.0",
+    "chalk": "^5.6.2",
+    "dotenv": "^17.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
