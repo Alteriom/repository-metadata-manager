@@ -282,9 +282,13 @@ program
         // If not local-only and token is available, run API-based checks
         if (!localOnly) {
             try {
-                const config = await loadConfig();
-                if (config.token) {
+                // Check token availability using TokenManager
+                const tokenManager = new TokenManager();
+                const tokenInfo = tokenManager.detectToken();
+                
+                if (tokenInfo.isAvailable) {
                     console.log(chalk.blue('\n🔍 Running API-based compliance checks...\n'));
+                    const config = await loadConfig();
                     const healthManager = new HealthScoreManager(config);
                     const { health } = await healthManager.generateHealthReport();
                     displayHealthSummary(health);
