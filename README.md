@@ -23,9 +23,10 @@ This enterprise-grade tool addresses comprehensive repository management needs:
 - **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
 - **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
 - **🎯 Compliance Automation**: Full compliance checking with auto-fix capabilities
-- **🤖 AI Agent Mode**: Zero-configuration automation for CI/CD and AI agents ✨ NEW
+- **🤖 AI Agent Mode**: Zero-configuration automation for CI/CD and AI agents
 - **🔄 Cross-Repository Automation**: Organization-wide health monitoring and dependency tracking
 - **📋 Interactive Management**: User-friendly CLI with guided workflows
+- **🧠 MCP Server**: Model Context Protocol server for AI assistants (GitHub Copilot, Claude) ✨ NEW
 
 ## 📦 Installation
 
@@ -138,7 +139,33 @@ npm run automation:dry-run
 npm run automation:auto-fix
 ```
 
-### 9. AI Agent Mode ✨ NEW
+### 9. MCP Server for AI Assistants ✨ NEW
+
+**Use repository management tools directly in GitHub Copilot, Claude, and other AI assistants** via Model Context Protocol:
+
+```bash
+# Install MCP server dependencies
+cd mcp-server && npm install
+
+# Server automatically activates in VS Code
+# Open GitHub Copilot Chat → Agent mode → Tools icon
+# You'll see 13 repository management tools available
+
+# Example prompts:
+"Calculate health score for this repository"
+"What documentation is missing?"
+"Run security audit"
+"Auto-fix compliance issues (dry-run first)"
+```
+
+**Features:**
+- 13 tools for health, security, docs, CI/CD, compliance
+- Natural language interface through AI assistants
+- Organization-wide operations
+- Auto-fix capabilities with dry-run
+- See `mcp-server/README.md` for full documentation
+
+### 10. AI Agent Mode ✨ NEW
 
 **Zero-configuration compliance automation** for AI agents and CI/CD environments:
 

@@ -46,6 +46,25 @@ module.exports = [
         },
     },
     {
+        // Override for mcp-server directory - uses ES modules
+        files: ['mcp-server/**/*.js'],
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: {
+                // Node.js globals
+                global: 'readonly',
+                process: 'readonly',
+                Buffer: 'readonly',
+                console: 'readonly',
+                setTimeout: 'readonly',
+                setInterval: 'readonly',
+                clearTimeout: 'readonly',
+                clearInterval: 'readonly',
+            },
+        },
+    },
+    {
         ignores: ['node_modules/', 'coverage/', 'dist/', '*.min.js'],
     },
 ];

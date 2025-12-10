@@ -135,6 +135,8 @@
         "bin/",
         "lib/",
         "scripts/",
+        "mcp-server/",
+        ".vscode/mcp.json",
         "README.md",
         "LICENSE"
     ]

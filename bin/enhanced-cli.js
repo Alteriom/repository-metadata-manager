@@ -692,6 +692,7 @@ program
     )
     .option('--track-deps', 'Track dependencies across organization')
     .option('--auto-fix', 'Auto-fix compliance issues')
+    .option('--target <target>', 'Target scope: current or all (default: current)')
     .option('--categorize', 'Categorize repositories by type')
     .option('--prioritize', 'Prioritize fixes based on impact and effort')
     .option('--compliance-report', 'Generate comprehensive compliance report')
@@ -766,7 +767,7 @@ program
         if (options.autoFix) {
             const results = await automation.autoFixComplianceIssues({
                 dryRun: !!options.dryRun,
-                target: 'current',
+                target: options.target || 'current',
             });
 
             if (options.json) {
