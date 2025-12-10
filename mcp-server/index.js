@@ -15,7 +15,6 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { readFileSync } from 'fs';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -35,8 +34,6 @@ const SERVER_VERSION = '1.0.0';
  * Execute a repository management tool
  */
 async function executeTool(toolName, args) {
-  const cwd = args.repositoryPath || process.cwd();
-  
   // Import feature managers dynamically
   const { default: HealthScoreManager } = await import(join(parentLibPath, 'features', 'HealthScoreManager.js'));
   const { default: DocumentationManager } = await import(join(parentLibPath, 'features', 'DocumentationManager.js'));
@@ -121,7 +118,7 @@ async function executeTool(toolName, args) {
 
     case 'generate_health_report': {
       const manager = new HealthScoreManager(config);
-      const { health, report } = await manager.generateHealthReport();
+      const { report } = await manager.generateHealthReport();
       return {
         content: [{
           type: 'text',
