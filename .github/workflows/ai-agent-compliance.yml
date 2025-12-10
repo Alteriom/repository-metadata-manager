@@ -1,0 +1,222 @@
+name: AI Agent Compliance Check
+
+on:
+    pull_request:
+        branches: [main, develop]
+    push:
+        branches: [main, develop]
+    schedule:
+        # Run daily at 2 AM UTC
+        - cron: '0 2 * * *'
+    workflow_dispatch:
+        inputs:
+            auto_fix:
+                description: 'Automatically apply fixes'
+                required: false
+                default: 'false'
+                type: boolean
+            local_only:
+                description: 'Run in local-only mode (no API calls)'
+                required: false
+                default: 'false'
+                type: boolean
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+    actions: read
+
+jobs:
+    ai-agent-check:
+        name: AI Agent Compliance Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '20.x'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Detect environment
+              run: |
+                  echo "🔍 Environment Detection"
+                  node bin/enhanced-cli.js ai-agent --detect
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  AI_AGENT: 'true'
+
+            - name: Run AI agent compliance check
+              id: compliance
+              run: |
+                  echo "🤖 Running AI Agent Compliance Check"
+                  
+                  # Determine flags based on inputs or defaults
+                  AUTO_FIX="${{ github.event.inputs.auto_fix || 'false' }}"
+                  LOCAL_ONLY="${{ github.event.inputs.local_only || 'false' }}"
+                  
+                  FLAGS=""
+                  if [[ "$AUTO_FIX" == "true" ]]; then
+                    FLAGS="$FLAGS --auto-fix"
+                  fi
+                  
+                  if [[ "$LOCAL_ONLY" == "true" ]]; then
+                    FLAGS="$FLAGS --local-only"
+                  fi
+                  
+                  # For PR events, use dry-run by default unless auto-fix is explicitly enabled
+                  if [[ "${{ github.event_name }}" == "pull_request" && "$AUTO_FIX" != "true" ]]; then
+                    FLAGS="$FLAGS --dry-run"
+                  fi
+                  
+                  echo "Running with flags: $FLAGS"
+                  node bin/enhanced-cli.js ai-agent $FLAGS | tee compliance-report.txt
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  AI_AGENT: 'true'
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+              continue-on-error: true
+
+            - name: Check for changes
+              id: changes
+              run: |
+                  if [[ -n $(git status --porcelain) ]]; then
+                    echo "changes_detected=true" >> $GITHUB_OUTPUT
+                    echo "📝 Changes detected by AI agent"
+                  else
+                    echo "changes_detected=false" >> $GITHUB_OUTPUT
+                    echo "✅ No changes needed"
+                  fi
+
+            - name: Commit and push changes (if auto-fix enabled)
+              if: steps.changes.outputs.changes_detected == 'true' && (github.event.inputs.auto_fix == 'true' || github.event_name == 'push')
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git add .
+                  git commit -m "chore: automated compliance fixes by AI agent
+
+                  Applied by AI agent compliance workflow
+                  
+                  Co-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+                  git push
+
+            - name: Comment on PR with results
+              if: github.event_name == 'pull_request'
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const fs = require('fs');
+                      let reportContent = 'Compliance report not available';
+                      
+                      try {
+                        reportContent = fs.readFileSync('compliance-report.txt', 'utf8');
+                      } catch (error) {
+                        console.log('Could not read compliance report');
+                      }
+                      
+                      const changesDetected = '${{ steps.changes.outputs.changes_detected }}' === 'true';
+                      const autoFix = '${{ github.event.inputs.auto_fix }}' === 'true';
+                      
+                      let summary = '## 🤖 AI Agent Compliance Check\n\n';
+                      
+                      if (changesDetected) {
+                        if (autoFix) {
+                          summary += '✅ **Compliance issues were automatically fixed**\n\n';
+                          summary += 'The AI agent detected and fixed compliance issues. Changes have been committed.\n\n';
+                        } else {
+                          summary += '⚠️ **Compliance issues detected (dry-run mode)**\n\n';
+                          summary += 'The AI agent detected compliance issues. Re-run with auto-fix enabled to apply fixes.\n\n';
+                        }
+                      } else {
+                        summary += '✅ **No compliance issues detected**\n\n';
+                        summary += 'Repository is compliant with all standards.\n\n';
+                      }
+                      
+                      summary += '<details>\n<summary>📋 Full Compliance Report</summary>\n\n';
+                      summary += '```\n' + reportContent + '\n```\n\n';
+                      summary += '</details>\n\n';
+                      
+                      summary += '---\n';
+                      summary += '*This check was performed by the AI Agent automation workflow*\n';
+                      
+                      // Find existing bot comments
+                      const { data: comments } = await github.rest.issues.listComments({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                      });
+                      
+                      const botComment = comments.find(comment => 
+                        comment.user.type === 'Bot' && 
+                        comment.body.includes('AI Agent Compliance Check')
+                      );
+                      
+                      if (botComment) {
+                        await github.rest.issues.updateComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          comment_id: botComment.id,
+                          body: summary
+                        });
+                      } else {
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          body: summary
+                        });
+                      }
+
+            - name: Health score check
+              run: |
+                  echo "📊 Calculating repository health score..."
+                  node bin/enhanced-cli.js health --report || echo "Health check completed with warnings"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Upload compliance report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: compliance-report
+                  path: |
+                      compliance-report.txt
+                      **/SECURITY.md
+                      **/CONTRIBUTING.md
+                      **/CODE_OF_CONDUCT.md
+                      .github/ISSUE_TEMPLATE/**
+                      .github/PULL_REQUEST_TEMPLATE.md
+                  if-no-files-found: ignore
+                  retention-days: 30
+
+    notify:
+        name: Notify Results
+        runs-on: ubuntu-latest
+        needs: [ai-agent-check]
+        if: always()
+
+        steps:
+            - name: Check workflow status
+              run: |
+                  echo "🔍 AI Agent Compliance Workflow Results:"
+                  echo "Compliance Check: ${{ needs.ai-agent-check.result }}"
+                  
+                  if [[ "${{ needs.ai-agent-check.result }}" == "success" ]]; then
+                    echo "✅ AI Agent compliance check completed successfully!"
+                  else
+                    echo "⚠️ AI Agent compliance check completed with warnings"
+                  fi

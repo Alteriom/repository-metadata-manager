@@ -23,7 +23,8 @@ This enterprise-grade tool addresses comprehensive repository management needs:
 - **📚 Documentation Standards**: Quality analysis and auto-generation of documentation
 - **⚙️ CI/CD Pipeline Management**: Workflow analysis and template generation
 - **🎯 Compliance Automation**: Full compliance checking with auto-fix capabilities
-- **🤖 Cross-Repository Automation**: Organization-wide health monitoring and dependency tracking ✨ NEW
+- **🤖 AI Agent Mode**: Zero-configuration automation for CI/CD and AI agents ✨ NEW
+- **🔄 Cross-Repository Automation**: Organization-wide health monitoring and dependency tracking
 - **📋 Interactive Management**: User-friendly CLI with guided workflows
 
 ## 📦 Installation
@@ -137,6 +138,55 @@ npm run automation:dry-run
 npm run automation:auto-fix
 ```
 
+### 9. AI Agent Mode ✨ NEW
+
+**Zero-configuration compliance automation** for AI agents and CI/CD environments:
+
+```bash
+# Detect environment and token availability
+repository-manager ai-agent --detect
+
+# Run in local-only mode (no GitHub API required)
+repository-manager ai-agent --local-only
+
+# Dry-run mode - show what would be fixed
+repository-manager ai-agent --dry-run
+
+# Auto-fix compliance issues
+repository-manager ai-agent --auto-fix
+
+# Full automation (local fixes + API checks)
+repository-manager ai-agent --auto-fix
+```
+
+**Key Features:**
+
+- 🔑 **Automatic Token Detection**: Hierarchical token detection (Environment → GitHub Actions → .env file)
+- 🤖 **GitHub Actions Integration**: Automatic detection and configuration when running in CI/CD
+- 📁 **Local File Fixes**: Create missing documentation (SECURITY.md, CONTRIBUTING.md, etc.)
+- 🔧 **Auto-Fix Capabilities**: Automated compliance fixes without manual intervention
+- 🛡️ **Graceful Degradation**: Works even without GitHub API access
+
+**Example: GitHub Actions Workflow**
+
+```yaml
+name: Compliance Check
+on: [pull_request, push]
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install -g @alteriom/repository-metadata-manager
+      - run: repository-manager ai-agent --auto-fix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+See [AI Agent Workflow](.github/workflows/ai-agent-compliance.yml) for the complete automated workflow.
+
 ## 📋 Enhanced Commands
 
 | Command           | Description                                                         |
@@ -148,7 +198,8 @@ npm run automation:auto-fix
 | `cicd`            | CI/CD workflow analysis and template generation                     |
 | `iot`             | IoT-specific compliance and template generation                     |
 | `compliance`      | Full compliance check with auto-fix capabilities                    |
-| `automation`      | Cross-repository operations and organization-wide automation ✨ NEW |
+| `ai-agent`        | AI agent mode with automatic token detection and local fixes ✨ NEW |
+| `automation`      | Cross-repository operations and organization-wide automation        |
 | `interactive`     | Interactive wizard for guided repository management                 |
 | `analytics`       | Organization-wide analytics and insights                            |
 | `template`        | Generate new projects from comprehensive templates                  |
