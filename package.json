@@ -70,7 +70,15 @@
         "automation:prioritize": "node bin/enhanced-cli.js automation --prioritize --batch-suggestions",
         "automation:compliance": "node bin/enhanced-cli.js automation --compliance-report --save",
         "automation:security": "node bin/enhanced-cli.js automation --security-dashboard --save",
-        "automation:maintenance": "node bin/enhanced-cli.js automation --maintenance"
+        "automation:maintenance": "node bin/enhanced-cli.js automation --maintenance",
+        "fix:branch-protection": "node scripts/enable-branch-protection.js",
+        "fix:branch-protection:dry-run": "node scripts/enable-branch-protection.js --dry-run",
+        "fix:templates": "node scripts/generate-templates.js",
+        "fix:templates:dry-run": "node scripts/generate-templates.js --dry-run",
+        "fix:dependabot": "node scripts/enable-dependabot.js",
+        "fix:dependabot:dry-run": "node scripts/enable-dependabot.js --dry-run",
+        "fix:all": "npm run fix:dependabot && npm run fix:templates && npm run fix:branch-protection",
+        "fix:all:dry-run": "npm run fix:dependabot:dry-run && npm run fix:templates:dry-run && npm run fix:branch-protection:dry-run"
     },
     "keywords": [
         "alteriom",
