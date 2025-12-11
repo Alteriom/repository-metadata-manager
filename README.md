@@ -934,12 +934,24 @@ MIT License - feel free to use and modify for your organization.
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
+### Central Documentation
 
-- **[Documentation Index](docs/README.md)** - Complete documentation overview
+For comprehensive documentation, guides, and organizational standards, visit the **Alteriom Documentation Repository**:
+
+🔗 **[Alteriom Central Documentation](https://github.com/Alteriom/alteriom-documentation)**
+
+### Local Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory and [`.github/DOCUMENTATION.md`](.github/DOCUMENTATION.md):
+
+- **[Documentation Index](.github/DOCUMENTATION.md)** - Complete documentation hub with central links
+- **[Local Documentation](docs/README.md)** - Complete local documentation overview
 - **[Environment Setup](docs/guides/ENVIRONMENT.md)** - Development environment configuration
 - **[Organization Setup](docs/guides/ORGANIZATION_SETUP.md)** - Organization-wide setup guide
+- **[CLI Reference](docs/guides/CLI.md)** - Command-line interface guide
+- **[Automation Guide](docs/AUTOMATION.md)** - Cross-repository automation features
 - **[Implementation Details](docs/development/IMPLEMENTATION_SUMMARY.md)** - Technical architecture
+- **[API Reference](docs/development/API.md)** - Detailed API documentation
 - **[Versioning Guidelines](docs/development/VERSIONING.md)** - Release management
 - **[Release Notes](docs/releases/)** - Version history and changelogs
 
