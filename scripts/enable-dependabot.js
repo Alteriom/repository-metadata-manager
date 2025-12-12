@@ -15,50 +15,6 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN || process.env.AGENT_ORG_TOKEN,
 });
 
-function generateDependabotConfig(packageManager = 'npm') {
-    const configs = {
-        npm: `version: 2
-updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "Alteriom"
-    commit-message:
-      prefix: "chore(deps)"
-      include: "scope"
-`,
-        pip: `version: 2
-updates:
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-`,
-        docker: `version: 2
-updates:
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-`,
-        'github-actions': `version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-`,
-    };
-
-    return configs[packageManager] || configs.npm;
-}
-
 async function detectPackageManager(owner, repo) {
     const checks = [
         { file: 'package.json', ecosystem: 'npm' },
