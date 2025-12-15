@@ -197,7 +197,7 @@ jobs:
               continue-on-error: true
 
             - name: Upload Health Audit Results
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v6
               if: always()
               with:
                   name: health-audit-results
@@ -208,7 +208,7 @@ jobs:
                   retention-days: 30
 
             - name: Upload Health History
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v6
               if: always()
               with:
                   name: health-history
