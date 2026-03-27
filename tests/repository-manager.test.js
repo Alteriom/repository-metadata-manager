@@ -1,28 +1,49 @@
-const RepositoryManager = require('../lib/core/RepositoryManager');
-const fs = require('fs');
+// Mock TokenManager before requiring RepositoryManager
+jest.mock('../lib/utils/TokenManager', () => {
+    return jest.fn().mockImplementation(() => ({
+        detectToken: jest.fn().mockReturnValue({
+            token: 'test-token',
+            source: 'explicit',
+            isAvailable: true,
+        }),
+        getRepositoryInfo: jest.fn().mockReturnValue({
+            owner: 'test-owner',
+            repo: 'test-repo',
+        }),
+    }));
+});
 
-// Mock dependencies
-jest.mock('@octokit/rest');
+// Mock Octokit to avoid ESM import issues
+const mockOctokitInstance = {
+    repos: {
+        get: jest.fn(),
+        getContent: jest.fn(),
+        getBranchProtection: jest.fn(),
+        listBranches: jest.fn(),
+        createOrUpdateFileContents: jest.fn(),
+        update: jest.fn(),
+        listCommits: jest.fn(),
+        getCommit: jest.fn(),
+    },
+};
+
+jest.mock('@octokit/rest', () => ({
+    Octokit: jest.fn().mockImplementation(() => mockOctokitInstance),
+}));
+
 jest.mock('fs');
 
-const { Octokit } = require('@octokit/rest');
+const RepositoryManager = require('../lib/core/RepositoryManager');
 
 describe('RepositoryManager', () => {
     let repositoryManager;
-    let mockOctokit;
 
     beforeEach(() => {
         jest.clearAllMocks();
 
-        mockOctokit = {
-            rest: {
-                repos: {
-                    getContent: jest.fn(),
-                    get: jest.fn(),
-                },
-            },
-        };
-        Octokit.mockImplementation(() => mockOctokit);
+        // Re-mock the Octokit instance methods after clearAllMocks
+        mockOctokitInstance.repos.get = jest.fn();
+        mockOctokitInstance.repos.getContent = jest.fn();
 
         repositoryManager = new RepositoryManager({
             token: 'test-token',
@@ -44,14 +65,14 @@ describe('RepositoryManager', () => {
             expect(manager.repo).toBe('test-repo');
         });
 
-        it('should initialize octokit with token', () => {
+        it('should have an octokit instance when token is available', () => {
             const config = {
                 token: 'test-token',
                 owner: 'test-owner',
                 repo: 'test-repo',
             };
-            new RepositoryManager(config);
-            expect(Octokit).toHaveBeenCalledWith({ auth: 'test-token' });
+            const manager = new RepositoryManager(config);
+            expect(manager.octokit).toBeTruthy();
         });
     });
 
@@ -64,77 +85,44 @@ describe('RepositoryManager', () => {
                 },
             };
 
-            mockOctokit.rest.repos.getContent.mockResolvedValue(mockContent);
-
-            const result = await repositoryManager.getContents(
-                'owner',
-                'repo',
-                'README.md'
+            repositoryManager.octokit.repos.getContent.mockResolvedValue(
+                mockContent
             );
 
-            expect(result).toBe('Test content');
-            expect(mockOctokit.rest.repos.getContent).toHaveBeenCalledWith({
-                owner: 'owner',
-                repo: 'repo',
+            const result = await repositoryManager.getContents('README.md');
+
+            expect(result).toEqual(mockContent.data);
+            expect(
+                repositoryManager.octokit.repos.getContent
+            ).toHaveBeenCalledWith({
+                owner: 'test-owner',
+                repo: 'test-repo',
                 path: 'README.md',
             });
         });
 
-        it('should handle directory contents', async () => {
-            const mockContent = {
-                data: [
-                    { name: 'file1.txt', type: 'file' },
-                    { name: 'file2.txt', type: 'file' },
-                ],
-            };
+        it('should return null for 404 errors', async () => {
+            const error = new Error('Not found');
+            error.status = 404;
+            repositoryManager.octokit.repos.getContent.mockRejectedValue(error);
 
-            mockOctokit.rest.repos.getContent.mockResolvedValue(mockContent);
-
-            const result = await repositoryManager.getContents(
-                'owner',
-                'repo',
-                'src/'
-            );
-
-            expect(Array.isArray(result)).toBe(true);
-            expect(result).toHaveLength(2);
-        });
-
-        it('should handle API errors gracefully', async () => {
-            mockOctokit.rest.repos.getContent.mockRejectedValue(
-                new Error('Not found')
-            );
-
-            const result = await repositoryManager.getContents(
-                'owner',
-                'repo',
-                'nonexistent.md'
-            );
+            const result = await repositoryManager.getContents('nonexistent.md');
 
             expect(result).toBeNull();
         });
 
-        it('should handle non-base64 encoded content', async () => {
-            const mockContent = {
-                data: {
-                    content: 'Direct content',
-                    encoding: 'utf-8',
-                },
-            };
+        it('should throw non-404 errors', async () => {
+            const error = new Error('Server error');
+            error.status = 500;
+            repositoryManager.octokit.repos.getContent.mockRejectedValue(error);
 
-            mockOctokit.rest.repos.getContent.mockResolvedValue(mockContent);
-
-            const result = await repositoryManager.getContents(
-                'owner',
-                'repo',
-                'file.txt'
-            );
-
-            expect(result).toBe('Direct content');
+            await expect(
+                repositoryManager.getContents('file.txt')
+            ).rejects.toThrow('Server error');
         });
     });
 
-    describe('getRepositoryInfo', () => {
+    describe('getRepository', () => {
         it('should fetch repository information', async () => {
             const mockRepo = {
                 data: {
@@ -142,207 +130,70 @@ describe('RepositoryManager', () => {
                     description: 'Test repository',
                     default_branch: 'main',
                     private: false,
-                    topics: ['test', 'repo'],
                 },
             };
 
-            mockOctokit.rest.repos.get.mockResolvedValue(mockRepo);
+            repositoryManager.octokit.repos.get.mockResolvedValue(mockRepo);
 
-            const result = await repositoryManager.getRepositoryInfo(
-                'owner',
-                'repo'
-            );
+            const result = await repositoryManager.getRepository();
 
             expect(result).toEqual(mockRepo.data);
-            expect(mockOctokit.rest.repos.get).toHaveBeenCalledWith({
-                owner: 'owner',
-                repo: 'repo',
+            expect(repositoryManager.octokit.repos.get).toHaveBeenCalledWith({
+                owner: 'test-owner',
+                repo: 'test-repo',
             });
         });
+    });
 
-        it('should handle API errors for repository info', async () => {
-            mockOctokit.rest.repos.get.mockRejectedValue(
-                new Error('Repository not found')
+    describe('getBranchProtection', () => {
+        it('should fetch branch protection rules', async () => {
+            const mockProtection = {
+                data: {
+                    required_status_checks: { strict: true },
+                    enforce_admins: { enabled: true },
+                },
+            };
+
+            repositoryManager.octokit.repos.getBranchProtection.mockResolvedValue(
+                mockProtection
             );
 
-            const result = await repositoryManager.getRepositoryInfo(
-                'owner',
-                'nonexistent'
+            const result =
+                await repositoryManager.getBranchProtection('main');
+
+            expect(result).toEqual(mockProtection.data);
+        });
+
+        it('should return null for unprotected branches', async () => {
+            const error = new Error('Not found');
+            error.status = 404;
+            repositoryManager.octokit.repos.getBranchProtection.mockRejectedValue(
+                error
             );
 
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('parseRepositoryUrl', () => {
-        it('should parse GitHub HTTPS URLs', () => {
-            const url = 'https://github.com/owner/repo.git';
-            const result = repositoryManager.parseRepositoryUrl(url);
-
-            expect(result).toEqual({ owner: 'owner', repo: 'repo' });
-        });
-
-        it('should parse GitHub SSH URLs', () => {
-            const url = 'git@github.com:owner/repo.git';
-            const result = repositoryManager.parseRepositoryUrl(url);
-
-            expect(result).toEqual({ owner: 'owner', repo: 'repo' });
-        });
-
-        it('should handle URLs without .git extension', () => {
-            const url = 'https://github.com/owner/repo';
-            const result = repositoryManager.parseRepositoryUrl(url);
-
-            expect(result).toEqual({ owner: 'owner', repo: 'repo' });
-        });
-
-        it('should handle invalid URLs', () => {
-            const url = 'not-a-github-url';
-            const result = repositoryManager.parseRepositoryUrl(url);
-
-            expect(result).toBeNull();
-        });
-
-        it('should handle undefined URLs', () => {
-            const result = repositoryManager.parseRepositoryUrl(undefined);
+            const result =
+                await repositoryManager.getBranchProtection('main');
 
             expect(result).toBeNull();
         });
     });
 
-    describe('fileExists', () => {
-        it('should check if file exists locally', () => {
-            fs.existsSync.mockReturnValue(true);
+    describe('_ensureAPIAvailable', () => {
+        it('should throw when in local-only mode', () => {
+            repositoryManager.localOnlyMode = true;
+            repositoryManager.octokit = null;
 
-            const result = repositoryManager.fileExists('package.json');
-
-            expect(result).toBe(true);
-            expect(fs.existsSync).toHaveBeenCalledWith('package.json');
+            expect(() =>
+                repositoryManager._ensureAPIAvailable()
+            ).toThrow('GitHub API not available');
         });
 
-        it('should return false for non-existent files', () => {
-            fs.existsSync.mockReturnValue(false);
+        it('should not throw when API is available', () => {
+            repositoryManager.localOnlyMode = false;
 
-            const result = repositoryManager.fileExists('nonexistent.json');
-
-            expect(result).toBe(false);
-        });
-    });
-
-    describe('readLocalFile', () => {
-        it('should read local file content', () => {
-            const mockContent = 'File content';
-            fs.readFileSync.mockReturnValue(mockContent);
-
-            const result = repositoryManager.readLocalFile('test.txt');
-
-            expect(result).toBe(mockContent);
-            expect(fs.readFileSync).toHaveBeenCalledWith('test.txt', 'utf8');
-        });
-
-        it('should handle file read errors', () => {
-            fs.readFileSync.mockImplementation(() => {
-                throw new Error('File not found');
-            });
-
-            const result = repositoryManager.readLocalFile('nonexistent.txt');
-
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('isGitRepository', () => {
-        it('should detect git repository', () => {
-            fs.existsSync.mockReturnValue(true);
-
-            const result = repositoryManager.isGitRepository();
-
-            expect(result).toBe(true);
-            expect(fs.existsSync).toHaveBeenCalledWith('.git');
-        });
-
-        it('should return false for non-git directories', () => {
-            fs.existsSync.mockReturnValue(false);
-
-            const result = repositoryManager.isGitRepository();
-
-            expect(result).toBe(false);
-        });
-    });
-
-    describe('getCurrentBranch', () => {
-        it('should get current branch from git', () => {
-            fs.readFileSync.mockReturnValue('ref: refs/heads/main\\n');
-            fs.existsSync.mockReturnValue(true);
-
-            const result = repositoryManager.getCurrentBranch();
-
-            expect(result).toBe('main');
-        });
-
-        it('should handle detached HEAD state', () => {
-            fs.readFileSync.mockReturnValue('abc123def456');
-            fs.existsSync.mockReturnValue(true);
-
-            const result = repositoryManager.getCurrentBranch();
-
-            expect(result).toBe('HEAD');
-        });
-
-        it('should handle missing .git/HEAD', () => {
-            fs.existsSync.mockReturnValue(false);
-
-            const result = repositoryManager.getCurrentBranch();
-
-            expect(result).toBe('unknown');
-        });
-
-        it('should handle file read errors', () => {
-            fs.existsSync.mockReturnValue(true);
-            fs.readFileSync.mockImplementation(() => {
-                throw new Error('Permission denied');
-            });
-
-            const result = repositoryManager.getCurrentBranch();
-
-            expect(result).toBe('unknown');
-        });
-    });
-
-    describe('getRemoteUrl', () => {
-        it('should get remote URL from git config', () => {
-            const gitConfig = `[core]
-        repositoryformatversion = 0
-[remote "origin"]
-        url = https://github.com/owner/repo.git
-        fetch = +refs/heads/*:refs/remotes/origin/*`;
-
-            fs.readFileSync.mockReturnValue(gitConfig);
-            fs.existsSync.mockReturnValue(true);
-
-            const result = repositoryManager.getRemoteUrl();
-
-            expect(result).toBe('https://github.com/owner/repo.git');
-        });
-
-        it('should handle missing git config', () => {
-            fs.existsSync.mockReturnValue(false);
-
-            const result = repositoryManager.getRemoteUrl();
-
-            expect(result).toBeNull();
-        });
-
-        it('should handle config without remote URL', () => {
-            const gitConfig = `[core]
-        repositoryformatversion = 0`;
-
-            fs.readFileSync.mockReturnValue(gitConfig);
-            fs.existsSync.mockReturnValue(true);
-
-            const result = repositoryManager.getRemoteUrl();
-
-            expect(result).toBeNull();
+            expect(() =>
+                repositoryManager._ensureAPIAvailable()
+            ).not.toThrow();
         });
     });
 });

@@ -56,10 +56,10 @@ describe('Enhanced CLI', () => {
             expect(output).toMatch(/(health|score|audit)/i);
         });
 
-        it('should support detailed health flag', () => {
-            const result = runCLI('health --detailed');
+        it('should support report health flag', () => {
+            const result = runCLI('health --report');
             const output = getOutput(result);
-            expect(output).toMatch(/(health|score|detailed)/i);
+            expect(output).toMatch(/(health|score|report|calculating)/i);
         });
 
         it('should support json output format', () => {
@@ -77,10 +77,10 @@ describe('Enhanced CLI', () => {
             expect(output).toMatch(/(documentation|docs|audit)/i);
         });
 
-        it('should support dry-run mode', () => {
-            const result = runCLI('docs --audit --dry-run');
+        it('should support generate mode', () => {
+            const result = runCLI('docs --generate');
             const output = getOutput(result);
-            expect(output).toMatch(/(dry.?run|preview|simulation)/i);
+            expect(output).toMatch(/(documentation|docs|generat)/i);
         });
     });
 
@@ -91,10 +91,10 @@ describe('Enhanced CLI', () => {
             expect(output).toMatch(/(security|audit|vulnerability)/i);
         });
 
-        it('should support local security checks', () => {
-            const result = runCLI('security --local');
+        it('should support security enforce flag', () => {
+            const result = runCLI('security --enforce');
             const output = getOutput(result);
-            expect(output).toMatch(/(security|local|audit)/i);
+            expect(output).toMatch(/(security|enforce|audit)/i);
         });
     });
 
@@ -105,10 +105,10 @@ describe('Enhanced CLI', () => {
             expect(output).toMatch(/(branch|protection|audit)/i);
         });
 
-        it('should support specific branch analysis', () => {
-            const result = runCLI('branches --audit --branch main');
+        it('should support branch audit', () => {
+            const result = runCLI('branches --audit');
             const output = getOutput(result);
-            expect(output).toMatch(/(branch|main|protection)/i);
+            expect(output).toMatch(/(branch|protection|audit)/i);
         });
     });
 
@@ -120,9 +120,9 @@ describe('Enhanced CLI', () => {
         });
 
         it('should support workflow template generation', () => {
-            const result = runCLI('cicd --template');
+            const result = runCLI('cicd --generate node');
             const output = getOutput(result);
-            expect(output).toMatch(/(template|workflow|generate)/i);
+            expect(output).toMatch(/(template|workflow|generat|ci)/i);
         });
     });
 

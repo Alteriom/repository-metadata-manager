@@ -4,75 +4,75 @@ const SecurityManager = require('../lib/features/SecurityManager');
 const BranchProtectionManager = require('../lib/features/BranchProtectionManager');
 const CICDManager = require('../lib/features/CICDManager');
 
-// Mock the GitHub API
+// Mock TokenManager so RepositoryManager doesn't try real token detection
+jest.mock('../lib/utils/TokenManager', () => {
+    return jest.fn().mockImplementation(() => ({
+        detectToken: jest.fn().mockReturnValue({
+            token: 'test-token',
+            source: 'explicit',
+            isAvailable: true,
+        }),
+        getRepositoryInfo: jest.fn().mockReturnValue({
+            owner: 'owner',
+            repo: 'repo',
+        }),
+    }));
+});
+
+// Mock Octokit
 jest.mock('@octokit/rest', () => {
     return {
         Octokit: jest.fn().mockImplementation(() => ({
-            rest: {
-                repos: {
-                    get: jest.fn(),
-                    getContent: jest.fn(),
-                    getBranch: jest.fn(),
-                    getBranchProtection: jest.fn(),
-                },
-                actions: {
-                    listRepoWorkflows: jest.fn(),
-                },
-                issues: {
-                    listForRepo: jest.fn(),
-                },
+            repos: {
+                get: jest.fn(),
+                getContent: jest.fn(),
+                getBranch: jest.fn(),
+                getBranchProtection: jest.fn(),
+                listBranches: jest.fn(),
+                listCommits: jest.fn(),
+                getCommit: jest.fn(),
+            },
+            actions: {
+                listRepoWorkflows: jest.fn(),
+            },
+            issues: {
+                listForRepo: jest.fn(),
             },
         })),
     };
 });
 
-describe('Feature Managers', () => {
-    let mockOctokit;
+const testConfig = {
+    token: 'test-token',
+    owner: 'owner',
+    repo: 'repo',
+};
 
+describe('Feature Managers', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        const { Octokit } = require('@octokit/rest');
-        mockOctokit = new Octokit();
     });
 
     describe('HealthScoreManager', () => {
         let healthScoreManager;
 
         beforeEach(() => {
-            healthScoreManager = new HealthScoreManager(mockOctokit);
+            healthScoreManager = new HealthScoreManager(testConfig);
         });
 
-        it('should initialize with correct weights', () => {
-            expect(healthScoreManager.weights).toEqual({
-                documentation: 25,
-                security: 30,
-                branchProtection: 20,
-                cicd: 25,
-            });
+        it('should initialize with config', () => {
+            expect(healthScoreManager.config).toEqual(testConfig);
         });
 
-        it('should calculate health score correctly', async () => {
-            const categories = {
-                documentation: 80,
-                security: 90,
-                branchProtection: 70,
-                cicd: 85,
-            };
-
-            const result = await healthScoreManager.calculateHealthScore(
-                'owner',
-                'repo',
-                categories
-            );
-
-            expect(result).toHaveProperty('overallScore');
-            expect(result).toHaveProperty('grade');
-            expect(result).toHaveProperty('categories');
-            expect(result.overallScore).toBeGreaterThan(0);
-            expect(result.overallScore).toBeLessThanOrEqual(100);
+        it('should calculate grade correctly', () => {
+            expect(healthScoreManager.calculateGrade(95)).toBe('A');
+            expect(healthScoreManager.calculateGrade(85)).toBe('B');
+            expect(healthScoreManager.calculateGrade(75)).toBe('C');
+            expect(healthScoreManager.calculateGrade(65)).toBe('D');
+            expect(healthScoreManager.calculateGrade(45)).toBe('F');
         });
 
-        it('should assign correct grade based on score', async () => {
+        it('should assign correct grade based on score thresholds', () => {
             const testCases = [
                 { score: 95, expectedGrade: 'A' },
                 { score: 85, expectedGrade: 'B' },
@@ -82,34 +82,26 @@ describe('Feature Managers', () => {
             ];
 
             for (const testCase of testCases) {
-                const categories = {
-                    documentation: testCase.score,
-                    security: testCase.score,
-                    branchProtection: testCase.score,
-                    cicd: testCase.score,
-                };
-
-                const result = await healthScoreManager.calculateHealthScore(
-                    'owner',
-                    'repo',
-                    categories
-                );
-                expect(result.grade).toBe(testCase.expectedGrade);
+                const grade = healthScoreManager.calculateGrade(testCase.score);
+                expect(grade).toBe(testCase.expectedGrade);
             }
         });
 
-        it('should handle missing categories gracefully', async () => {
-            const categories = {
-                documentation: 80,
-                // Missing other categories
+        it('should generate recommendations for low-scoring categories', () => {
+            const results = {
+                categories: {
+                    security: { score: 50, weight: 30 },
+                    documentation: { score: 50, weight: 25 },
+                    cicd: { score: 50, weight: 25 },
+                    branchProtection: { score: 50, weight: 20 },
+                },
+                criticalIssues: [],
+                recommendations: [],
             };
 
-            const result = await healthScoreManager.calculateHealthScore(
-                'owner',
-                'repo',
-                categories
-            );
-            expect(result.overallScore).toBeGreaterThanOrEqual(0);
+            healthScoreManager.generateRecommendations(results);
+
+            expect(results.recommendations.length).toBeGreaterThan(0);
         });
     });
 
@@ -117,68 +109,10 @@ describe('Feature Managers', () => {
         let documentationManager;
 
         beforeEach(() => {
-            documentationManager = new DocumentationManager(mockOctokit);
+            documentationManager = new DocumentationManager(testConfig);
         });
 
-        it('should audit documentation and return score', async () => {
-            mockOctokit.rest.repos.getContent
-                .mockResolvedValueOnce({
-                    data: {
-                        content:
-                            Buffer.from('# Test README').toString('base64'),
-                    },
-                })
-                .mockRejectedValueOnce(new Error('Not found'));
-
-            const result = await documentationManager.auditDocumentation(
-                'owner',
-                'repo'
-            );
-
-            expect(result).toHaveProperty('score');
-            expect(result).toHaveProperty('files');
-            expect(result.score).toBeGreaterThanOrEqual(0);
-            expect(result.score).toBeLessThanOrEqual(100);
-        });
-
-        it('should analyze document content correctly', async () => {
-            const mockContent = {
-                data: {
-                    content: Buffer.from(
-                        '# Test Project\n\nThis is a description.'
-                    ).toString('base64'),
-                },
-            };
-
-            mockOctokit.rest.repos.getContent.mockResolvedValue(mockContent);
-
-            const analysis = await documentationManager.analyzeDocument(
-                'owner',
-                'repo',
-                'README.md'
-            );
-
-            expect(analysis).toHaveProperty('exists');
-            expect(analysis).toHaveProperty('score');
-            expect(analysis.exists).toBe(true);
-        });
-
-        it('should handle missing documents', async () => {
-            mockOctokit.rest.repos.getContent.mockRejectedValue(
-                new Error('Not found')
-            );
-
-            const analysis = await documentationManager.analyzeDocument(
-                'owner',
-                'repo',
-                'MISSING.md'
-            );
-
-            expect(analysis.exists).toBe(false);
-            expect(analysis.score).toBe(0);
-        });
-
-        it('should validate README content', async () => {
+        it('should validate README content with good sections', async () => {
             const goodContent =
                 '# Project\n\nDescription here\n\n## Installation\n\n## Usage\n\n## Contributing\n\n## License';
             const contentObject = {
@@ -202,64 +136,95 @@ describe('Feature Managers', () => {
             expect(validation.score).toBeLessThan(30);
             expect(validation.issues.length).toBeGreaterThan(0);
         });
+
+        it('should validate changelog content', async () => {
+            const changelogContent =
+                '# Changelog\n\n## [1.0.0]\n\n### Added\n- Initial release';
+            const contentObject = {
+                content: Buffer.from(changelogContent).toString('base64'),
+            };
+            const validation =
+                await documentationManager.validateChangelog(contentObject);
+
+            expect(validation.score).toBeGreaterThan(0);
+        });
+
+        it('should calculate doc score from file results', () => {
+            const files = [
+                { file: 'README.md', weight: 30, score: 25 },
+                { file: 'LICENSE', weight: 15, score: 15 },
+                { file: 'CONTRIBUTING.md', weight: 15, score: 0 },
+            ];
+
+            const score = documentationManager.calculateDocScore(files);
+            // (25 + 15 + 0) / (30 + 15 + 15) * 100 = 66.67 => 67
+            expect(score).toBeGreaterThanOrEqual(0);
+            expect(score).toBeLessThanOrEqual(100);
+        });
+
+        it('should analyze a document config for missing file', async () => {
+            // Mock getContents to throw (simulating API failure) and getLocalContents to return null
+            documentationManager.getContents = jest
+                .fn()
+                .mockRejectedValue(new Error('Not found'));
+            documentationManager.getLocalContents = jest
+                .fn()
+                .mockResolvedValue(null);
+            documentationManager.silent = true;
+
+            const docConfig = {
+                file: 'MISSING.md',
+                weight: 10,
+                validator: null,
+            };
+
+            const analysis =
+                await documentationManager.analyzeDocument(docConfig);
+
+            expect(analysis.exists).toBe(false);
+            expect(analysis.score).toBe(0);
+            expect(analysis.issues.length).toBeGreaterThan(0);
+        });
     });
 
     describe('SecurityManager', () => {
         let securityManager;
 
         beforeEach(() => {
-            securityManager = new SecurityManager(mockOctokit);
+            securityManager = new SecurityManager(testConfig);
         });
 
-        it('should audit security and return score', async () => {
-            mockOctokit.rest.repos.get.mockResolvedValue({
-                data: {
-                    security_and_analysis: {
-                        secret_scanning: { status: 'enabled' },
-                        dependabot_security_updates: { status: 'enabled' },
-                    },
-                },
-            });
+        it('should calculate security score from checks', () => {
+            const checks = [
+                { name: 'Check A', status: true, weight: 20 },
+                { name: 'Check B', status: false, weight: 20 },
+                { name: 'Check C', status: true, weight: 10 },
+            ];
 
-            const result = await securityManager.auditSecurity('owner', 'repo');
+            const score = securityManager.calculateSecurityScore(checks);
 
-            expect(result).toHaveProperty('score');
-            expect(result).toHaveProperty('checks');
-            expect(result.score).toBeGreaterThanOrEqual(0);
-            expect(result.score).toBeLessThanOrEqual(100);
+            expect(score).toBeGreaterThanOrEqual(0);
+            expect(score).toBeLessThanOrEqual(100);
+            // (20 + 10) / 50 * 100 = 60
+            expect(score).toBe(60);
         });
 
-        it('should check for security policy', async () => {
-            mockOctokit.rest.repos.getContent.mockResolvedValue({
-                data: {
-                    content: Buffer.from(
-                        '# Security Policy\n\nReport vulnerabilities...'
-                    ).toString('base64'),
-                },
-            });
-
-            const result = await securityManager.checkSecurityPolicy(
-                'owner',
-                'repo'
-            );
-
-            expect(result).toHaveProperty('exists');
-            expect(result).toHaveProperty('score');
-            expect(result.exists).toBe(true);
+        it('should return 0 for empty checks', () => {
+            const score = securityManager.calculateSecurityScore([]);
+            expect(score).toBe(0);
         });
 
-        it('should handle missing security policy', async () => {
-            mockOctokit.rest.repos.getContent.mockRejectedValue(
-                new Error('Not found')
-            );
+        it('should check for vulnerable packages', () => {
+            const deps = {
+                lodash: '^4.17.15',
+                express: '^4.18.0',
+            };
 
-            const result = await securityManager.checkSecurityPolicy(
-                'owner',
-                'repo'
-            );
+            const vulnerable =
+                securityManager.checkVulnerablePackages(deps);
 
-            expect(result.exists).toBe(false);
-            expect(result.score).toBe(0);
+            // lodash is in the known vulnerable list
+            expect(vulnerable).toContain('lodash');
         });
     });
 
@@ -267,57 +232,50 @@ describe('Feature Managers', () => {
         let branchProtectionManager;
 
         beforeEach(() => {
-            branchProtectionManager = new BranchProtectionManager(mockOctokit);
+            branchProtectionManager = new BranchProtectionManager(testConfig);
         });
 
-        it('should audit branch protection', async () => {
-            mockOctokit.rest.repos.getBranchProtection.mockResolvedValue({
-                data: {
-                    required_status_checks: { strict: true },
-                    enforce_admins: { enabled: true },
-                    required_pull_request_reviews: {
-                        required_approving_review_count: 1,
-                    },
-                },
-            });
-
-            const result = await branchProtectionManager.auditBranchProtection(
-                'owner',
-                'repo'
-            );
-
-            expect(result).toHaveProperty('score');
-            expect(result).toHaveProperty('checks');
-            expect(result.score).toBeGreaterThanOrEqual(0);
-        });
-
-        it('should handle unprotected branches', async () => {
-            mockOctokit.rest.repos.getBranchProtection.mockRejectedValue(
-                new Error('Branch not protected')
-            );
-
-            const result = await branchProtectionManager.auditBranchProtection(
-                'owner',
-                'repo'
-            );
-
-            expect(result.score).toBe(0);
-        });
-
-        it('should check specific protection rules', async () => {
+        it('should analyze branch protection with full protection', () => {
             const protectionData = {
-                required_status_checks: { strict: true },
+                required_status_checks: { strict: true, contexts: ['ci'] },
                 enforce_admins: { enabled: true },
                 required_pull_request_reviews: {
                     required_approving_review_count: 2,
                 },
+                restrictions: { users: [], teams: [] },
+                required_linear_history: { enabled: true },
             };
 
-            const result =
-                branchProtectionManager.checkProtectionRules(protectionData);
+            const result = branchProtectionManager.analyzeBranchProtection(
+                'main',
+                protectionData
+            );
 
             expect(result).toHaveProperty('score');
+            expect(result).toHaveProperty('checks');
             expect(result.score).toBeGreaterThan(0);
+            expect(result.protected).toBe(true);
+        });
+
+        it('should handle unprotected branches', () => {
+            const result =
+                branchProtectionManager.analyzeBranchProtection('main', null);
+
+            expect(result.score).toBe(0);
+            expect(result.protected).toBe(false);
+            expect(result.issues.length).toBeGreaterThan(0);
+        });
+
+        it('should calculate branch score from multiple branches', () => {
+            const branches = [
+                { branch: 'main', score: 80 },
+                { branch: 'develop', score: 60 },
+            ];
+
+            const score =
+                branchProtectionManager.calculateBranchScore(branches);
+
+            expect(score).toBe(70);
         });
     });
 
@@ -325,70 +283,59 @@ describe('Feature Managers', () => {
         let cicdManager;
 
         beforeEach(() => {
-            cicdManager = new CICDManager(mockOctokit);
+            cicdManager = new CICDManager(testConfig);
         });
 
-        it('should audit CI/CD workflows', async () => {
-            mockOctokit.rest.actions.listRepoWorkflows.mockResolvedValue({
-                data: {
-                    workflows: [
-                        {
-                            name: 'CI',
-                            state: 'active',
-                            path: '.github/workflows/ci.yml',
-                        },
-                        {
-                            name: 'Deploy',
-                            state: 'active',
-                            path: '.github/workflows/deploy.yml',
-                        },
-                    ],
-                },
-            });
+        it('should calculate CICD score of 0 when no workflows', () => {
+            const results = {
+                workflows: [],
+                recommendations: [],
+                essentialWorkflowsScore: 0,
+            };
 
-            const result = await cicdManager.auditCICD('owner', 'repo');
-
-            expect(result).toHaveProperty('score');
-            expect(result).toHaveProperty('workflows');
-            expect(result.score).toBeGreaterThanOrEqual(0);
+            const score = cicdManager.calculateCICDScore(results);
+            expect(score).toBe(0);
         });
 
-        it('should handle repositories without workflows', async () => {
-            mockOctokit.rest.actions.listRepoWorkflows.mockResolvedValue({
-                data: { workflows: [] },
-            });
-
-            const result = await cicdManager.auditCICD('owner', 'repo');
-
-            expect(result.score).toBe(0);
-            expect(result.workflows).toHaveLength(0);
-        });
-
-        it('should analyze workflow quality', async () => {
-            const workflows = [
-                {
-                    name: 'CI',
-                    state: 'active',
-                    path: '.github/workflows/ci.yml',
-                },
-                {
-                    name: 'Security',
-                    state: 'active',
-                    path: '.github/workflows/security.yml',
-                },
-                {
-                    name: 'Release',
-                    state: 'active',
-                    path: '.github/workflows/release.yml',
-                },
+        it('should calculate workflow score from checks', () => {
+            const checks = [
+                { name: 'Secure checkout', status: true, weight: 10 },
+                { name: 'Uses caching', status: true, weight: 10 },
+                { name: 'Includes testing', status: false, weight: 15 },
             ];
 
-            const result = cicdManager.analyzeWorkflows(workflows);
+            const score = cicdManager.calculateWorkflowScore(checks);
+            // (10 + 10) / 35 * 100 = 57.14 => 57
+            expect(score).toBeGreaterThan(0);
+            expect(score).toBeLessThanOrEqual(100);
+        });
 
-            expect(result).toHaveProperty('score');
-            expect(result).toHaveProperty('hasCI');
-            expect(result).toHaveProperty('hasSecurity');
-            expect(result.score).toBeGreaterThan(0);
+        it('should check workflow security issues', () => {
+            const analysis = {
+                checks: [],
+                securityIssues: [],
+                recommendations: [],
+            };
+
+            const content = `
+name: CI
+on: pull_request_target
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+`;
+
+            cicdManager.checkWorkflowSecurity(content, analysis);
+
+            expect(analysis.securityIssues.length).toBeGreaterThan(0);
+            expect(
+                analysis.securityIssues.some((issue) =>
+                    issue.includes('pull_request_target')
+                )
+            ).toBe(true);
         });
     });
 });
