@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 // Mock TokenManager before requiring RepositoryManager
 jest.mock('../lib/utils/TokenManager', () => {
     return jest.fn().mockImplementation(() => ({
