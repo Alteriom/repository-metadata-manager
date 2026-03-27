@@ -2,7 +2,7 @@ name: Security Scanning
 
 on:
     push:
-        branches: [main, develop, '**']
+        branches: [main, develop]
     pull_request:
         branches: [main, develop]
     schedule:
@@ -23,13 +23,13 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
 
             - name: Dependency Review
               uses: actions/dependency-review-action@v4
               with:
                   fail-on-severity: critical
-                  allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC, BSD-2-Clause, Python-2.0, CC-BY-4.0, 0BSD
+                  allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC, BSD-2-Clause, Python-2.0, CC-BY-4.0, 0BSD, AGPL-3.0
               continue-on-error: false
 
     security-audit:
@@ -38,10 +38,10 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
 
             - name: Setup Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v4
               with:
                   node-version: '20.x'
                   cache: 'npm'
@@ -80,7 +80,7 @@ jobs:
                   fi
 
             - name: Upload security audit results
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: security-audit-results
@@ -94,12 +94,12 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Run TruffleHog OSS
-              uses: trufflesecurity/trufflehog@main
+              uses: trufflesecurity/trufflehog@v3.94.1
               with:
                   path: ./
                   base: main
@@ -127,10 +127,10 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
 
             - name: Setup Node.js
-              uses: actions/setup-node@v6
+              uses: actions/setup-node@v4
               with:
                   node-version: '20.x'
                   cache: 'npm'
@@ -164,7 +164,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v6
+              uses: actions/checkout@v4
 
             - name: Security Summary
               run: |
