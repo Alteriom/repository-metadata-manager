@@ -1,6 +1,6 @@
 'use strict';
 
-const { formatReport, formatFixResult } = require('../../lib/interfaces/cli');
+const { formatReport, formatFixResult, formatGitHubAnnotations } = require('../../lib/interfaces/cli');
 
 function makeReport(overrides = {}) {
   return {
@@ -77,6 +77,66 @@ describe('CLI formatReport', () => {
   });
 });
 
+describe('CLI formatReport verbose mode', () => {
+  it('shows detailed findings when verbose is true', () => {
+    const output = formatReport(makeReport(), { verbose: true });
+    expect(output).toContain('Detailed Findings');
+    expect(output).toContain('Missing SECURITY.md');
+    expect(output).toContain('[high]');
+  });
+
+  it('does not show detailed findings when verbose is false', () => {
+    const output = formatReport(makeReport(), { verbose: false });
+    expect(output).not.toContain('Detailed Findings');
+  });
+
+  it('shows fix suggestions in verbose mode', () => {
+    const output = formatReport(makeReport(), { verbose: true });
+    expect(output).toContain('Fix:');
+    expect(output).toContain('Create SECURITY.md');
+  });
+});
+
+describe('CLI formatGitHubAnnotations', () => {
+  it('outputs ::error for high severity findings', () => {
+    const output = formatGitHubAnnotations(makeReport());
+    expect(output).toContain('::error');
+    expect(output).toContain('Missing SECURITY.md');
+  });
+
+  it('includes file path in annotation', () => {
+    const report = makeReport({
+      checkers: {
+        security: {
+          checker: 'security', score: 70, grade: 'C',
+          findings: [
+            { id: 'sec-1', severity: 'high', message: 'Secret found', file: 'config.js', line: 5, fixable: false },
+          ],
+          metadata: {}, duration: 15,
+        },
+      },
+    });
+    const output = formatGitHubAnnotations(report);
+    expect(output).toContain('::error file=config.js,line=5::Secret found');
+  });
+
+  it('outputs ::warning for medium/low severity', () => {
+    const report = makeReport({
+      checkers: {
+        docs: {
+          checker: 'docs', score: 80, grade: 'B',
+          findings: [
+            { id: 'doc-1', severity: 'low', message: 'Missing badges', file: 'README.md', line: null, fixable: false },
+          ],
+          metadata: {}, duration: 5,
+        },
+      },
+    });
+    const output = formatGitHubAnnotations(report);
+    expect(output).toContain('::warning file=README.md::Missing badges');
+  });
+});
+
 describe('CLI formatFixResult', () => {
   it('shows applied fixes', () => {
     const fixResults = [
@@ -107,5 +167,27 @@ describe('CLI formatFixResult', () => {
     ];
     const output = formatFixResult(fixResults);
     expect(output).toContain('fix-missing-readme');
+  });
+});
+
+describe('CLI file output (--output flag)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const tmpFile = path.join(__dirname, '..', 'fixtures', '__tmp_output.json');
+
+  afterEach(() => {
+    try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+  });
+
+  it('can write JSON report to file', () => {
+    const { formatReport: formatJson } = require('../../lib/interfaces/json');
+    const report = makeReport();
+    const jsonOutput = formatJson(report);
+
+    fs.writeFileSync(tmpFile, jsonOutput, 'utf8');
+    const written = fs.readFileSync(tmpFile, 'utf8');
+    const parsed = JSON.parse(written);
+    expect(parsed.score).toBe(85);
+    expect(parsed.grade).toBe('B');
   });
 });

@@ -84,6 +84,73 @@ describe('SecurityChecker', () => {
     });
   });
 
+  describe('secret scanning', () => {
+    it('finds AWS key pattern in config.js', async () => {
+      const ctx = buildContext('insecure-project');
+      const result = await checker.check(ctx);
+
+      const secretFinding = result.findings.find(
+        (f) => f.id === 'sec-010' && f.message.includes('AWS Key'),
+      );
+      expect(secretFinding).toBeDefined();
+      expect(secretFinding.severity).toBe('critical');
+      expect(secretFinding.file).toBe('config.js');
+    });
+
+    it('finds connection string pattern in config.js', async () => {
+      const ctx = buildContext('insecure-project');
+      const result = await checker.check(ctx);
+
+      const secretFinding = result.findings.find(
+        (f) => f.id === 'sec-010' && f.message.includes('Connection String'),
+      );
+      expect(secretFinding).toBeDefined();
+      expect(secretFinding.severity).toBe('critical');
+    });
+
+    it('does not find secrets in healthy-project', async () => {
+      const ctx = buildContext('healthy-project');
+      const result = await checker.check(ctx);
+
+      const secretFindings = result.findings.filter((f) => f.id === 'sec-010');
+      expect(secretFindings).toHaveLength(0);
+    });
+  });
+
+  describe('npm audit integration', () => {
+    it('reports critical CVEs from cached audit', async () => {
+      const cache = new Cache();
+      cache.set('npm-audit', {
+        vulnerabilities: {
+          'bad-pkg': { severity: 'critical' },
+          'worse-pkg': { severity: 'high' },
+        },
+      });
+      const ctx = buildContext('healthy-project', { cache });
+      const result = await checker.check(ctx);
+
+      const critFinding = result.findings.find((f) => f.id === 'sec-011');
+      expect(critFinding).toBeDefined();
+      expect(critFinding.severity).toBe('critical');
+
+      const highFinding = result.findings.find((f) => f.id === 'sec-012');
+      expect(highFinding).toBeDefined();
+      expect(highFinding.severity).toBe('high');
+    });
+
+    it('handles null audit result gracefully', async () => {
+      const cache = new Cache();
+      cache.set('npm-audit', null);
+      const ctx = buildContext('healthy-project', { cache });
+      const result = await checker.check(ctx);
+
+      const auditFindings = result.findings.filter(
+        (f) => f.id === 'sec-011' || f.id === 'sec-012',
+      );
+      expect(auditFindings).toHaveLength(0);
+    });
+  });
+
   describe('fix()', () => {
     it('creates .gitignore when missing', async () => {
       const fs = require('fs');

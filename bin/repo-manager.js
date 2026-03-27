@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('fs');
 const { Command } = require('commander');
 const Engine = require('../lib/engine/Engine');
-const { formatReport, formatFixResult } = require('../lib/interfaces/cli');
+const { formatReport, formatFixResult, formatGitHubAnnotations } = require('../lib/interfaces/cli');
 const { formatReport: formatJson } = require('../lib/interfaces/json');
 const pkg = require('../package.json');
 
@@ -18,17 +19,29 @@ program
   .command('check')
   .description('Run health checks on the current repository')
   .option('-o, --only <checkers>', 'Run only specific checkers (comma-separated)', val => val.split(','))
-  .option('-f, --format <format>', 'Output format: cli, json', 'cli')
+  .option('-f, --format <format>', 'Output format: cli, json, github', 'cli')
+  .option('-v, --verbose', 'Show detailed findings', false)
+  .option('--output <file>', 'Write output to file')
   .option('--project <path>', 'Project root path', process.cwd())
   .action(async (options) => {
     try {
       const engine = new Engine({ projectRoot: options.project });
       const report = await engine.run(options.only);
 
+      let output;
       if (options.format === 'json') {
-        console.log(formatJson(report));
+        output = formatJson(report);
+      } else if (options.format === 'github') {
+        output = formatGitHubAnnotations(report);
       } else {
-        console.log(formatReport(report));
+        output = formatReport(report, { verbose: options.verbose });
+      }
+
+      if (options.output) {
+        fs.writeFileSync(options.output, output, 'utf8');
+        console.log(`Report written to ${options.output}`);
+      } else {
+        console.log(output);
       }
 
       // Exit with error code if below fail threshold
