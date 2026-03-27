@@ -56,10 +56,10 @@ jobs:
                   echo "Generating audit report..."
                   npm audit --json > security-audit.json || true
 
-            - name: Run local security audit
+            - name: Run security check
               run: |
-                  echo "Running enhanced security audit..."
-                  node scripts/security-audit-local.js
+                  echo "Running security check..."
+                  node bin/repo-manager.js check --only security --format json || true
 
             - name: Check for security policy
               run: |
