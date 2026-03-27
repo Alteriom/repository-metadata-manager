@@ -48,44 +48,11 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Detect environment
-              run: |
-                  echo "🔍 Environment Detection"
-                  node bin/enhanced-cli.js ai-agent --detect
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  AI_AGENT: 'true'
-
-            - name: Run AI agent compliance check
+            - name: Run compliance check
               id: compliance
               run: |
-                  echo "🤖 Running AI Agent Compliance Check"
-                  
-                  # Determine flags based on inputs or defaults
-                  AUTO_FIX="${{ github.event.inputs.auto_fix || 'false' }}"
-                  LOCAL_ONLY="${{ github.event.inputs.local_only || 'false' }}"
-                  
-                  FLAGS=""
-                  if [[ "$AUTO_FIX" == "true" ]]; then
-                    FLAGS="$FLAGS --auto-fix"
-                  fi
-                  
-                  if [[ "$LOCAL_ONLY" == "true" ]]; then
-                    FLAGS="$FLAGS --local-only"
-                  fi
-                  
-                  # For PR events, use dry-run by default unless auto-fix is explicitly enabled
-                  if [[ "${{ github.event_name }}" == "pull_request" && "$AUTO_FIX" != "true" ]]; then
-                    FLAGS="$FLAGS --dry-run"
-                  fi
-                  
-                  echo "Running with flags: $FLAGS"
-                  node bin/enhanced-cli.js ai-agent $FLAGS | tee compliance-report.txt
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  AI_AGENT: 'true'
-                  GITHUB_REPOSITORY: ${{ github.repository }}
-                  GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+                  echo "Running v2.0 compliance check..."
+                  node bin/repo-manager.js check --format json | tee compliance-report.txt
               continue-on-error: true
 
             - name: Check for changes
@@ -182,15 +149,13 @@ jobs:
 
             - name: Health score check
               run: |
-                  echo "📊 Calculating repository health score..."
-                  node bin/enhanced-cli.js health --report || echo "Health check completed with warnings"
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  echo "Calculating repository health score..."
+                  node bin/repo-manager.js check || echo "Health check completed with warnings"
               continue-on-error: true
 
             - name: Upload compliance report
               if: always()
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v4
               with:
                   name: compliance-report
                   path: |
