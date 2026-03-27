@@ -35,12 +35,13 @@ const SERVER_VERSION = '1.0.0';
  */
 async function executeTool(toolName, args) {
   // Import feature managers dynamically
-  const { default: HealthScoreManager } = await import(join(parentLibPath, 'features', 'HealthScoreManager.js'));
-  const { default: DocumentationManager } = await import(join(parentLibPath, 'features', 'DocumentationManager.js'));
-  const { default: SecurityManager } = await import(join(parentLibPath, 'features', 'SecurityManager.js'));
-  const { default: CICDManager } = await import(join(parentLibPath, 'features', 'CICDManager.js'));
-  const { default: BranchProtectionManager } = await import(join(parentLibPath, 'features', 'BranchProtectionManager.js'));
-  const { default: AutomationManager } = await import(join(parentLibPath, 'features', 'AutomationManager.js'));
+  // CJS modules expose module.exports as .default when dynamically imported from ESM
+  const HealthScoreManager = (await import(join(parentLibPath, 'features', 'HealthScoreManager.js'))).default;
+  const DocumentationManager = (await import(join(parentLibPath, 'features', 'DocumentationManager.js'))).default;
+  const SecurityManager = (await import(join(parentLibPath, 'features', 'SecurityManager.js'))).default;
+  const CICDManager = (await import(join(parentLibPath, 'features', 'CICDManager.js'))).default;
+  const BranchProtectionManager = (await import(join(parentLibPath, 'features', 'BranchProtectionManager.js'))).default;
+  const AutomationManager = (await import(join(parentLibPath, 'features', 'AutomationManager.js'))).default;
   
   const config = {
     owner: process.env.GITHUB_REPOSITORY_OWNER || args.owner,
