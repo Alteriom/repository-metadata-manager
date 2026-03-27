@@ -4,14 +4,14 @@
 
 | Version  | Supported          |
 | -------- | ------------------ |
-| Latest   | :white_check_mark: |
-| < Latest | :x:                |
+| 1.2.x   | :white_check_mark: |
+| < 1.2.x | :x:                |
 
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability, please report it to:
 
-- **Email**: <security@alteriom.net>
+- **Email**: <security@alteriom.com>
 - **GitHub**: Use private vulnerability reporting (if enabled)
 
 ### What to include
@@ -59,5 +59,5 @@ This repository implements several security measures:
 For security-related questions or concerns:
 
 - Create a private security advisory
-- Email: <security@alteriom.net>
+- Email: <security@alteriom.com>
 - Security team response time: 24-48 hours

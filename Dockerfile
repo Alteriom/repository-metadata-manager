@@ -37,5 +37,5 @@ LABEL \
   org.opencontainers.image.title="Repository Metadata Manager" \
   org.opencontainers.image.description="Complete repository compliance and health management suite" \
   org.opencontainers.image.vendor="Alteriom Organization" \
-  org.opencontainers.image.version="2.0.0" \
+  org.opencontainers.image.version="1.2.6" \
   org.opencontainers.image.licenses="MIT"

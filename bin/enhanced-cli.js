@@ -23,6 +23,8 @@ const AutoFixManager = require('../lib/features/AutoFixManager');
 const TokenManager = require('../lib/utils/TokenManager');
 const EnvironmentDetector = require('../lib/utils/EnvironmentDetector');
 
+const pkg = require('../package.json');
+
 const program = new Command();
 
 // ASCII Art Banner
@@ -34,7 +36,7 @@ console.log(chalk.gray('🚀 Complete Repository Management Suite\n'));
 program
     .name('repository-manager')
     .description('Complete repository compliance and health management tool')
-    .version('2.0.0');
+    .version(pkg.version);
 
 // Health Score Commands
 program
