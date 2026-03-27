@@ -45,22 +45,22 @@ program
     .option('--report', 'Generate detailed health report')
     .option('--json', 'Output as JSON')
     .action(async (options) => {
-        const config = await loadConfig();
-        const healthManager = new HealthScoreManager(config);
+        try {
+            const config = await loadConfig();
+            const healthManager = new HealthScoreManager(config);
 
-        console.log(chalk.blue('🔍 Calculating repository health score...\n'));
+            console.log(chalk.blue('🔍 Calculating repository health score...\n'));
 
-        if (options.report) {
-            const { health, report } =
-                await healthManager.generateHealthReport();
+            const health = await healthManager.calculateHealthScore();
             if (options.json) {
                 console.log(JSON.stringify(health, null, 2));
             } else {
-                console.log(report);
+                displayHealthSummary(health);
             }
-        } else {
-            const health = await healthManager.calculateHealthScore();
-            displayHealthSummary(health);
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -72,22 +72,28 @@ program
     .option('--enforce', 'Apply security standards')
     .option('--fix', 'Auto-fix security issues')
     .action(async (options) => {
-        const config = await loadConfig();
-        const securityManager = new SecurityManager(config);
+        try {
+            const config = await loadConfig();
+            const securityManager = new SecurityManager(config);
 
-        if (options.audit || (!options.enforce && !options.fix)) {
-            console.log(chalk.blue('🔐 Running security audit...\n'));
-            const results = await securityManager.securityAudit();
-            displaySecurityResults(results);
-        }
+            if (options.audit || (!options.enforce && !options.fix)) {
+                console.log(chalk.blue('🔐 Running security audit...\n'));
+                const results = await securityManager.securityAudit();
+                displaySecurityResults(results);
+            }
 
-        if (options.enforce || options.fix) {
-            console.log(chalk.blue('🛡️ Enforcing security standards...\n'));
-            const results = await securityManager.enforceSecurityStandards();
-            console.log(
-                chalk.green(`✅ Applied ${results.fixes.length} security fixes`)
-            );
-            results.fixes.forEach((fix) => console.log(`  - ${fix}`));
+            if (options.enforce || options.fix) {
+                console.log(chalk.blue('🛡️ Enforcing security standards...\n'));
+                const results = await securityManager.enforceSecurityStandards();
+                console.log(
+                    chalk.green(`✅ Applied ${results.fixes.length} security fixes`)
+                );
+                results.fixes.forEach((fix) => console.log(`  - ${fix}`));
+            }
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -100,25 +106,31 @@ program
     .option('--reviewers <number>', 'Required reviewers', '1')
     .option('--status-checks <checks...>', 'Required status checks')
     .action(async (options) => {
-        const config = await loadConfig();
-        const branchManager = new BranchProtectionManager(config);
+        try {
+            const config = await loadConfig();
+            const branchManager = new BranchProtectionManager(config);
 
-        if (options.audit || !options.enforce) {
-            console.log(chalk.blue('🌿 Auditing branch protection...\n'));
-            const results = await branchManager.auditBranchProtection();
-            displayBranchResults(results);
-        }
+            if (options.audit || !options.enforce) {
+                console.log(chalk.blue('🌿 Auditing branch protection...\n'));
+                const results = await branchManager.auditBranchProtection();
+                displayBranchResults(results);
+            }
 
-        if (options.enforce) {
-            const settings = {
-                requiredReviewers: parseInt(options.reviewers),
-                statusChecks: options.statusChecks || ['ci/tests'],
-            };
+            if (options.enforce) {
+                const settings = {
+                    requiredReviewers: parseInt(options.reviewers),
+                    statusChecks: options.statusChecks || ['ci/tests'],
+                };
 
-            console.log(chalk.blue('🔒 Enforcing branch protection...\n'));
-            const results =
-                await branchManager.enforceBranchProtection(settings);
-            displayEnforcementResults(results);
+                console.log(chalk.blue('🔒 Enforcing branch protection...\n'));
+                const results =
+                    await branchManager.enforceBranchProtection(settings);
+                displayEnforcementResults(results);
+            }
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -130,24 +142,30 @@ program
     .option('--generate', 'Generate missing documentation')
     .option('--templates', 'Create documentation templates')
     .action(async (options) => {
-        const config = await loadConfig();
-        const docsManager = new DocumentationManager(config);
+        try {
+            const config = await loadConfig();
+            const docsManager = new DocumentationManager(config);
 
-        if (options.audit || (!options.generate && !options.templates)) {
-            console.log(chalk.blue('📚 Auditing documentation...\n'));
-            const results = await docsManager.auditDocumentation();
-            displayDocumentationResults(results);
-        }
+            if (options.audit || (!options.generate && !options.templates)) {
+                console.log(chalk.blue('📚 Auditing documentation...\n'));
+                const results = await docsManager.auditDocumentation();
+                displayDocumentationResults(results);
+            }
 
-        if (options.generate) {
-            console.log(chalk.blue('📝 Generating missing documentation...\n'));
-            const results = await docsManager.generateMissingDocs();
-            console.log(
-                chalk.green(
-                    `✅ Generated ${results.generated.length} documentation files`
-                )
-            );
-            results.generated.forEach((file) => console.log(`   - ${file}`));
+            if (options.generate) {
+                console.log(chalk.blue('📝 Generating missing documentation...\n'));
+                const results = await docsManager.generateMissingDocs();
+                console.log(
+                    chalk.green(
+                        `✅ Generated ${results.generated.length} documentation files`
+                    )
+                );
+                results.generated.forEach((file) => console.log(`   - ${file}`));
+            }
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -161,28 +179,34 @@ program
         'Generate workflow templates (node|security|release|all)'
     )
     .action(async (options) => {
-        const config = await loadConfig();
-        const cicdManager = new CICDManager(config);
+        try {
+            const config = await loadConfig();
+            const cicdManager = new CICDManager(config);
 
-        if (options.audit || !options.generate) {
-            console.log(chalk.blue('⚙️ Auditing CI/CD workflows...\n'));
-            const results = await cicdManager.auditWorkflows();
-            displayCICDResults(results);
-        }
+            if (options.audit || !options.generate) {
+                console.log(chalk.blue('⚙️ Auditing CI/CD workflows...\n'));
+                const results = await cicdManager.auditWorkflows();
+                displayCICDResults(results);
+            }
 
-        if (options.generate) {
-            console.log(
-                chalk.blue(
-                    `🔧 Generating ${options.generate} workflow templates...\n`
-                )
-            );
-            const generated = await cicdManager.generateWorkflowTemplates(
-                options.generate
-            );
-            console.log(
-                chalk.green(`✅ Generated ${generated.length} workflow files`)
-            );
-            generated.forEach((file) => console.log(`   - ${file}`));
+            if (options.generate) {
+                console.log(
+                    chalk.blue(
+                        `🔧 Generating ${options.generate} workflow templates...\n`
+                    )
+                );
+                const generated = await cicdManager.generateWorkflowTemplates(
+                    options.generate
+                );
+                console.log(
+                    chalk.green(`✅ Generated ${generated.length} workflow files`)
+                );
+                generated.forEach((file) => console.log(`   - ${file}`));
+            }
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -202,21 +226,27 @@ program
     .option('--fix', 'Auto-fix issues where possible')
     .option('--report', 'Generate compliance report')
     .action(async (options) => {
-        const config = await loadConfig();
-        console.log(chalk.blue('🎯 Running full compliance check...\n'));
+        try {
+            const config = await loadConfig();
+            console.log(chalk.blue('🎯 Running full compliance check...\n'));
 
-        const healthManager = new HealthScoreManager(config);
-        const { health, report } = await healthManager.generateHealthReport();
+            const healthManager = new HealthScoreManager(config);
+            const health = await healthManager.calculateHealthScore();
 
-        if (options.report) {
-            console.log(report);
-        } else {
-            displayHealthSummary(health);
-        }
+            if (options.json) {
+                console.log(JSON.stringify(health, null, 2));
+            } else {
+                displayHealthSummary(health);
+            }
 
-        if (options.fix) {
-            console.log(chalk.blue('\n🔧 Applying automatic fixes...\n'));
-            await applyAutomaticFixes(config);
+            if (options.fix) {
+                console.log(chalk.blue('\n🔧 Applying automatic fixes...\n'));
+                await applyAutomaticFixes(config);
+            }
+        } catch (error) {
+            console.error(chalk.red(`Error: ${error.message}`));
+            if (options.verbose) console.error(error.stack);
+            process.exit(1);
         }
     });
 
@@ -292,7 +322,7 @@ program
                     console.log(chalk.blue('\n🔍 Running API-based compliance checks...\n'));
                     const config = await loadConfig();
                     const healthManager = new HealthScoreManager(config);
-                    const { health } = await healthManager.generateHealthReport();
+                    const health = await healthManager.calculateHealthScore();
                     displayHealthSummary(health);
                 } else {
                     console.log(chalk.yellow('\n⚠️  No GitHub token available for API-based checks'));
@@ -398,7 +428,7 @@ program
 // IoT-Specific Commands
 program
     .command('iot')
-    .description('IoT-specific repository management for Alteriom projects')
+    .description('IoT-specific repository management')
     .option('--audit', 'Run IoT-specific compliance checks')
     .option(
         '--template <type>',
@@ -427,7 +457,7 @@ program
 program
     .command('dashboard')
     .description('Generate interactive HTML dashboard for organization health')
-    .option('--output <file>', 'Output file name', 'alteriom-dashboard.html')
+    .option('--output <file>', 'Output file name', 'org-dashboard.html')
     .option('--open', 'Open dashboard in browser after generation')
     .action(async (options) => {
         const config = await loadConfig();
@@ -523,7 +553,7 @@ program
     .option(
         '--contact <email>',
         'Security contact email',
-        'security@alteriom.com'
+        'security@example.com'
     )
     .action(async (options) => {
         const config = await loadConfig();
@@ -573,9 +603,9 @@ program
                         {
                             contactEmail: options.contact,
                             organizationName:
-                                config.organizationName || 'Alteriom',
+                                config.organizationName || 'Organization',
                             organizationTag:
-                                config.organizationTag || 'alteriom',
+                                config.organizationTag || 'org',
                         }
                     );
 
@@ -663,7 +693,7 @@ program
                 options.name,
                 {
                     outputPath: options.output,
-                    organizationTag: config.organizationTag || 'alteriom',
+                    organizationTag: config.organizationTag || 'org',
                 }
             );
 
@@ -952,12 +982,15 @@ function displayHealthSummary(health) {
         console.log(`  ${icon} ${category}: ${color(data.score + '%')}`);
     }
 
-    if (health.recommendations.length > 0) {
+    if (health.recommendations && health.recommendations.length > 0) {
         console.log('\n🎯 Top Recommendations:');
         health.recommendations.slice(0, 3).forEach((rec, i) => {
-            const priority =
-                rec.priority === 'HIGH' ? chalk.red('🔴') : chalk.yellow('🟡');
-            console.log(`  ${i + 1}. ${priority} ${rec.message}`);
+            // Handle both string recommendations and object recommendations
+            const message = typeof rec === 'string' ? rec : rec.message;
+            const priority = typeof rec === 'object' && rec.priority === 'HIGH'
+                ? chalk.red('🔴')
+                : chalk.yellow('🟡');
+            console.log(`  ${i + 1}. ${priority} ${message}`);
         });
     }
 }
@@ -1361,7 +1394,7 @@ async function runTemplateWizard(config) {
             answers.projectName,
             {
                 outputPath: answers.outputPath,
-                organizationTag: config.organizationTag || 'alteriom',
+                organizationTag: config.organizationTag || 'org',
             }
         );
 
@@ -1459,7 +1492,7 @@ async function runSecurityPolicyWizard(config) {
                 type: 'input',
                 name: 'contactEmail',
                 message: 'Security contact email:',
-                default: 'security@alteriom.com',
+                default: config.organizationTag ? `security@${config.organizationTag}.com` : 'security@example.com',
                 validate: (input) => {
                     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
                         return 'Please enter a valid email address';
@@ -1474,8 +1507,8 @@ async function runSecurityPolicyWizard(config) {
                 generateAnswers.policyType,
                 {
                     contactEmail: generateAnswers.contactEmail,
-                    organizationName: config.organizationName || 'Alteriom',
-                    organizationTag: config.organizationTag || 'alteriom',
+                    organizationName: config.organizationName || 'Organization',
+                    organizationTag: config.organizationTag || 'org',
                 }
             );
 
