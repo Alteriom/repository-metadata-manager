@@ -86,7 +86,7 @@ async function executeTool(toolName, args) {
 
     case 'audit_security': {
       const manager = new SecurityManager(config);
-      const results = await manager.auditSecurity();
+      const results = await manager.securityAudit();
       return {
         content: [{
           type: 'text',
@@ -119,11 +119,11 @@ async function executeTool(toolName, args) {
 
     case 'generate_health_report': {
       const manager = new HealthScoreManager(config);
-      const { report } = await manager.generateHealthReport();
+      const health = await manager.calculateHealthScore();
       return {
         content: [{
           type: 'text',
-          text: report
+          text: JSON.stringify(health, null, 2)
         }]
       };
     }

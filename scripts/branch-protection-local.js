@@ -430,11 +430,12 @@ class LocalBranchProtectionAuditor {
             (sum, check) => sum + check.weight,
             0
         );
+        // Cap each check's score at its weight to prevent exceeding 100
         const earnedScore = checks.reduce(
-            (sum, check) => sum + (check.score / check.weight) * check.weight,
+            (sum, check) => sum + Math.min(check.score, check.weight),
             0
         );
-        return Math.round((earnedScore / totalWeight) * 100);
+        return Math.min(100, Math.round((earnedScore / totalWeight) * 100));
     }
 
     displayResults(results) {
