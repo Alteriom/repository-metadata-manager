@@ -1,0 +1,63 @@
+name: 'Repository Health Check'
+description: 'Run repository health and compliance checks using @alteriom/repository-metadata-manager'
+inputs:
+  format:
+    description: 'Output format: cli, json, github'
+    required: false
+    default: 'github'
+  fail-below:
+    description: 'Fail if score is below this threshold (0-100)'
+    required: false
+    default: '0'
+  only:
+    description: 'Run only specific checkers (comma-separated)'
+    required: false
+    default: ''
+  token:
+    description: 'GitHub token for API-enhanced checks'
+    required: false
+    default: '${{ github.token }}'
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '20'
+outputs:
+  score:
+    description: 'Overall health score (0-100)'
+    value: ${{ steps.check.outputs.score }}
+  grade:
+    description: 'Letter grade (A-F)'
+    value: ${{ steps.check.outputs.grade }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install repo-manager
+      shell: bash
+      run: npm install -g @alteriom/repository-metadata-manager@latest
+
+    - name: Run health check
+      id: check
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        ARGS="--format ${{ inputs.format }}"
+        if [ "${{ inputs.fail-below }}" != "0" ]; then
+          ARGS="$ARGS --fail-below ${{ inputs.fail-below }}"
+        fi
+        if [ -n "${{ inputs.only }}" ]; then
+          ARGS="$ARGS --only ${{ inputs.only }}"
+        fi
+
+        # Capture JSON for outputs
+        RESULT=$(repo-manager check --format json 2>/dev/null || true)
+        echo "score=$(echo "$RESULT" | jq -r '.score')" >> $GITHUB_OUTPUT
+        echo "grade=$(echo "$RESULT" | jq -r '.grade')" >> $GITHUB_OUTPUT
+
+        # Run with requested format
+        repo-manager check $ARGS

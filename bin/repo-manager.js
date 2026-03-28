@@ -23,9 +23,19 @@ program
   .option('-v, --verbose', 'Show detailed findings', false)
   .option('--output <file>', 'Write output to file')
   .option('--project <path>', 'Project root path', process.cwd())
+  .option('--fail-below <score>', 'Exit with code 1 if score is below this threshold', parseInt)
+  .option('--token <token>', 'GitHub API token (defaults to GITHUB_TOKEN env var)')
   .action(async (options) => {
     try {
-      const engine = new Engine({ projectRoot: options.project });
+      // Auto-detect CI environment
+      if (process.env.GITHUB_ACTIONS === 'true' && !options.format) {
+        options.format = 'github';
+      }
+
+      const engine = new Engine({
+        projectRoot: options.project,
+        token: options.token
+      });
       const report = await engine.run(options.only);
 
       let output;
@@ -45,9 +55,8 @@ program
       }
 
       // Exit with error code if below fail threshold
-      const config = report.config || {};
-      const failThreshold = (config.thresholds && config.thresholds.fail) || 50;
-      if (report.score < failThreshold) {
+      const threshold = options.failBelow || 0;
+      if (report.score < threshold) {
         process.exit(1);
       }
     } catch (error) {
@@ -60,17 +69,26 @@ program
   .command('fix')
   .description('Auto-fix detected issues')
   .option('--dry-run', 'Preview fixes without applying', false)
+  .option('-f, --format <format>', 'Output format: cli, json', 'cli')
   .option('--project <path>', 'Project root path', process.cwd())
+  .option('--token <token>', 'GitHub API token (defaults to GITHUB_TOKEN env var)')
   .action(async (options) => {
     try {
-      const engine = new Engine({ projectRoot: options.project });
+      const engine = new Engine({
+        projectRoot: options.project,
+        token: options.token
+      });
       const { report, fixes } = await engine.fix({ dryRun: options.dryRun });
 
-      console.log(formatReport(report));
-      console.log(formatFixResult(fixes));
+      if (options.format === 'json') {
+        console.log(JSON.stringify({ report, fixes }, null, 2));
+      } else {
+        console.log(formatReport(report));
+        console.log(formatFixResult(fixes));
 
-      if (options.dryRun) {
-        console.log('(Dry run \u2014 no changes applied)');
+        if (options.dryRun) {
+          console.log('(Dry run \u2014 no changes applied)');
+        }
       }
     } catch (error) {
       console.error(`Error: ${error.message}`);
