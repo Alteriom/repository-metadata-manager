@@ -41,6 +41,10 @@ jobs:
               env:
                   CI: true
 
+            - name: Run health check
+              run: node bin/repo-manager.js check --format github --fail-below 50
+              continue-on-error: true
+
             - name: Validate CLI
               run: |
                   node bin/repo-manager.js check --format json > /dev/null

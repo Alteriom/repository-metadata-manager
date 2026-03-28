@@ -55,12 +55,14 @@ jobs:
                   git config --global user.name 'github-actions[bot]'
                   git config --global user.email 'github-actions[bot]@users.noreply.github.com'
             - name: Version bump and create tag
+              env:
+                  VERSION_TYPE: ${{ github.event.inputs.version_type }}
               run: |
                   # Get current version
                   CURRENT_VERSION=$(node -p "require('./package.json').version")
 
                   # Calculate new version
-                  case "${{ github.event.inputs.version_type }}" in
+                  case "$VERSION_TYPE" in
                     "patch")
                       NEW_VERSION=$(node -e "
                         const semver = require('semver');
