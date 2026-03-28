@@ -6,38 +6,23 @@ on:
     push:
         branches: [main, develop]
     schedule:
-        # Run daily at 2 AM UTC
         - cron: '0 2 * * *'
     workflow_dispatch:
-        inputs:
-            auto_fix:
-                description: 'Automatically apply fixes'
-                required: false
-                default: 'false'
-                type: boolean
-            local_only:
-                description: 'Run in local-only mode (no API calls)'
-                required: false
-                default: 'false'
-                type: boolean
 
 permissions:
-    contents: write
+    contents: read
     pull-requests: write
     issues: write
     actions: read
 
 jobs:
-    ai-agent-check:
-        name: AI Agent Compliance Check
+    compliance-check:
+        name: Compliance Check
         runs-on: ubuntu-latest
 
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -49,35 +34,19 @@ jobs:
               run: npm ci
 
             - name: Run compliance check
-              id: compliance
+              id: check
               run: |
-                  echo "Running v2.0 compliance check..."
-                  node bin/repo-manager.js check --format json | tee compliance-report.txt
+                  node bin/repo-manager.js check --format json > compliance-report.json
+                  SCORE=$(jq -r '.score' compliance-report.json)
+                  GRADE=$(jq -r '.grade' compliance-report.json)
+                  echo "score=$SCORE" >> $GITHUB_OUTPUT
+                  echo "grade=$GRADE" >> $GITHUB_OUTPUT
+                  echo "Repository health: $SCORE/100 ($GRADE)"
               continue-on-error: true
 
-            - name: Check for changes
-              id: changes
-              run: |
-                  if [[ -n $(git status --porcelain) ]]; then
-                    echo "changes_detected=true" >> $GITHUB_OUTPUT
-                    echo "📝 Changes detected by AI agent"
-                  else
-                    echo "changes_detected=false" >> $GITHUB_OUTPUT
-                    echo "✅ No changes needed"
-                  fi
-
-            - name: Commit and push changes (if auto-fix enabled)
-              if: steps.changes.outputs.changes_detected == 'true' && (github.event.inputs.auto_fix == 'true' || github.event_name == 'push')
-              run: |
-                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
-                  git config --local user.name "github-actions[bot]"
-                  git add .
-                  git commit -m "chore: automated compliance fixes by AI agent
-
-                  Applied by AI agent compliance workflow
-                  
-                  Co-authored-by: github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-                  git push
+            - name: Run with GitHub annotations
+              run: node bin/repo-manager.js check --format github
+              continue-on-error: true
 
             - name: Comment on PR with results
               if: github.event_name == 'pull_request'
@@ -86,102 +55,64 @@ jobs:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   script: |
                       const fs = require('fs');
-                      let reportContent = 'Compliance report not available';
-                      
+                      let report;
                       try {
-                        reportContent = fs.readFileSync('compliance-report.txt', 'utf8');
-                      } catch (error) {
-                        console.log('Could not read compliance report');
+                        report = JSON.parse(fs.readFileSync('compliance-report.json', 'utf8'));
+                      } catch {
+                        report = { score: 0, grade: 'F', summary: { total_findings: 0 } };
                       }
-                      
-                      const changesDetected = '${{ steps.changes.outputs.changes_detected }}' === 'true';
-                      const autoFix = '${{ github.event.inputs.auto_fix }}' === 'true';
-                      
-                      let summary = '## 🤖 AI Agent Compliance Check\n\n';
-                      
-                      if (changesDetected) {
-                        if (autoFix) {
-                          summary += '✅ **Compliance issues were automatically fixed**\n\n';
-                          summary += 'The AI agent detected and fixed compliance issues. Changes have been committed.\n\n';
-                        } else {
-                          summary += '⚠️ **Compliance issues detected (dry-run mode)**\n\n';
-                          summary += 'The AI agent detected compliance issues. Re-run with auto-fix enabled to apply fixes.\n\n';
-                        }
-                      } else {
-                        summary += '✅ **No compliance issues detected**\n\n';
-                        summary += 'Repository is compliant with all standards.\n\n';
-                      }
-                      
-                      summary += '<details>\n<summary>📋 Full Compliance Report</summary>\n\n';
-                      summary += '```\n' + reportContent + '\n```\n\n';
-                      summary += '</details>\n\n';
-                      
-                      summary += '---\n';
-                      summary += '*This check was performed by the AI Agent automation workflow*\n';
-                      
-                      // Find existing bot comments
+
+                      const summary = [
+                        '## Repository Health Check',
+                        '',
+                        `**Score: ${report.score}/100 (${report.grade})**`,
+                        '',
+                        `Findings: ${report.summary?.total_findings || 0} total`,
+                        '',
+                        '<details>',
+                        '<summary>Full Report</summary>',
+                        '',
+                        '```json',
+                        JSON.stringify(report, null, 2).substring(0, 60000),
+                        '```',
+                        '',
+                        '</details>',
+                        '',
+                        '---',
+                        '*Automated by repository-metadata-manager*',
+                      ].join('\n');
+
                       const { data: comments } = await github.rest.issues.listComments({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         issue_number: context.issue.number,
                       });
-                      
-                      const botComment = comments.find(comment => 
-                        comment.user.type === 'Bot' && 
-                        comment.body.includes('AI Agent Compliance Check')
+
+                      const botComment = comments.find(c =>
+                        c.user.type === 'Bot' && c.body.includes('Repository Health Check')
                       );
-                      
+
                       if (botComment) {
                         await github.rest.issues.updateComment({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
                           comment_id: botComment.id,
-                          body: summary
+                          body: summary,
                         });
                       } else {
                         await github.rest.issues.createComment({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
                           issue_number: context.issue.number,
-                          body: summary
+                          body: summary,
                         });
                       }
 
-            - name: Health score check
-              run: |
-                  echo "Calculating repository health score..."
-                  node bin/repo-manager.js check || echo "Health check completed with warnings"
-              continue-on-error: true
-
-            - name: Upload compliance report
+            - name: Upload report
               if: always()
               uses: actions/upload-artifact@v4
               with:
                   name: compliance-report
-                  path: |
-                      compliance-report.txt
-                      **/SECURITY.md
-                      **/CONTRIBUTING.md
-                      **/CODE_OF_CONDUCT.md
-                      .github/ISSUE_TEMPLATE/**
-                      .github/PULL_REQUEST_TEMPLATE.md
+                  path: compliance-report.json
                   if-no-files-found: ignore
                   retention-days: 30
-
-    notify:
-        name: Notify Results
-        runs-on: ubuntu-latest
-        needs: [ai-agent-check]
-        if: always()
-
-        steps:
-            - name: Check workflow status
-              run: |
-                  echo "🔍 AI Agent Compliance Workflow Results:"
-                  echo "Compliance Check: ${{ needs.ai-agent-check.result }}"
-                  
-                  if [[ "${{ needs.ai-agent-check.result }}" == "success" ]]; then
-                    echo "✅ AI Agent compliance check completed successfully!"
-                  else
-                    echo "⚠️ AI Agent compliance check completed with warnings"
-                  fi
