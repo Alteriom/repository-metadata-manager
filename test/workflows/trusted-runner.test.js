@@ -65,6 +65,8 @@ describe('trusted candidate test runner', () => {
 
     expect(supervisor).toContain("stdio: ['ignore', 'pipe', 'pipe', 'ipc']");
     expect(supervisor).toContain('jest-authority-reporter.js');
+    expect(supervisor).toContain("'--disable-sigusr1'");
+    expect(supervisor).toContain('jest-controller-isolation.js');
     expect(supervisor).not.toContain('--outputFile');
   });
 });

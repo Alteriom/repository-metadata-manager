@@ -73,10 +73,34 @@ function runJest(root, trustedRoot) {
   const ignoredSupervisorTest = path
     .join(root, 'test', 'workflows', 'trusted-runner.test.js')
     .replace(/\\/g, '/');
+  const requireIsolation =
+    process.env.REPO_MANAGER_TRUSTED_TEST_ISOLATION === 'required';
+  if (
+    requireIsolation &&
+    (process.platform !== 'linux' ||
+      typeof process.getuid !== 'function' ||
+      process.getuid() !== 0)
+  ) {
+    throw new Error(
+      'Trusted candidate tests require a root Linux supervisor for worker isolation'
+    );
+  }
+  const controllerEnvironment = { ...process.env };
+  if (requireIsolation) {
+    const isolationModule = path.join(
+      trustedRoot,
+      'scripts',
+      'jest-controller-isolation.js'
+    );
+    controllerEnvironment.NODE_OPTIONS = `--require=${isolationModule}`;
+    controllerEnvironment.REPO_MANAGER_TRUSTED_WORKER_UID = '65534';
+    controllerEnvironment.REPO_MANAGER_TRUSTED_WORKER_GID = '65534';
+  }
   return new Promise((resolve, reject) => {
     const child = childProcess.spawn(
       process.execPath,
       [
+        '--disable-sigusr1',
         jestBin,
         '--config',
         JSON.stringify({
@@ -86,13 +110,14 @@ function runJest(root, trustedRoot) {
           testPathIgnorePatterns: [ignoredSupervisorTest],
         }),
         '--ci',
+        '--no-cache',
         '--maxWorkers=2',
         '--reporters=default',
         `--reporters=${authorityReporter}`,
       ],
       {
         cwd: root,
-        env: process.env,
+        env: controllerEnvironment,
         stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
       }
     );

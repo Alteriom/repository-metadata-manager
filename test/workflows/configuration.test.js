@@ -100,6 +100,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toMatch(
             /\n {4}repository_dispatch:\r?\n {8}types: \[repository-compliance\]/
         );
+        expect(workflow).not.toMatch(/\n {4}workflow_dispatch:\r?\n/);
         expect(workflow).toContain(
             "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
@@ -185,6 +186,10 @@ describe('workflow control configuration', () => {
         expect(sandbox).toContain('cp -R control/test candidate/test');
         expect(sandbox).toContain('control/eslint.config.js');
         expect(sandbox).toContain('control/scripts/run-trusted-tests.js');
+        expect(sandbox).toContain('sudo env -i');
+        expect(sandbox).toContain(
+            'REPO_MANAGER_TRUSTED_TEST_ISOLATION=required'
+        );
         expect(sandbox).not.toContain('--runInBand');
         expect(sandbox).toContain('env -i');
         expect(sandbox).not.toContain('APP_PRIVATE_KEY');

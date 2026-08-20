@@ -13,7 +13,6 @@ on:
         - cron: '0 2 * * *'
     repository_dispatch:
         types: [repository-compliance]
-    workflow_dispatch:
 
 permissions:
     contents: read
@@ -161,10 +160,11 @@ jobs:
               working-directory: candidate
               shell: bash
               run: |
-                  env -i \
+                  sudo env -i \
                     CI=true \
                     HOME="$RUNNER_TEMP/trusted-test-home" \
                     PATH="$PATH" \
+                    REPO_MANAGER_TRUSTED_TEST_ISOLATION=required \
                     node "$GITHUB_WORKSPACE/control/scripts/run-trusted-tests.js" \
                       "$GITHUB_WORKSPACE/candidate"
 
