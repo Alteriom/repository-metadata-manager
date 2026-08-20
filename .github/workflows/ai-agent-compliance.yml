@@ -20,7 +20,7 @@ jobs:
         name: Compliance Check
         runs-on: ubuntu-latest
         env:
-            AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+            AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]') }}
             LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security
 
         steps:

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keep checker-specific `--only` evaluations from failing verification gates for unrelated checkers
 - Preserve explicitly requested disabled checkers in the verification-gate scope
 - Give fork pull requests a secret-free local compliance path while reserving authoritative GitHub checks for trusted events
+- Treat Dependabot pull requests as untrusted events because GitHub withholds Actions secrets from them
+- Add a maximum required-approval constraint so solo-maintainer policies verify an exact zero-approval rule
 
 ## [3.0.0] - 2026-08-19
 

@@ -117,5 +117,36 @@ describe('BranchProtectionChecker', () => {
       expect(result.findings.some(finding => finding.id === 'bp-010' && finding.severity === 'high')).toBe(true);
       expect(result.findings.some(finding => finding.id === 'bp-012' && finding.severity === 'high')).toBe(true);
     });
+
+    it('fails when live approvals exceed the configured maximum', async () => {
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: { getBranchProtection: jest.fn().mockResolvedValue({ data: {
+          required_status_checks: { strict: true, contexts: ['ci'], checks: [] },
+          required_pull_request_reviews: { required_approving_review_count: 1, require_code_owner_reviews: false },
+          required_conversation_resolution: { enabled: true },
+          enforce_admins: { enabled: false },
+          required_signatures: { enabled: false },
+          required_linear_history: { enabled: false },
+        } }) } },
+        config: {
+          branchProtection: {
+            requiredApprovals: 0, maximumRequiredApprovals: 0,
+            requireStatusChecks: true, requireStrictStatusChecks: true,
+            requireCodeOwnerReviews: false, requireConversationResolution: true, enforceAdmins: false,
+            requireSignedCommits: false, requireLinearHistory: false,
+          },
+        },
+      });
+
+      const result = await checker.check(ctx);
+      expect(result.metadata.verified).toBe(true);
+      expect(result.findings).toContainEqual(expect.objectContaining({
+        id: 'bp-012',
+        severity: 'high',
+        message: 'Required approvals are 1; policy requires 0 to 0',
+      }));
+    });
   });
 });

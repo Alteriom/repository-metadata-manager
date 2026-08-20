@@ -24,6 +24,7 @@
     },
     "branchProtection": {
         "requiredApprovals": 1,
+        "maximumRequiredApprovals": 1,
         "requireStatusChecks": true,
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": true,

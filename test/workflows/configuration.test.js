@@ -88,7 +88,7 @@ describe('workflow control configuration', () => {
         );
 
         expect(workflow).toContain(
-            "AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}"
+            "AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]') }}"
         );
         expect(workflow).toContain(
             'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
@@ -124,13 +124,14 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.1.0');
+        expect(policy.version).toBe('1.2.0');
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
             'repository-metadata',
         ]);
         expect(policy.branchProtection).toMatchObject({
             requiredApprovals: 0,
+            maximumRequiredApprovals: 0,
             requireStatusChecks: true,
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,

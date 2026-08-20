@@ -46,6 +46,20 @@ describe('Policy', () => {
     expect(() => Policy.load(root)).toThrow('Unknown policy property');
   });
 
+  it('validates approval ranges', () => {
+    expect(() => Policy.validate({
+      branchProtection: { requiredApprovals: 0, maximumRequiredApprovals: 0 },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredApprovals: 1, maximumRequiredApprovals: 0 },
+    })).toThrow('must be greater than or equal to requiredApprovals');
+
+    expect(() => Policy.validate({
+      branchProtection: { maximumRequiredApprovals: 0.5 },
+    })).toThrow('must be a non-negative integer');
+  });
+
   it('rejects policy paths outside the repository', () => {
     expect(() => Policy.load(root, path.join('..', 'policy.json'))).toThrow('must stay within');
   });

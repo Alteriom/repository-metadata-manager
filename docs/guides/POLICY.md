@@ -22,7 +22,7 @@ Command-center profiles should set `requireVerifiedCheckers` to `branch-protecti
 
 Checker-specific runs created with `--only` apply score and severity gates to that scoped result, but apply checker-specific verification gates only when the required checker is in the requested scope. A complete evaluation still requires every configured verified checker.
 
-For a solo-maintainer repository, set `requiredApprovals` to `0`, disable code-owner approval, and retain strict status checks plus conversation resolution. Requiring one approval in that model creates a self-approval deadlock rather than meaningful separation of duties. Keep `enforceAdmins` disabled so the sole administrator retains an emergency recovery path, and record any bypass outside the repository as a command-center audit event.
+For a solo-maintainer repository, set both `requiredApprovals` and `maximumRequiredApprovals` to `0`, disable code-owner approval, and retain strict status checks plus conversation resolution. The minimum preserves the existing baseline semantics; the optional maximum proves that the live rule has not drifted back to an impossible approval requirement. Keep `enforceAdmins` disabled so the sole administrator retains an emergency recovery path, and record any bypass outside the repository as a command-center audit event.
 
 ## Organization layering
 
