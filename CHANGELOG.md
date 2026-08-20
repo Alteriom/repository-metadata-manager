@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Authenticate hosted compliance checks with a repository-scoped, least-privilege GitHub App token so branch protection and security controls can be verified
 - Replace the impossible self-approval requirement with strict status, conversation-resolution, and verified-checker gates for solo maintainers
+- Keep checker-specific `--only` evaluations from failing verification gates for unrelated checkers
 
 ## [3.0.0] - 2026-08-19
 

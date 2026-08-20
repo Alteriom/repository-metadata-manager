@@ -40,9 +40,27 @@ jobs:
                   APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
               run: |
                   set -euo pipefail
-                  key="$APP_PRIVATE_KEY"
+                  if [[ "$APP_PRIVATE_KEY" == \{* ]]; then
+                    key="$(printf '%s' "$APP_PRIVATE_KEY" | jq -er '.privateKey // .private_key // .pem')"
+                  elif [[ "$APP_PRIVATE_KEY" == \"* ]]; then
+                    key="$(printf '%s' "$APP_PRIVATE_KEY" | jq -er '.')"
+                  else
+                    key="$APP_PRIVATE_KEY"
+                  fi
+                  key="${key//%0A/$'\n'}"
+                  key="${key//%0a/$'\n'}"
                   if [[ "$key" != *"BEGIN "* ]]; then
-                    key="$(printf '%s' "$key" | base64 --decode)"
+                    encoded="$(printf '%s' "$key" | tr -d '[:space:]' | tr '_-' '/+')"
+                    case $((${#encoded} % 4)) in
+                      2) encoded="${encoded}==" ;;
+                      3) encoded="${encoded}=" ;;
+                      1) echo "APP_PRIVATE_KEY is not valid PEM or base64" >&2; exit 1 ;;
+                    esac
+                    key="$(printf '%s' "$encoded" | base64 --decode)"
+                  fi
+                  if [[ "$key" != *"-----BEGIN "*"PRIVATE KEY-----"* ]]; then
+                    echo "APP_PRIVATE_KEY does not contain a private-key PEM block" >&2
+                    exit 1
                   fi
                   private_key="$(printf '%s\n' "$key" | awk 'BEGIN { ORS="\\n" } { print }' | head -c -2)"
                   echo "::add-mask::$private_key"

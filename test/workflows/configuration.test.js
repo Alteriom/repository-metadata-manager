@@ -76,6 +76,20 @@ describe('workflow control configuration', () => {
         );
     });
 
+    it('keeps unauthenticated CI checks inside a checker-specific scope', () => {
+        const workflow = fs.readFileSync(
+            path.join(projectRoot, '.github', 'workflows', 'ci.yml'),
+            'utf8'
+        );
+
+        expect(workflow).toContain(
+            'repo-manager.js check --only license --format json'
+        );
+        expect(workflow).not.toMatch(
+            /repo-manager\.js check --format (?:github|json)/
+        );
+    });
+
     it('uses verified controls without requiring a solo maintainer to self-approve', () => {
         const policy = JSON.parse(
             fs.readFileSync(
