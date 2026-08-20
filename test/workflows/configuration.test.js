@@ -101,6 +101,8 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('--no-same-permissions');
         expect(workflow).toContain('find candidate -type l -delete');
         expect(workflow).toContain('git -C candidate init --quiet');
+        expect(workflow).toContain('commit --allow-empty --quiet');
+        expect(workflow).not.toContain('git -C candidate add');
         expect(workflow).not.toMatch(/Checkout candidate repository/);
         expect(workflow).toContain('working-directory: control');
         expect(workflow).toContain(
