@@ -59,8 +59,15 @@ describe('workflow control configuration', () => {
         );
         expect(workflow).toContain('app-id: ${{ secrets.APP_ID }}');
         expect(workflow).toContain(
-            'private-key: ${{ secrets.APP_PRIVATE_KEY }}'
+            'APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}'
         );
+        expect(workflow).toContain(
+            'private-key: ${{ steps.private-key.outputs.private-key }}'
+        );
+        expect(workflow).toContain(
+            'repositories: ${{ github.event.repository.name }}'
+        );
+        expect(workflow).toContain('base64 --decode');
         expect(workflow).toContain('permission-administration: read');
         expect(workflow).toContain('permission-contents: read');
         expect(appTokenBindings).toHaveLength(2);

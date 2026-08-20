@@ -33,14 +33,29 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Normalize GitHub App private key
+              id: private-key
+              shell: bash
+              env:
+                  APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+              run: |
+                  set -euo pipefail
+                  key="$APP_PRIVATE_KEY"
+                  if [[ "$key" != *"BEGIN "* ]]; then
+                    key="$(printf '%s' "$key" | base64 --decode)"
+                  fi
+                  private_key="$(printf '%s\n' "$key" | awk 'BEGIN { ORS="\\n" } { print }' | head -c -2)"
+                  echo "::add-mask::$private_key"
+                  echo "private-key=$private_key" >> "$GITHUB_OUTPUT"
+
             - name: Create repository compliance token
               id: app-token
               uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
               with:
                   app-id: ${{ secrets.APP_ID }}
-                  private-key: ${{ secrets.APP_PRIVATE_KEY }}
+                  private-key: ${{ steps.private-key.outputs.private-key }}
                   owner: ${{ github.repository_owner }}
-                  repositories: ${{ github.repository }}
+                  repositories: ${{ github.event.repository.name }}
                   permission-administration: read
                   permission-contents: read
 

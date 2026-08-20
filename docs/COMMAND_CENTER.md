@@ -11,6 +11,8 @@ For GitHub Actions, mint the evaluation token with the official `actions/create-
 - `APP_ID`
 - `APP_PRIVATE_KEY`
 
+`APP_PRIVATE_KEY` can contain the PEM text or its base64 encoding. The workflow normalizes either representation without printing the key.
+
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 
 ## Solo-maintainer controls
