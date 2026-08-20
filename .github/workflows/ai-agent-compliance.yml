@@ -112,9 +112,24 @@ jobs:
                         immutableTree(baseSha),
                         immutableTree(archiveSha),
                       ]);
-                      const documentationOnly = filename =>
-                        /\.(?:md|mdx|rst|txt|png|jpe?g|gif|webp)$/i.test(filename) ||
-                        /^(?:LICENSE|NOTICE)(?:\.[^/]*)?$/i.test(filename);
+                      const documentationOnly = filename => {
+                        const normalized = filename.replaceAll('\\', '/');
+                        const basename = normalized.slice(normalized.lastIndexOf('/') + 1);
+                        const controlOrManifest =
+                          /^(?:AGENTS|CLAUDE|GEMINI|SKILL)\.md$/i.test(basename) ||
+                          /^(?:requirements(?:[-.][^/]*)?|constraints(?:[-.][^/]*)?|CMakeLists)\.txt$/i
+                            .test(basename);
+                        if (controlOrManifest) return false;
+
+                        const documentationAsset =
+                          /\.(?:md|mdx|rst|txt|png|jpe?g|gif|webp)$/i.test(normalized);
+                        const conventionalRootDocument =
+                          /^(?:README|CHANGELOG|CONTRIBUTING|CODE_OF_CONDUCT|SECURITY|SUPPORT|GOVERNANCE)(?:\.[^/]*)?$/i
+                            .test(normalized);
+                        return /^(?:LICENSE|NOTICE)(?:\.[^/]*)?$/i.test(normalized) ||
+                          (documentationAsset &&
+                            (normalized.startsWith('docs/') || conventionalRootDocument));
+                      };
                       let requiresTrustedReview = true;
                       if (baseTree && candidateTree) {
                         const paths = new Set([...baseTree.keys(), ...candidateTree.keys()]);

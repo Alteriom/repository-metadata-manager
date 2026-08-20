@@ -136,6 +136,12 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('if (tree.truncated || !Array.isArray(tree.tree))');
         expect(workflow).toContain('Immutable tree listing was truncated');
         expect(workflow).toContain('const documentationOnly = filename =>');
+        expect(workflow).toContain("normalized.startsWith('docs/')");
+        expect(workflow).toContain('const conventionalRootDocument =');
+        expect(workflow).toContain('(?:AGENTS|CLAUDE|GEMINI|SKILL)');
+        expect(workflow).toContain('requirements(?:[-.][^/]*)?');
+        expect(workflow).toContain('CMakeLists');
+        expect(workflow).toContain('if (controlOrManifest) return false');
         expect(workflow).toContain('baseTree.get(path) !== candidateTree.get(path)');
         expect(workflow).toContain('changedPaths.some(path => !documentationOnly(path))');
         expect(workflow).toContain('if (requiresTrustedReview)');
