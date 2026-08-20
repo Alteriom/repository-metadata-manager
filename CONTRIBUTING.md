@@ -13,7 +13,7 @@ We love your input! We want to make contributing to this project as easy and tra
 To get started with local development:
 
 1. **Prerequisites**
-    - Node.js 18+ installed (supports 18.x, 20.x, 22.x)
+    - Node.js 24+ installed
     - Git installed
     - GitHub account
 

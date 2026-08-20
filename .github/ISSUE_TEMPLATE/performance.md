@@ -34,9 +34,9 @@ assignees: ''
 
 ```bash
 # How did you measure performance?
-time repository-manager health
+time repo-manager check
 # or
-/usr/bin/time -v repository-manager health
+/usr/bin/time -v repo-manager check
 ```
 
 **Performance Data:**
@@ -168,7 +168,7 @@ If you have specific technical suggestions.
 
 ```bash
 # Commands used for profiling
-node --prof repository-manager health
+node --prof bin/repo-manager.js check
 node --prof-process isolate-*.log > processed.txt
 ```
 

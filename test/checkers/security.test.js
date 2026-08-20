@@ -115,6 +115,35 @@ describe('SecurityChecker', () => {
       const secretFindings = result.findings.filter((f) => f.id === 'sec-010');
       expect(secretFindings).toHaveLength(0);
     });
+
+    it('scans nested source files while allowing documented example env files', async () => {
+      const fs = require('fs');
+      const os = require('os');
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-security-'));
+      fs.mkdirSync(path.join(root, 'src'));
+      fs.writeFileSync(path.join(root, '.env.example'), 'GITHUB_TOKEN=replace_me\n');
+      const syntheticAwsKey = ['AKIA', '1234567890ABCDEF'].join('');
+      fs.writeFileSync(path.join(root, 'src', 'config.js'), `const key = "${syntheticAwsKey}";\n`);
+      fs.writeFileSync(path.join(root, '.gitignore'), '.env\n.env*\n');
+      fs.writeFileSync(path.join(root, 'SECURITY.md'), 'Report vulnerabilities privately using the documented security process.');
+
+      try {
+        const ctx = new Context({
+          projectRoot: root,
+          projectType: 'generic',
+          github: null,
+          packageJson: null,
+          gitInfo: null,
+          config: { security: { ignoredDirectories: [], ignoredPaths: [], maxFileSizeBytes: 1048576 } },
+          cache: new Cache(),
+        });
+        const result = await checker.check(ctx);
+        expect(result.findings.some(finding => finding.file === 'src/config.js' && finding.id === 'sec-010')).toBe(true);
+        expect(result.findings.some(finding => finding.file === '.env.example' && finding.id === 'sec-005')).toBe(false);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('npm audit integration', () => {
@@ -138,38 +167,28 @@ describe('SecurityChecker', () => {
       expect(highFinding.severity).toBe('high');
     });
 
-    it('handles null audit result gracefully', async () => {
+    it('reports when npm audit cannot be verified', async () => {
       const cache = new Cache();
       cache.set('npm-audit', null);
       const ctx = buildContext('healthy-project', { cache });
       const result = await checker.check(ctx);
 
-      const auditFindings = result.findings.filter(
-        (f) => f.id === 'sec-011' || f.id === 'sec-012',
-      );
-      expect(auditFindings).toHaveLength(0);
+      expect(result.findings.some(finding => finding.id === 'sec-013')).toBe(true);
     });
   });
 
-  describe('fix()', () => {
-    it('creates .gitignore when missing', async () => {
-      const fs = require('fs');
-      const tmpDir = path.join(fixturesDir, '__tmp_sec_fix');
-      fs.mkdirSync(tmpDir, { recursive: true });
+  describe('plan()', () => {
+    it('plans .gitignore creation without changing the repository', async () => {
+      const ctx = buildContext('insecure-project');
+      const result = await checker.plan(ctx, [{ id: 'sec-003' }]);
 
-      try {
-        const ctx = buildContext('insecure-project');
-        ctx.projectRoot = tmpDir;
-
-        const fixFindings = [{ id: 'sec-003', severity: 'high', message: '.gitignore is missing' }];
-        const fixResult = await checker.fix(ctx, fixFindings);
-
-        expect(fixResult.applied).toHaveLength(1);
-        expect(fixResult.applied[0].id).toBe('sec-003');
-        expect(fs.existsSync(path.join(tmpDir, '.gitignore'))).toBe(true);
-      } finally {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-      }
+      expect(result.operations).toHaveLength(1);
+      expect(result.operations[0]).toEqual(expect.objectContaining({
+        type: 'write-file',
+        path: '.gitignore',
+        beforeHash: null,
+      }));
+      expect(ctx.fileExists('.gitignore')).toBe(false);
     });
   });
 });

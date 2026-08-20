@@ -7,13 +7,10 @@ const Cache = require('../../lib/engine/Cache');
 
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
-function buildContext(fixtureName, cacheOverrides = {}) {
+function buildContext(fixtureName) {
   const projectRoot = path.join(fixturesDir, fixtureName);
   const packageJson = Context.readPackageJson(projectRoot);
   const cache = new Cache();
-
-  // Pre-populate cache with mock npm audit result so we never run npm audit in tests
-  cache.set('npm-audit', cacheOverrides.npmAudit !== undefined ? cacheOverrides.npmAudit : null);
 
   return new Context({
     projectRoot,
@@ -73,35 +70,4 @@ describe('DependenciesChecker', () => {
     });
   });
 
-  describe('npm audit integration', () => {
-    it('reports critical vulnerabilities from cached audit', async () => {
-      const ctx = buildContext('healthy-project', {
-        npmAudit: {
-          vulnerabilities: {
-            'bad-pkg': { severity: 'critical' },
-            'worse-pkg': { severity: 'high' },
-          },
-        },
-      });
-      const result = await checker.check(ctx);
-
-      const critFinding = result.findings.find((f) => f.id === 'dep-006');
-      expect(critFinding).toBeDefined();
-      expect(critFinding.severity).toBe('critical');
-
-      const highFinding = result.findings.find((f) => f.id === 'dep-007');
-      expect(highFinding).toBeDefined();
-    });
-
-    it('handles null audit result gracefully', async () => {
-      const ctx = buildContext('healthy-project', { npmAudit: null });
-      const result = await checker.check(ctx);
-
-      // Should not crash, no audit findings
-      const auditFindings = result.findings.filter(
-        (f) => f.id === 'dep-006' || f.id === 'dep-007',
-      );
-      expect(auditFindings).toHaveLength(0);
-    });
-  });
 });

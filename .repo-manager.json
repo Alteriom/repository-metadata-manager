@@ -1,17 +1,7 @@
 {
     "schemaVersion": 1,
-    "id": "my-organization/repository-baseline",
+    "id": "alteriom/repository-baseline",
     "version": "1.0.0",
-    "checkers": {
-        "documentation": { "enabled": true, "weight": 25 },
-        "security": { "enabled": true, "weight": 30 },
-        "cicd": { "enabled": true, "weight": 20 },
-        "dependencies": { "enabled": true, "weight": 10 },
-        "branch-protection": { "enabled": true, "weight": 15 },
-        "license": { "enabled": true, "weight": 5 },
-        "repository-metadata": { "enabled": true, "weight": 10 },
-        "iot": { "enabled": true, "weight": 10 }
-    },
     "gates": {
         "failBelow": 70,
         "maxCritical": 0,
@@ -19,8 +9,7 @@
         "checkerMinimums": {
             "security": 70,
             "cicd": 70
-        },
-        "requireVerifiedCheckers": []
+        }
     },
     "branchProtection": {
         "requiredApprovals": 1,
@@ -35,21 +24,12 @@
     "repositoryMetadata": {
         "requireDescription": true,
         "minimumTopics": 3,
-        "requiredTopics": [],
+        "requiredTopics": ["alteriom", "compliance"],
         "deleteBranchOnMerge": true,
         "requireSecretScanning": true,
         "requireDependabotSecurityUpdates": true
     },
     "security": {
-        "maxFileSizeBytes": 1048576,
-        "ignoredDirectories": [
-            ".git",
-            "node_modules",
-            "coverage",
-            "dist",
-            "build",
-            ".cache"
-        ],
         "ignoredPaths": ["test/fixtures"]
     }
 }

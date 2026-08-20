@@ -120,7 +120,7 @@ npm run health
 
 ```bash
 # Performance test commands (if applicable)
-time repository-manager health
+time repo-manager check
 ```
 
 ## 📚 Documentation

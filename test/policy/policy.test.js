@@ -1,0 +1,52 @@
+'use strict';
+
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const Policy = require('../../lib/policy/Policy');
+
+describe('Policy', () => {
+  let root;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-policy-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('returns a versioned default policy when no file exists', () => {
+    const loaded = Policy.load(root);
+    expect(loaded.source).toBe('default');
+    expect(loaded.policy.schemaVersion).toBe(1);
+    expect(loaded.policy.gates.failBelow).toBe(70);
+  });
+
+  it('merges validated overrides with defaults', () => {
+    fs.writeFileSync(path.join(root, '.repo-manager.json'), JSON.stringify({
+      schemaVersion: 1,
+      id: 'test/policy',
+      version: '2.0.0',
+      gates: { failBelow: 85 },
+      checkers: { security: { weight: 50 } },
+    }));
+
+    const loaded = Policy.load(root);
+    expect(loaded.policy.gates.failBelow).toBe(85);
+    expect(loaded.policy.checkers.security.weight).toBe(50);
+    expect(loaded.policy.checkers.documentation.enabled).toBe(true);
+  });
+
+  it('fails closed for malformed or unknown policy data', () => {
+    fs.writeFileSync(path.join(root, '.repo-manager.json'), '{broken');
+    expect(() => Policy.load(root)).toThrow('Invalid policy JSON');
+
+    fs.writeFileSync(path.join(root, '.repo-manager.json'), JSON.stringify({ unexpected: true }));
+    expect(() => Policy.load(root)).toThrow('Unknown policy property');
+  });
+
+  it('rejects policy paths outside the repository', () => {
+    expect(() => Policy.load(root, path.join('..', 'policy.json'))).toThrow('must stay within');
+  });
+});

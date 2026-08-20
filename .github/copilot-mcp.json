@@ -1,14 +1,11 @@
 {
     "mcpServers": {
-        "alteriom-webhook-server": {
+        "repository-manager": {
             "command": "node",
-            "args": ["app.js"],
+            "args": ["mcp-server/index.js"],
             "env": {
-                "GITHUB_APP_ID": "${COPILOT_MCP_GITHUB_APP_ID}",
-                "GITHUB_APP_PRIVATE_KEY": "${COPILOT_MCP_GITHUB_APP_PRIVATE_KEY}",
-                "WEBHOOK_SECRET": "${COPILOT_MCP_WEBHOOK_SECRET}",
-                "PORT": "3000",
-                "NODE_ENV": "development"
+                "REPO_MANAGER_ALLOWED_ROOTS": "${workspaceFolder}",
+                "REPO_MANAGER_ENABLE_APPLY": "false"
             }
         }
     }
