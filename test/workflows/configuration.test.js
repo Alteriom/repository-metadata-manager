@@ -97,12 +97,22 @@ describe('workflow control configuration', () => {
 
         expect(workflow).toMatch(/\n {4}pull_request_target:\r?\n/);
         expect(workflow).not.toMatch(/\n {4}pull_request:\r?\n/);
+        expect(workflow).toMatch(
+            /\n {4}repository_dispatch:\r?\n {8}types: \[repository-compliance\]/
+        );
         expect(workflow).toContain(
             "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
         expect(workflow).toContain(
-            "CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}"
+            'CANDIDATE_REF: ${{ steps.candidate.outputs.archive-sha }}'
         );
+        expect(workflow).toContain(
+            'DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}'
+        );
+        expect(workflow).toContain('github.rest.pulls.get');
+        expect(workflow).toContain("core.setOutput('archive-sha', archiveSha)");
+        expect(workflow).toContain("core.setOutput('report-sha', reportSha)");
+        expect(workflow).toContain("core.setOutput('check-sha', checkSha)");
         expect(workflow).toContain('github.rest.repos.downloadTarballArchive');
         expect(workflow).toContain('Buffer.from(response.data)');
         expect(workflow).toContain('--no-same-owner');
@@ -110,7 +120,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('find candidate -type l -delete');
         expect(workflow).toContain('git -C candidate init --quiet');
         expect(workflow).toContain(
-            "CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}"
+            'CANDIDATE_SHA: ${{ steps.candidate.outputs.report-sha }}'
         );
         expect(workflow).toContain(
             'printf \'%s\\n\' "$CANDIDATE_SHA" > candidate/.git/refs/heads/candidate'
@@ -141,7 +151,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('github.rest.checks.create');
         expect(workflow).toContain("name: 'Compliance Check'");
         expect(workflow).toContain(
-            "CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}"
+            'CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}'
         );
     });
 

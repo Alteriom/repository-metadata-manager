@@ -17,7 +17,7 @@ The workflow uses the v3 action's legacy `app-id` input because the organization
 
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 
-Dependabot or any context without App secrets runs a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Its result is published as `Compliance Check (restricted)` by GitHub Actions and cannot satisfy the protected `Compliance Check` context. A maintainer can run the trusted workflow manually for that candidate. Authoritative branch-protection and repository-metadata verification, the protected App-sourced check, and PR report comments require the App-backed context.
+Dependabot or any context without App secrets runs a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Its result is published as `Compliance Check (restricted)` by GitHub Actions and cannot satisfy the protected `Compliance Check` context. A maintainer can request the trusted, default-branch workflow for an open PR with `gh api repos/OWNER/REPOSITORY/dispatches -f event_type=repository-compliance -F 'client_payload[pull_request_number]=123'`. The dispatcher resolves the PR's current immutable merge SHA for evaluation and publishes the App-sourced result on its head SHA. Authoritative branch-protection and repository-metadata verification, the protected App-sourced check, and PR report comments require the App-backed context.
 
 ## Solo-maintainer controls
 

@@ -10,6 +10,8 @@ on:
         branches: [main, develop]
     schedule:
         - cron: '0 2 * * *'
+    repository_dispatch:
+        types: [repository-compliance]
     workflow_dispatch:
 
 permissions:
@@ -35,10 +37,49 @@ jobs:
                   path: control
                   persist-credentials: false
 
+            - name: Resolve candidate identity
+              id: candidate
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+              env:
+                  DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}
+              with:
+                  script: |
+                      let archiveSha = context.sha;
+                      let reportSha = context.sha;
+                      let checkSha = context.sha;
+
+                      if (context.eventName === 'pull_request_target') {
+                        archiveSha = context.payload.pull_request.merge_commit_sha;
+                        reportSha = context.payload.pull_request.merge_commit_sha;
+                        checkSha = context.payload.pull_request.head.sha;
+                      } else if (context.eventName === 'repository_dispatch') {
+                        const pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
+                        if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
+                          core.setFailed('repository-compliance requires a positive pull_request_number');
+                          return;
+                        }
+                        const { data: pull } = await github.rest.pulls.get({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: pullNumber,
+                        });
+                        if (pull.state !== 'open' || !pull.merge_commit_sha) {
+                          core.setFailed(`Pull request #${pullNumber} is not open and mergeable`);
+                          return;
+                        }
+                        archiveSha = pull.merge_commit_sha;
+                        reportSha = pull.merge_commit_sha;
+                        checkSha = pull.head.sha;
+                      }
+
+                      core.setOutput('archive-sha', archiveSha);
+                      core.setOutput('report-sha', reportSha);
+                      core.setOutput('check-sha', checkSha);
+
             - name: Download candidate repository as data
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}
+                  CANDIDATE_REF: ${{ steps.candidate.outputs.archive-sha }}
               with:
                   script: |
                       const fs = require('fs');
@@ -56,7 +97,7 @@ jobs:
             - name: Extract candidate repository without executing it
               shell: bash
               env:
-                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}
+                  CANDIDATE_SHA: ${{ steps.candidate.outputs.report-sha }}
               run: |
                   mkdir candidate
                   tar \
@@ -191,7 +232,7 @@ jobs:
               if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+                  CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}
                   CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
@@ -221,7 +262,7 @@ jobs:
               if: always() && env.AUTHENTICATED_CONTEXT != 'true'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+                  CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}
                   CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
