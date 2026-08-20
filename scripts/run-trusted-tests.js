@@ -1,8 +1,6 @@
 'use strict';
 
 const childProcess = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
 function validateJestResult(result) {
@@ -64,90 +62,115 @@ function compareTestIdentities(expected, actual) {
   );
 }
 
-function runJest(root, resultPath, trustedRoot) {
+function runJest(root, trustedRoot) {
   const jestBin = require.resolve('jest/bin/jest');
   const lockdown = path.join(trustedRoot, 'scripts', 'jest-lockdown.js');
+  const authorityReporter = path.join(
+    trustedRoot,
+    'scripts',
+    'jest-authority-reporter.js'
+  );
   const ignoredSupervisorTest = path
     .join(root, 'test', 'workflows', 'trusted-runner.test.js')
     .replace(/\\/g, '/');
-  const child = childProcess.spawnSync(
-    process.execPath,
-    [
-      jestBin,
-      '--config',
-      JSON.stringify({
-        rootDir: root,
-        testEnvironment: 'node',
-        setupFilesAfterEnv: [lockdown],
-        testPathIgnorePatterns: [ignoredSupervisorTest],
-      }),
-      '--ci',
-      '--maxWorkers=2',
-      '--json',
-      `--outputFile=${resultPath}`,
-    ],
-    {
-      cwd: root,
-      encoding: 'utf8',
-      env: process.env,
-      maxBuffer: 10 * 1024 * 1024,
-      timeout: 120000,
-    }
-  );
+  return new Promise((resolve, reject) => {
+    const child = childProcess.spawn(
+      process.execPath,
+      [
+        jestBin,
+        '--config',
+        JSON.stringify({
+          rootDir: root,
+          testEnvironment: 'node',
+          setupFilesAfterEnv: [lockdown],
+          testPathIgnorePatterns: [ignoredSupervisorTest],
+        }),
+        '--ci',
+        '--maxWorkers=2',
+        '--reporters=default',
+        `--reporters=${authorityReporter}`,
+      ],
+      {
+        cwd: root,
+        env: process.env,
+        stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+      }
+    );
+    let authorityResult;
+    let duplicateAuthorityResult = false;
+    let stdout = '';
+    let stderr = '';
+    const timeout = setTimeout(() => child.kill(), 120000);
 
-  if (child.error) throw child.error;
-  if (child.status !== 0) {
-    if (child.stdout) process.stdout.write(child.stdout);
-    if (child.stderr) process.stderr.write(child.stderr);
-    throw new Error(`Trusted Jest process failed with status ${child.status}`);
-  }
-  if (!fs.existsSync(resultPath)) {
-    throw new Error('Trusted Jest process exited without a result document');
-  }
-
-  try {
-    return JSON.parse(fs.readFileSync(resultPath, 'utf8'));
-  } catch {
-    throw new Error('Trusted Jest process produced an invalid result document');
-  }
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    child.on('message', (message) => {
+      if (message?.type !== 'repository-manager:trusted-jest-result') return;
+      if (authorityResult !== undefined) duplicateAuthorityResult = true;
+      else authorityResult = message.result;
+    });
+    child.on('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.on('close', (status, signal) => {
+      clearTimeout(timeout);
+      if (status !== 0 || signal) {
+        if (stdout) process.stdout.write(stdout);
+        if (stderr) process.stderr.write(stderr);
+        reject(
+          new Error(
+            `Trusted Jest process failed with status ${status ?? 'none'}` +
+              `${signal ? ` (${signal})` : ''}`
+          )
+        );
+        return;
+      }
+      if (duplicateAuthorityResult) {
+        reject(new Error('Trusted Jest controller emitted duplicate authority results'));
+        return;
+      }
+      if (authorityResult === undefined) {
+        reject(new Error('Trusted Jest controller exited without an authority result'));
+        return;
+      }
+      resolve(authorityResult);
+    });
+  });
 }
 
-function runTrustedTests(candidateRoot) {
+async function runTrustedTests(candidateRoot) {
   const resolvedCandidate = path.resolve(candidateRoot);
   const trustedRoot = path.resolve(__dirname, '..');
-  const resultDirectory = fs.mkdtempSync(
-    path.join(os.tmpdir(), 'repo-manager-trusted-jest-')
+  const baseline = await runJest(trustedRoot, trustedRoot);
+  validateJestResult(baseline);
+  const candidate = await runJest(resolvedCandidate, trustedRoot);
+  validateJestResult(candidate);
+  compareTestIdentities(
+    testIdentities(baseline, trustedRoot),
+    testIdentities(candidate, resolvedCandidate)
   );
-  const baselineResultPath = path.join(resultDirectory, 'baseline.json');
-  const candidateResultPath = path.join(resultDirectory, 'candidate.json');
-
-  try {
-    const baseline = runJest(trustedRoot, baselineResultPath, trustedRoot);
-    validateJestResult(baseline);
-    const candidate = runJest(resolvedCandidate, candidateResultPath, trustedRoot);
-    validateJestResult(candidate);
-    compareTestIdentities(
-      testIdentities(baseline, trustedRoot),
-      testIdentities(candidate, resolvedCandidate)
-    );
-    console.log(
-      `Protected candidate tests passed: ${candidate.numPassedTestSuites} suites, ` +
-        `${candidate.numPassedTests} assertions`
-    );
-  } finally {
-    fs.rmSync(resultDirectory, { recursive: true, force: true });
-  }
+  console.log(
+    `Protected candidate tests passed: ${candidate.numPassedTestSuites} suites, ` +
+      `${candidate.numPassedTests} assertions`
+  );
 }
 
 if (require.main === module) {
-  try {
-    if (process.argv.length !== 3) {
-      throw new Error('Usage: run-trusted-tests.js <candidate-root>');
-    }
-    runTrustedTests(process.argv[2]);
-  } catch (error) {
-    console.error(error.message);
+  if (process.argv.length !== 3) {
+    console.error('Usage: run-trusted-tests.js <candidate-root>');
     process.exitCode = 1;
+  } else {
+    runTrustedTests(process.argv[2]).catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    });
   }
 }
 

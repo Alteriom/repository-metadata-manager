@@ -10,7 +10,7 @@ const {
 } = require('../../scripts/run-trusted-tests');
 
 describe('trusted candidate test runner', () => {
-  it('fails when candidate code exits a Jest worker before assertions complete', () => {
+  it('fails when candidate code exits a Jest worker before assertions complete', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-exit-'));
     const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
@@ -19,13 +19,13 @@ describe('trusted candidate test runner', () => {
         path.join(root, 'candidate-exit.test.js'),
         "'use strict';\nprocess.exit(0);\n"
       );
-      expect(() => runTrustedTests(root)).toThrow(/Trusted Jest process/);
+      await expect(runTrustedTests(root)).rejects.toThrow(/Trusted Jest (process|run)/);
     } finally {
       stdout.mockRestore();
       stderr.mockRestore();
       fs.rmSync(root, { recursive: true, force: true });
     }
-  }, 35000);
+  }, 60000);
 
   it('rejects incomplete or skipped Jest results', () => {
     expect(() => validateJestResult({ success: true })).toThrow(
@@ -55,5 +55,16 @@ describe('trusted candidate test runner', () => {
         ['test/a.test.js::suite candidate dummy']
       )
     ).toThrow(/missing: test\/a\.test\.js::suite protected assertion/);
+  });
+
+  it('keeps authority on parent IPC instead of a candidate-writable file', () => {
+    const supervisor = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'scripts', 'run-trusted-tests.js'),
+      'utf8'
+    );
+
+    expect(supervisor).toContain("stdio: ['ignore', 'pipe', 'pipe', 'ipc']");
+    expect(supervisor).toContain('jest-authority-reporter.js');
+    expect(supervisor).not.toContain('--outputFile');
   });
 });

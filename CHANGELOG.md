@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Override candidate npm omission settings so security audits include development, optional, and peer dependencies
 - Supervise candidate Jest execution and require complete passing results so premature termination cannot satisfy the trusted test gate
 - Freeze protected Jest globals and compare exact baseline test identities so candidate dummy tests cannot replace protected assertions
+- Move Jest result authority to a protected controller reporter and parent IPC channel that candidate exit handlers cannot rewrite
 
 ## [3.0.0] - 2026-08-19
 
