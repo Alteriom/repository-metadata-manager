@@ -20,6 +20,8 @@ Weights produce a summary score. Gates express non-negotiable controls. For exam
 
 Command-center profiles should set `requireVerifiedCheckers` to `branch-protection` and `repository-metadata` when authenticated GitHub facts are mandatory. Local developer profiles can leave it empty for offline evaluation.
 
+For a solo-maintainer repository, set `requiredApprovals` to `0`, disable code-owner approval, and retain strict status checks plus conversation resolution. Requiring one approval in that model creates a self-approval deadlock rather than meaningful separation of duties. Keep `enforceAdmins` disabled so the sole administrator retains an emergency recovery path, and record any bypass outside the repository as a command-center audit event.
+
 ## Organization layering
 
 The command center should materialize one resolved policy in each evaluation workspace:

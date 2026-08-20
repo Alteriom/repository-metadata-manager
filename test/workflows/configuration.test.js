@@ -39,7 +39,7 @@ describe('workflow control configuration', () => {
         expect(workflow).not.toMatch(/allow-licenses:.*\bJSON\b/);
     });
 
-    it('authenticates both enforced repository compliance invocations', () => {
+    it('authenticates compliance checks with a least-privilege GitHub App token', () => {
         const workflow = fs.readFileSync(
             path.join(
                 projectRoot,
@@ -49,11 +49,46 @@ describe('workflow control configuration', () => {
             ),
             'utf8'
         );
-        const tokenBindings =
+        const appTokenBindings =
             workflow.match(
-                /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/g
+                /GITHUB_TOKEN: \$\{\{ steps\.app-token\.outputs\.token \}\}/g
             ) || [];
 
-        expect(tokenBindings).toHaveLength(2);
+        expect(workflow).toContain(
+            'actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2'
+        );
+        expect(workflow).toContain('app-id: ${{ secrets.APP_ID }}');
+        expect(workflow).toContain(
+            'private-key: ${{ secrets.APP_PRIVATE_KEY }}'
+        );
+        expect(workflow).toContain('permission-administration: read');
+        expect(workflow).toContain('permission-contents: read');
+        expect(appTokenBindings).toHaveLength(2);
+        expect(workflow).not.toMatch(
+            /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/
+        );
+    });
+
+    it('uses verified controls without requiring a solo maintainer to self-approve', () => {
+        const policy = JSON.parse(
+            fs.readFileSync(
+                path.join(projectRoot, '.repo-manager.json'),
+                'utf8'
+            )
+        );
+
+        expect(policy.version).toBe('1.1.0');
+        expect(policy.gates.requireVerifiedCheckers).toEqual([
+            'branch-protection',
+            'repository-metadata',
+        ]);
+        expect(policy.branchProtection).toMatchObject({
+            requiredApprovals: 0,
+            requireStatusChecks: true,
+            requireStrictStatusChecks: true,
+            requireCodeOwnerReviews: false,
+            requireConversationResolution: true,
+            enforceAdmins: false,
+        });
     });
 });

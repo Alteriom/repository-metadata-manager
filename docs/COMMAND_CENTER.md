@@ -6,6 +6,26 @@ Use a GitHub App with separate read and write installations or tokens. Evaluatio
 
 Do not provide user-supplied tokens to CLI or MCP arguments. Inject short-lived credentials through the executor environment.
 
+For GitHub Actions, mint the evaluation token with the official `actions/create-github-app-token` action and scope it to the repository being checked. The app needs `Administration: read` for branch protection and security settings plus `Contents: read` for repository evaluation. This repository expects these organization Actions secrets:
+
+- `APP_ID`
+- `APP_PRIVATE_KEY`
+
+`APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
+
+## Solo-maintainer controls
+
+A solo maintainer cannot provide an independent approval. Use zero required approvals and compensate with controls that do not create a self-approval deadlock:
+
+- require strict, up-to-date status checks;
+- require all review conversations to be resolved;
+- require verified `branch-protection` and `repository-metadata` checker results;
+- keep critical and high-severity compliance gates at zero;
+- enable secret scanning and Dependabot security updates; and
+- retain administrator bypass for emergency recovery.
+
+This profile makes automation and evidence the merge authority. It does not treat a maintainer's approval of their own change as an independent control.
+
 ## Reconciliation flow
 
 1. Inventory repositories and assign policy profiles.

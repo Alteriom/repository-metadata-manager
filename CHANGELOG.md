@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Authenticate hosted compliance checks with a repository-scoped, least-privilege GitHub App token so branch protection and security controls can be verified
+- Replace the impossible self-approval requirement with strict status, conversation-resolution, and verified-checker gates for solo maintainers
+
 ## [3.0.0] - 2026-08-19
 
 ### Added
@@ -52,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GitHub Actions workflow for automated compliance checking
   - Graceful degradation when GitHub token is unavailable
   
+
 - **Local-Only Mode**: Run compliance checks without GitHub API access
   - Automatic creation of missing documentation (SECURITY.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md)
   - Issue and PR templates generation
@@ -100,6 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Multi-token support (GITHUB_TOKEN, AGENT_ORG_TOKEN, ORG_ACCESS_TOKEN)
   - `scripts/test-docs-tokens.js` for comprehensive token testing
   
+
 - **Authentication & Security**
   - Token validation across 10+ GitHub API endpoints
   - Graceful degradation with automatic fallback to local analysis

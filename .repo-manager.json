@@ -1,7 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "alteriom/repository-baseline",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "gates": {
         "failBelow": 70,
         "maxCritical": 0,
@@ -9,15 +9,16 @@
         "checkerMinimums": {
             "security": 70,
             "cicd": 70
-        }
+        },
+        "requireVerifiedCheckers": ["branch-protection", "repository-metadata"]
     },
     "branchProtection": {
-        "requiredApprovals": 1,
+        "requiredApprovals": 0,
         "requireStatusChecks": true,
         "requireStrictStatusChecks": true,
-        "requireCodeOwnerReviews": true,
+        "requireCodeOwnerReviews": false,
         "requireConversationResolution": true,
-        "enforceAdmins": true,
+        "enforceAdmins": false,
         "requireSignedCommits": false,
         "requireLinearHistory": false
     },

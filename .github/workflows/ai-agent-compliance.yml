@@ -33,10 +33,21 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Create repository compliance token
+              id: app-token
+              uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+              with:
+                  app-id: ${{ secrets.APP_ID }}
+                  private-key: ${{ secrets.APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: ${{ github.repository }}
+                  permission-administration: read
+                  permission-contents: read
+
             - name: Run compliance check
               id: check
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
                   node bin/repo-manager.js check --format json > compliance-report.json
                   SCORE=$(jq -r '.score' compliance-report.json)
@@ -48,7 +59,7 @@ jobs:
 
             - name: Run with GitHub annotations
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: node bin/repo-manager.js check --format github
               continue-on-error: true
 
