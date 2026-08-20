@@ -149,11 +149,19 @@ describe('SecurityChecker', () => {
 
   describe('npm audit integration', () => {
     it('runs npm audit without inherited credentials or candidate registry control', async () => {
-      const previousGitHubToken = process.env.GITHUB_TOKEN;
-      const previousRuntimeToken = process.env.ACTIONS_RUNTIME_TOKEN;
+      const environmentNames = [
+        'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'NPM_CONFIG_REGISTRY',
+        'HTTPS_PROXY', 'NODE_EXTRA_CA_CERTS',
+      ];
+      const previousEnvironment = Object.fromEntries(
+        environmentNames.map(name => [name, process.env[name]])
+      );
       const credentialSentinel = String(process.pid);
       process.env.GITHUB_TOKEN = credentialSentinel;
       process.env.ACTIONS_RUNTIME_TOKEN = credentialSentinel;
+      process.env.NPM_CONFIG_REGISTRY = 'https://registry.corp.example/';
+      process.env.HTTPS_PROXY = 'http://proxy.corp.example:8080';
+      process.env.NODE_EXTRA_CA_CERTS = 'certificates/corporate-ca.pem';
       const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
         vulnerabilities: {},
       }));
@@ -164,19 +172,21 @@ describe('SecurityChecker', () => {
 
         expect(audit).toHaveBeenCalledTimes(1);
         const [command, options] = audit.mock.calls[0];
-        expect(command).toContain('--registry=https://registry.npmjs.org/');
         expect(command).toContain('--ignore-scripts');
+        expect(command).not.toContain('--registry=');
         expect(options.env.GITHUB_TOKEN).toBeUndefined();
         expect(options.env.ACTIONS_RUNTIME_TOKEN).toBeUndefined();
-        expect(options.env.NPM_CONFIG_REGISTRY).toBe('https://registry.npmjs.org/');
+        expect(options.env.NPM_CONFIG_REGISTRY).toBe('https://registry.corp.example/');
+        expect(options.env.HTTPS_PROXY).toBe('http://proxy.corp.example:8080');
+        expect(options.env.NODE_EXTRA_CA_CERTS).toBe('certificates/corporate-ca.pem');
         expect(options.env.HOME).toBe(options.env.USERPROFILE);
         expect(options.env.HOME).not.toBe(process.env.HOME);
       } finally {
         audit.mockRestore();
-        if (previousGitHubToken === undefined) delete process.env.GITHUB_TOKEN;
-        else process.env.GITHUB_TOKEN = previousGitHubToken;
-        if (previousRuntimeToken === undefined) delete process.env.ACTIONS_RUNTIME_TOKEN;
-        else process.env.ACTIONS_RUNTIME_TOKEN = previousRuntimeToken;
+        for (const [name, value] of Object.entries(previousEnvironment)) {
+          if (value === undefined) delete process.env[name];
+          else process.env[name] = value;
+        }
       }
     });
 
