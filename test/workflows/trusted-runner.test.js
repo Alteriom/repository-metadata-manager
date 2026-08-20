@@ -78,6 +78,26 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('rejects candidate attempts to replace protected Jest matchers', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-matchers-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-matchers.test.js'),
+        "'use strict';\nconst registry = globalThis[Symbol.for('$$jest-matchers-object')];\nregistry.matchers.toBe = () => ({ pass: true, message: () => 'forged' });\ntest('dummy', () => expect(1).toBe(2));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('keeps authority on parent IPC instead of a candidate-writable file', () => {
     const supervisor = fs.readFileSync(
       path.join(__dirname, '..', '..', 'scripts', 'run-trusted-tests.js'),
@@ -96,5 +116,8 @@ describe('trusted candidate test runner', () => {
     );
     expect(lockdown).toContain("Object.defineProperty(process, 'send'");
     expect(lockdown).toContain('Object.freeze(protectedWorkerSend)');
+    expect(lockdown).toContain("Symbol.for('$$jest-matchers-object')");
+    expect(lockdown).toContain("['matchers', 'customEqualityTesters']");
+    expect(lockdown).toContain('Object.seal(matcherRegistry)');
   });
 });
