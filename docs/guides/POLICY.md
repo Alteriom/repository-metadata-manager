@@ -46,4 +46,4 @@ Exceptions should be stored by the command center with an owner, rationale, appr
 
 `ignoredPaths` is intended for controlled fixtures containing synthetic credentials. Keep it narrow. `ignoredDirectories` skips generated or vendored trees by directory name. Files larger than `maxFileSizeBytes` are not read by the built-in scanner.
 
-The npm audit subprocess uses an isolated npm home and never inherits credentials. It preserves only trusted proxy and CA variables from the parent process, and uses `REPO_MANAGER_NPM_AUDIT_REGISTRY`, `NPM_CONFIG_REGISTRY`, or the public npm registry in that order. Candidate project npm configuration cannot select the audit registry.
+The npm audit subprocess uses an isolated npm home and never inherits credentials. It preserves only trusted proxy and CA variables from the parent process, and uses `REPO_MANAGER_NPM_AUDIT_REGISTRY`, `NPM_CONFIG_REGISTRY`, or the public npm registry in that order. Candidate project npm configuration cannot select the audit registry or narrow workspace selection; monorepo audits explicitly include every configured workspace and the root.

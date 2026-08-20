@@ -77,11 +77,14 @@ jobs:
                         pull_number: pullNumber,
                         per_page: 100,
                       });
-                      const changesWorkflow = files.some(file =>
-                        file.filename.startsWith('.github/workflows/') ||
-                        file.previous_filename?.startsWith('.github/workflows/')
+                      const documentationOnly = filename =>
+                        /\.(?:md|mdx|rst|txt|png|jpe?g|gif|webp)$/i.test(filename) ||
+                        /^(?:LICENSE|NOTICE)(?:\.[^/]*)?$/i.test(filename);
+                      const requiresTrustedReview = files.some(file =>
+                        !documentationOnly(file.filename) ||
+                        (file.previous_filename && !documentationOnly(file.previous_filename))
                       );
-                      if (changesWorkflow) {
+                      if (requiresTrustedReview) {
                         const command = `/approve-command-center ${checkSha}`;
                         const comments = await github.paginate(github.rest.issues.listComments, {
                           owner: context.repo.owner,
@@ -103,11 +106,12 @@ jobs:
                         }
                         if (!approvedBy) {
                           core.setFailed(
-                            `Workflow changes require an administrator comment containing exactly: ${command}`
+                            `Executable or control changes require a trusted administrator ` +
+                            `comment containing exactly: ${command}`
                           );
                           return;
                         }
-                        core.notice(`Command-center workflow changes approved by ${approvedBy}`);
+                        core.notice(`Command-center changes reviewed by ${approvedBy}`);
                       }
 
                       core.setOutput('archive-sha', archiveSha);

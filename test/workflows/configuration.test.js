@@ -122,7 +122,11 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain("core.setOutput('report-sha', reportSha)");
         expect(workflow).toContain("core.setOutput('check-sha', checkSha)");
         expect(workflow).toContain('github.rest.pulls.listFiles');
-        expect(workflow).toContain("file.filename.startsWith('.github/workflows/')");
+        expect(workflow).toContain('const documentationOnly = filename =>');
+        expect(workflow).toContain('const requiresTrustedReview = files.some');
+        expect(workflow).toContain('!documentationOnly(file.previous_filename)');
+        expect(workflow).toContain('if (requiresTrustedReview)');
+        expect(workflow).toContain('Executable or control changes require a trusted administrator');
         expect(workflow).toContain('github.rest.issues.listComments');
         expect(workflow).toContain('github.rest.repos.getCollaboratorPermissionLevel');
         expect(workflow).toContain("permission.permission === 'admin'");

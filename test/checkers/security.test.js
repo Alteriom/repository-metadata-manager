@@ -183,6 +183,7 @@ describe('SecurityChecker', () => {
         expect(options.env.HTTPS_PROXY).toBe('http://proxy.corp.example:8080');
         expect(options.env.NODE_EXTRA_CA_CERTS).toBe('certificates/corporate-ca.pem');
         expect(options.env.NPM_CONFIG_OMIT).toBe('');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBe('');
         expect(options.env.HOME).toBe(options.env.USERPROFILE);
         expect(options.env.HOME).not.toBe(process.env.HOME);
       } finally {
@@ -191,6 +192,34 @@ describe('SecurityChecker', () => {
           if (value === undefined) delete process.env[name];
           else process.env[name] = value;
         }
+      }
+    });
+
+    it('audits every configured workspace and the root', async () => {
+      const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
+        vulnerabilities: {},
+      }));
+      const packageJson = Context.readPackageJson(
+        path.join(fixturesDir, 'healthy-project')
+      );
+
+      try {
+        const ctx = buildContext('healthy-project', {
+          cache: new Cache(),
+          packageJson: {
+            ...packageJson,
+            workspaces: ['packages/clean', 'packages/vulnerable'],
+          },
+        });
+        await checker.check(ctx);
+
+        const [command, options] = audit.mock.calls[0];
+        expect(command).toContain('--workspaces');
+        expect(command).toContain('--include-workspace-root');
+        expect(command).not.toContain('--workspace=');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBe('');
+      } finally {
+        audit.mockRestore();
       }
     });
 
