@@ -77,6 +77,14 @@ jobs:
                         pull_number: pullNumber,
                         per_page: 100,
                       });
+                      if (!Number.isSafeInteger(pull.changed_files) ||
+                          files.length !== pull.changed_files) {
+                        core.setFailed(
+                          `Pull request file listing is incomplete ` +
+                          `(${files.length}/${pull.changed_files ?? 'unknown'}); refusing review exemption`
+                        );
+                        return;
+                      }
                       const documentationOnly = filename =>
                         /\.(?:md|mdx|rst|txt|png|jpe?g|gif|webp)$/i.test(filename) ||
                         /^(?:LICENSE|NOTICE)(?:\.[^/]*)?$/i.test(filename);
