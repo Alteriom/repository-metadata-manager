@@ -263,13 +263,25 @@ jobs:
               working-directory: candidate
               shell: bash
               run: |
+                  TRUSTED_SANDBOX=/opt/repository-manager-trusted
+                  sudo install -d -o root -g root -m 0755 "$TRUSTED_SANDBOX"
+                  sudo cp -a "$GITHUB_WORKSPACE/control" "$TRUSTED_SANDBOX/control"
+                  sudo cp -a "$GITHUB_WORKSPACE/candidate" "$TRUSTED_SANDBOX/candidate"
+                  sudo chown -R root:root \
+                    "$TRUSTED_SANDBOX/control" \
+                    "$TRUSTED_SANDBOX/candidate"
+                  sudo chmod -R go-w \
+                    "$TRUSTED_SANDBOX/control" \
+                    "$TRUSTED_SANDBOX/candidate"
+                  sudo install -d -o 65534 -g 65534 -m 0700 \
+                    "$TRUSTED_SANDBOX/home"
                   sudo env -i \
                     CI=true \
-                    HOME="$RUNNER_TEMP/trusted-test-home" \
+                    HOME="$TRUSTED_SANDBOX/home" \
                     PATH="$PATH" \
                     REPO_MANAGER_TRUSTED_TEST_ISOLATION=required \
-                    node "$GITHUB_WORKSPACE/control/scripts/run-trusted-tests.js" \
-                      "$GITHUB_WORKSPACE/candidate"
+                    node "$TRUSTED_SANDBOX/control/scripts/run-trusted-tests.js" \
+                      "$TRUSTED_SANDBOX/candidate"
 
     compliance-check:
         name: Compliance Control Plane
