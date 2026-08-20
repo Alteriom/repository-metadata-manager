@@ -120,6 +120,10 @@ function runJest(root, trustedRoot) {
           testEnvironment: 'node',
           setupFilesAfterEnv: [lockdown],
           testPathIgnorePatterns: [ignoredSupervisorTest],
+          // Candidate tests are plain CommonJS. Disabling transforms prevents
+          // the root controller from creating a cache that isolated workers
+          // cannot write and avoids exposing a shared writable code cache.
+          transform: {},
         }),
         '--ci',
         '--no-cache',

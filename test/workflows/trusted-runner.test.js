@@ -291,6 +291,7 @@ describe('trusted candidate test runner', () => {
     expect(supervisor).toContain("'--disable-sigusr1'");
     expect(supervisor).toContain('jest-controller-isolation.js');
     expect(supervisor).toContain('jest-worker-ipc.js');
+    expect(supervisor).toContain('transform: {}');
     expect(supervisor).not.toContain('--outputFile');
 
     const lockdown = fs.readFileSync(
