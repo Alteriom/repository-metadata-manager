@@ -30,6 +30,8 @@ jobs:
               with:
                   fail-on-severity: critical
                   allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC, BSD-2-Clause, Python-2.0, CC-BY-4.0, CC0-1.0, 0BSD, AGPL-3.0
+                  # Version-scoped transitive exception for @modelcontextprotocol/sdk.
+                  allow-dependencies-licenses: pkg:npm/json-schema-typed@8.0.2
               continue-on-error: false
 
     security-audit:
