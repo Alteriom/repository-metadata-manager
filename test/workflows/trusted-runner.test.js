@@ -102,6 +102,60 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('rejects locally emitted Jest worker requests', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-request-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-request.test.js'),
+        "process.getBuiltinModule('process').emit('message', [1, false, 'worker', []]);\ntest('dummy', () => expect(true).toBe(true));\n"
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
+  it('rejects candidate replacement of the trusted Jest worker export', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-test-worker-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const testWorker = path.join(
+      path.dirname(require.resolve('jest-runner')),
+      'testWorker.js'
+    );
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-worker.test.js'),
+        `'use strict';\nconst worker = process.getBuiltinModule('module')._cache[${JSON.stringify(testWorker)}].exports;\n` +
+          "worker.worker = async () => ({ numFailingTests: 0 });\n" +
+          "test('dummy', () => expect(true).toBe(true));\n"
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('hides the raw Jest IPC descriptor from candidate code', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-fd-'));
     const trustedRoot = path.join(__dirname, '..', '..');
@@ -236,6 +290,11 @@ describe('trusted candidate test runner', () => {
     expect(workerIpc).toContain('bufferToString(serialize(payload)');
     expect(workerIpc).toContain('Object.getPrototypeOf(workerChannel)');
     expect(workerIpc).toContain("Object.defineProperty(process, '_channel'");
-    expect(workerIpc).toContain('if (!validEnvelope(secret, values[0]))');
+    expect(workerIpc).toContain('AUTH_REQUEST_TYPE');
+    expect(workerIpc).toContain('AUTH_RESPONSE_TYPE');
+    expect(workerIpc).toContain('issuedRequests.has(envelope.requestId)');
+    expect(workerIpc).toContain('__repositoryManagerTrustedReceive(messageListener)');
+    expect(workerIpc).toContain('receivedRequests.has(envelope.requestId)');
+    expect(workerIpc).toContain('Object.freeze(loadedModule.exports)');
   });
 });

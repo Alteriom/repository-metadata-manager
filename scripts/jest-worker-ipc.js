@@ -8,8 +8,10 @@ const path = require('path');
 const v8 = require('v8');
 
 const AUTH_FD_ENV = 'REPOSITORY_MANAGER_JEST_AUTH_FD';
-const AUTH_MESSAGE_TYPE = 'repository-manager:authenticated-jest-worker';
+const AUTH_REQUEST_TYPE = 'repository-manager:authenticated-jest-request';
+const AUTH_RESPONSE_TYPE = 'repository-manager:authenticated-jest-response';
 const SECRET_BYTES = 32;
+const bufferFrom = Buffer.from.bind(Buffer);
 const createHmac = crypto.createHmac.bind(crypto);
 const randomBytes = crypto.randomBytes.bind(crypto);
 const timingSafeEqual = crypto.timingSafeEqual.bind(crypto);
@@ -24,19 +26,27 @@ const processChildPath = path.join(
   'processChild.js'
 );
 const jestWorkerIndexPath = require.resolve('jest-worker');
+const testWorkerPath = path.join(
+  path.dirname(require.resolve('jest-runner')),
+  'testWorker.js'
+);
 
-function sign(secret, body) {
+function sign(secret, type, requestId, body) {
   const hmac = createHmac('sha256', secret);
-  hmacUpdate(hmac, body, 'utf8');
+  hmacUpdate(hmac, `${type}\0${requestId}\0${body}`, 'utf8');
   return hmacDigest(hmac, 'hex');
 }
 
-function validEnvelope(secret, envelope) {
-  if (!envelope || envelope.type !== AUTH_MESSAGE_TYPE ||
+function validEnvelope(secret, type, envelope) {
+  if (!envelope || envelope.type !== type ||
+      !/^[0-9a-f]{32}$/.test(envelope.requestId || '') ||
       typeof envelope.body !== 'string' ||
       typeof envelope.mac !== 'string') return false;
-  const expected = Buffer.from(sign(secret, envelope.body), 'hex');
-  const actual = Buffer.from(envelope.mac, 'hex');
+  const expected = bufferFrom(
+    sign(secret, type, envelope.requestId, envelope.body),
+    'hex'
+  );
+  const actual = bufferFrom(envelope.mac, 'hex');
   return expected.length === actual.length &&
     timingSafeEqual(expected, actual);
 }
@@ -75,14 +85,35 @@ if (!process.env.JEST_WORKER_ID) {
     secretPipe.on('error', () => child.kill());
     secretPipe.end(secret);
 
+    const issuedRequests = new Set();
+    const originalChildSend = child.send.bind(child);
+    child.send = (payload, ...args) => {
+      const requestId = bufferToString(randomBytes(16), 'hex');
+      const body = bufferToString(serialize(payload), 'base64');
+      issuedRequests.add(requestId);
+      return originalChildSend({
+        type: AUTH_REQUEST_TYPE,
+        requestId,
+        body,
+        mac: sign(secret, AUTH_REQUEST_TYPE, requestId, body),
+      }, ...args);
+    };
     const originalEmit = child.emit;
     child.emit = function emitAuthenticated(event, ...values) {
       if (event === 'message') {
-        if (!validEnvelope(secret, values[0])) {
+        const envelope = values[0];
+        if (!validEnvelope(secret, AUTH_RESPONSE_TYPE, envelope) ||
+            !issuedRequests.has(envelope.requestId)) {
           child.kill();
           throw new Error('Jest worker emitted an unauthenticated IPC message');
         }
-        values[0] = deserialize(Buffer.from(values[0].body, 'base64'));
+        const payload = deserialize(bufferFrom(envelope.body, 'base64'));
+        if (!Array.isArray(payload) || ![0, 1, 2, 3, 4].includes(payload[0])) {
+          child.kill();
+          throw new Error('Jest worker emitted an invalid IPC response');
+        }
+        if (payload[0] !== 3) issuedRequests.delete(envelope.requestId);
+        values[0] = payload;
       }
       return originalEmit.call(this, event, ...values);
     };
@@ -113,12 +144,28 @@ if (!process.env.JEST_WORKER_ID) {
 
   const originalExtension = Module._extensions['.js'];
   const originalSend = process.send.bind(process);
+  let activeRequestId;
+  const receivedRequests = new Set();
+  const authenticatedReceive = (listener) => (envelope, ...args) => {
+    if (!validEnvelope(secret, AUTH_REQUEST_TYPE, envelope) ||
+        receivedRequests.has(envelope.requestId)) {
+      throw new Error('Jest worker received an unauthenticated IPC request');
+    }
+    receivedRequests.add(envelope.requestId);
+    activeRequestId = envelope.requestId;
+    const payload = deserialize(bufferFrom(envelope.body, 'base64'));
+    return listener(payload, ...args);
+  };
   const authenticatedSend = (payload) => {
+    if (!activeRequestId) {
+      throw new Error('Jest worker response has no authenticated request');
+    }
     const body = bufferToString(serialize(payload), 'base64');
     return originalSend({
-      type: AUTH_MESSAGE_TYPE,
+      type: AUTH_RESPONSE_TYPE,
+      requestId: activeRequestId,
       body,
-      mac: sign(secret, body),
+      mac: sign(secret, AUTH_RESPONSE_TYPE, activeRequestId, body),
     });
   };
   const blockedWorkerSend = () => {
@@ -156,8 +203,19 @@ if (!process.env.JEST_WORKER_ID) {
     const resolvedFilename = path.resolve(filename);
     const isProcessChild = resolvedFilename === path.resolve(processChildPath);
     const isJestWorkerIndex = resolvedFilename === path.resolve(jestWorkerIndexPath);
-    if (!isProcessChild && !isJestWorkerIndex) {
+    const isTestWorker = resolvedFilename === path.resolve(testWorkerPath);
+    if (!isProcessChild && !isJestWorkerIndex && !isTestWorker) {
       return originalExtension(loadedModule, filename);
+    }
+
+    if (isTestWorker) {
+      const result = originalExtension(loadedModule, filename);
+      Object.freeze(loadedModule.exports);
+      transformedModules.add(resolvedFilename);
+      if (transformedModules.size === 3) {
+        Module._extensions['.js'] = originalExtension;
+      }
+      return result;
     }
 
     const source = fs.readFileSync(filename, 'utf8');
@@ -173,17 +231,39 @@ if (!process.env.JEST_WORKER_ID) {
       value: authenticatedSend,
       writable: false,
     });
+    if (isProcessChild) {
+      Object.defineProperty(loadedModule, '__repositoryManagerTrustedReceive', {
+        configurable: true,
+        value: authenticatedReceive,
+        writable: false,
+      });
+    }
     const prelude = [
       "'use strict';",
       "const __repositoryManagerTrustedSend = module.__repositoryManagerTrustedSend;",
+      ...(isProcessChild ? [
+        "const __repositoryManagerTrustedReceive = module.__repositoryManagerTrustedReceive;",
+        'delete module.__repositoryManagerTrustedReceive;',
+      ] : []),
       'delete module.__repositoryManagerTrustedSend;',
     ].join('\n');
-    const transformed = source.replace(
+    let transformed = source.replace(
       sendPattern,
       '__repositoryManagerTrustedSend('
     );
+    if (isProcessChild) {
+      const receivePattern = /process\.on\('message', messageListener\);/g;
+      const receiveRegistrations = source.match(receivePattern) || [];
+      if (receiveRegistrations.length !== 1) {
+        throw new Error('Trusted Jest worker harness has no auditable receive listener');
+      }
+      transformed = transformed.replace(
+        receivePattern,
+        "process.on('message', __repositoryManagerTrustedReceive(messageListener));"
+      );
+    }
     transformedModules.add(resolvedFilename);
-    if (transformedModules.size === 2) {
+    if (transformedModules.size === 3) {
       Module._extensions['.js'] = originalExtension;
     }
     return loadedModule._compile(`${prelude}\n${transformed}`, filename);
