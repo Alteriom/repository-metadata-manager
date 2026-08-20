@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move Jest result authority to a protected controller reporter and parent IPC channel that candidate exit handlers cannot rewrite
 - Remove branch-ref manual dispatch and isolate candidate Jest workers from the trusted controller with a separate Linux UID and disabled inspector activation
 - Capture and seal the Jest worker result channel before candidate modules load
+- Pin privileged evaluation to an administrator-selected immutable control-plane SHA, remove secret-bearing push/schedule triggers, and require an exact-head administrator attestation for workflow changes
 
 ## [3.0.0] - 2026-08-19
 

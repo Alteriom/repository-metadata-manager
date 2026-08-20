@@ -7,10 +7,6 @@ on:
     pull_request_target:
         branches: [main, develop]
         types: [opened, synchronize, reopened, ready_for_review]
-    push:
-        branches: [main, develop]
-    schedule:
-        - cron: '0 2 * * *'
     repository_dispatch:
         types: [repository-compliance]
 
@@ -27,8 +23,11 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+            issues: read
+            pull-requests: read
         outputs:
             archive-sha: ${{ steps.candidate.outputs.archive-sha }}
+            control-sha: ${{ steps.candidate.outputs.control-sha }}
             report-sha: ${{ steps.candidate.outputs.report-sha }}
             check-sha: ${{ steps.candidate.outputs.check-sha }}
 
@@ -38,37 +37,81 @@ jobs:
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
                   DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}
+                  TRUSTED_CONTROL_SHA: ${{ vars.REPOSITORY_MANAGER_CONTROL_SHA }}
               with:
                   script: |
-                      let archiveSha = context.sha;
-                      let reportSha = context.sha;
-                      let checkSha = context.sha;
+                      const controlSha = process.env.TRUSTED_CONTROL_SHA;
+                      if (!/^[0-9a-f]{40}$/.test(controlSha || '')) {
+                        core.setFailed('REPOSITORY_MANAGER_CONTROL_SHA must be an immutable lowercase commit SHA');
+                        return;
+                      }
+                      let pull;
+                      let pullNumber;
 
                       if (context.eventName === 'pull_request_target') {
-                        archiveSha = context.payload.pull_request.merge_commit_sha;
-                        reportSha = context.payload.pull_request.merge_commit_sha;
-                        checkSha = context.payload.pull_request.head.sha;
+                        pull = context.payload.pull_request;
+                        pullNumber = pull.number;
                       } else if (context.eventName === 'repository_dispatch') {
-                        const pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
+                        pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
                         if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
                           core.setFailed('repository-compliance requires a positive pull_request_number');
                           return;
                         }
-                        const { data: pull } = await github.rest.pulls.get({
+                        ({ data: pull } = await github.rest.pulls.get({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
                           pull_number: pullNumber,
+                        }));
+                      }
+                      if (!pull || pull.state !== 'open' || !pull.merge_commit_sha) {
+                        core.setFailed(`Pull request #${pullNumber || 'unknown'} is not open and mergeable`);
+                        return;
+                      }
+
+                      const archiveSha = pull.merge_commit_sha;
+                      const reportSha = pull.merge_commit_sha;
+                      const checkSha = pull.head.sha;
+                      const files = await github.paginate(github.rest.pulls.listFiles, {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: pullNumber,
+                        per_page: 100,
+                      });
+                      const changesWorkflow = files.some(file =>
+                        file.filename.startsWith('.github/workflows/') ||
+                        file.previous_filename?.startsWith('.github/workflows/')
+                      );
+                      if (changesWorkflow) {
+                        const command = `/approve-command-center ${checkSha}`;
+                        const comments = await github.paginate(github.rest.issues.listComments, {
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: pullNumber,
+                          per_page: 100,
                         });
-                        if (pull.state !== 'open' || !pull.merge_commit_sha) {
-                          core.setFailed(`Pull request #${pullNumber} is not open and mergeable`);
+                        let approvedBy;
+                        for (const comment of comments.filter(item => item.body.trim() === command).reverse()) {
+                          const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            username: comment.user.login,
+                          });
+                          if (permission.permission === 'admin') {
+                            approvedBy = comment.user.login;
+                            break;
+                          }
+                        }
+                        if (!approvedBy) {
+                          core.setFailed(
+                            `Workflow changes require an administrator comment containing exactly: ${command}`
+                          );
                           return;
                         }
-                        archiveSha = pull.merge_commit_sha;
-                        reportSha = pull.merge_commit_sha;
-                        checkSha = pull.head.sha;
+                        core.notice(`Command-center workflow changes approved by ${approvedBy}`);
                       }
 
                       core.setOutput('archive-sha', archiveSha);
+                      core.setOutput('control-sha', controlSha);
                       core.setOutput('report-sha', reportSha);
                       core.setOutput('check-sha', checkSha);
 
@@ -84,7 +127,7 @@ jobs:
             - name: Checkout trusted test control plane
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
-                  ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+                  ref: ${{ needs.resolve-candidate.outputs.control-sha }}
                   path: control
                   persist-credentials: false
 
@@ -181,7 +224,7 @@ jobs:
             - name: Checkout trusted control plane
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
-                  ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+                  ref: ${{ needs.resolve-candidate.outputs.control-sha }}
                   path: control
                   persist-credentials: false
 

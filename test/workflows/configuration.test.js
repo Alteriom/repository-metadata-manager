@@ -81,7 +81,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('checks: write');
     });
 
-    it('evaluates pull requests with base-branch code and policy', () => {
+    it('evaluates candidates with an immutable administrator-selected control plane', () => {
         const workflow = fs.readFileSync(
             path.join(
                 projectRoot,
@@ -101,9 +101,15 @@ describe('workflow control configuration', () => {
             /\n {4}repository_dispatch:\r?\n {8}types: \[repository-compliance\]/
         );
         expect(workflow).not.toMatch(/\n {4}workflow_dispatch:\r?\n/);
+        expect(workflow).not.toMatch(/\n {4}push:\r?\n/);
+        expect(workflow).not.toMatch(/\n {4}schedule:\r?\n/);
         expect(workflow).toContain(
-            "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
+            'TRUSTED_CONTROL_SHA: ${{ vars.REPOSITORY_MANAGER_CONTROL_SHA }}'
         );
+        expect(workflow).toContain("if (!/^[0-9a-f]{40}$/.test(controlSha || ''))");
+        expect(workflow.match(
+            /ref: \$\{\{ needs\.resolve-candidate\.outputs\.control-sha \}\}/g
+        )).toHaveLength(2);
         expect(workflow).toContain(
             'CANDIDATE_REF: ${{ needs.resolve-candidate.outputs.archive-sha }}'
         );
@@ -112,8 +118,15 @@ describe('workflow control configuration', () => {
         );
         expect(workflow.match(/github\.rest\.pulls\.get/g)).toHaveLength(1);
         expect(workflow).toContain("core.setOutput('archive-sha', archiveSha)");
+        expect(workflow).toContain("core.setOutput('control-sha', controlSha)");
         expect(workflow).toContain("core.setOutput('report-sha', reportSha)");
         expect(workflow).toContain("core.setOutput('check-sha', checkSha)");
+        expect(workflow).toContain('github.rest.pulls.listFiles');
+        expect(workflow).toContain("file.filename.startsWith('.github/workflows/')");
+        expect(workflow).toContain('github.rest.issues.listComments');
+        expect(workflow).toContain('github.rest.repos.getCollaboratorPermissionLevel');
+        expect(workflow).toContain("permission.permission === 'admin'");
+        expect(workflow).toContain('`/approve-command-center ${checkSha}`');
         expect(workflow).toContain('github.rest.repos.downloadTarballArchive');
         expect(workflow).toContain('Buffer.from(response.data)');
         expect(workflow).toContain('--no-same-owner');
@@ -254,7 +267,7 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.6.0');
+        expect(policy.version).toBe('1.7.0');
         expect(policy.gates.checkerMinimums['branch-protection']).toBe(100);
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',

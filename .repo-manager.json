@@ -1,7 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "alteriom/repository-baseline",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "gates": {
         "failBelow": 70,
         "maxCritical": 0,
