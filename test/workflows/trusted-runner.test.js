@@ -316,6 +316,8 @@ describe('trusted candidate test runner', () => {
     expect(workerIpc).toContain("'Candidate code cannot send Jest worker results'");
     expect(workerIpc).toContain('crypto.randomBytes.bind(crypto)');
     expect(workerIpc).toContain('randomBytes(SECRET_BYTES)');
+    expect(workerIpc).toContain('MAX_FORWARDED_STDERR_BYTES');
+    expect(workerIpc).toContain("child.stderr?.on('data'");
     expect(workerIpc).toContain("createHmac('sha256', secret)");
     expect(workerIpc).toContain('Function.call.bind(hmacProbe.update)');
     expect(workerIpc).toContain('bufferToString(serialize(payload)');
