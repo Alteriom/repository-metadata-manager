@@ -78,7 +78,7 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
-  it('rejects candidate attempts to invoke the Jest worker channel', async () => {
+  it('keeps direct candidate process.send calls outside the result channel', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-send-'));
     const trustedRoot = path.join(__dirname, '..', '..');
     const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
@@ -88,12 +88,36 @@ describe('trusted candidate test runner', () => {
         path.join(root, 'candidate-send.test.js'),
         "'use strict';\nprocess.send([0, { numFailedTests: 0, numPassedTests: 1 }]);\ntest('dummy', () => expect(true).toBe(true));\n"
       );
-      await expect(runJest(root, trustedRoot)).rejects.toThrow(
-        /Trusted Jest process/
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
       );
+      const result = await runJest(root, trustedRoot);
+      expect(result.numPassedTests).toBe(2);
+      expect(result.numFailedTests).toBe(0);
     } finally {
       stdout.mockRestore();
       stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
+  it('hides the raw Jest IPC descriptor from candidate code', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-fd-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-channel.test.js'),
+        "test('channel descriptor is private', () => { expect(process.channel.fd).toBeUndefined(); expect(process._channel).toBeUndefined(); });\n"
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      const result = await runJest(root, trustedRoot);
+      expect(result.numPassedTests).toBe(2);
+      expect(result.numFailedTests).toBe(0);
+    } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }
   }, 30000);
@@ -148,5 +172,10 @@ describe('trusted candidate test runner', () => {
     expect(workerIpc).toContain("process.env.JEST_WORKER_ID");
     expect(workerIpc).toContain("'__repositoryManagerTrustedSend'");
     expect(workerIpc).toContain("'Candidate code cannot send Jest worker results'");
+    expect(workerIpc).toContain("crypto.randomBytes(SECRET_BYTES)");
+    expect(workerIpc).toContain("crypto.createHmac('sha256', secret)");
+    expect(workerIpc).toContain('Object.getPrototypeOf(workerChannel)');
+    expect(workerIpc).toContain("Object.defineProperty(process, '_channel'");
+    expect(workerIpc).toContain('if (!validEnvelope(secret, values[0]))');
   });
 });

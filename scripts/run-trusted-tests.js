@@ -86,6 +86,8 @@ function runJest(root, trustedRoot) {
     );
   }
   const controllerEnvironment = { ...process.env };
+  delete controllerEnvironment.JEST_WORKER_ID;
+  delete controllerEnvironment.REPOSITORY_MANAGER_JEST_AUTH_FD;
   const ipcModule = path.join(
     trustedRoot,
     'scripts',
