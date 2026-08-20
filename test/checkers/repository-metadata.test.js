@@ -56,4 +56,16 @@ describe('RepositoryMetadataChecker', () => {
     expect(result.score).toBe(60);
     expect(result.findings.filter(finding => finding.severity === 'high')).toHaveLength(2);
   });
+
+  it('does not mark unavailable required security metadata as verified', async () => {
+    const result = await checker.check(context({
+      description: 'Managed service',
+      topics: ['managed', 'service', 'node'],
+      delete_branch_on_merge: true,
+    }));
+
+    expect(result.metadata.applicable).toBe(true);
+    expect(result.metadata.verified).toBe(false);
+    expect(result.findings.filter(finding => finding.severity === 'medium')).toHaveLength(2);
+  });
 });

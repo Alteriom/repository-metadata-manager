@@ -35,6 +35,8 @@ jobs:
 
             - name: Run compliance check
               id: check
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   node bin/repo-manager.js check --format json > compliance-report.json
                   SCORE=$(jq -r '.score' compliance-report.json)
@@ -45,6 +47,8 @@ jobs:
               continue-on-error: true
 
             - name: Run with GitHub annotations
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: node bin/repo-manager.js check --format github
               continue-on-error: true
 
