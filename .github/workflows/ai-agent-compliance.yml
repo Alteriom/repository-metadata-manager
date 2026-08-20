@@ -56,7 +56,10 @@ jobs:
                       3) encoded="${encoded}=" ;;
                       1) echo "APP_PRIVATE_KEY is not valid PEM or base64" >&2; exit 1 ;;
                     esac
-                    key="$(printf '%s' "$encoded" | base64 --decode)"
+                    if ! key="$(printf '%s' "$encoded" | base64 --decode 2>/dev/null)"; then
+                      echo "APP_PRIVATE_KEY is not valid PEM or base64" >&2
+                      exit 1
+                    fi
                   fi
                   if [[ "$key" != *"-----BEGIN "*"PRIVATE KEY-----"* ]]; then
                     echo "APP_PRIVATE_KEY does not contain a private-key PEM block" >&2
