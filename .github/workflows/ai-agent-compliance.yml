@@ -165,9 +165,8 @@ jobs:
                     CI=true \
                     HOME="$RUNNER_TEMP/trusted-test-home" \
                     PATH="$PATH" \
-                    node "$GITHUB_WORKSPACE/control/node_modules/jest/bin/jest.js" \
-                      --config '{"testEnvironment":"node","rootDir":"."}' \
-                      --runInBand
+                    node "$GITHUB_WORKSPACE/control/scripts/run-trusted-tests.js" \
+                      "$GITHUB_WORKSPACE/candidate"
 
     compliance-check:
         name: Compliance Control Plane

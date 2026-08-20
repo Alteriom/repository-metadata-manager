@@ -184,7 +184,8 @@ describe('workflow control configuration', () => {
         expect(sandbox).toContain('rm -rf candidate/test');
         expect(sandbox).toContain('cp -R control/test candidate/test');
         expect(sandbox).toContain('control/eslint.config.js');
-        expect(sandbox).toContain('control/node_modules/jest/bin/jest.js');
+        expect(sandbox).toContain('control/scripts/run-trusted-tests.js');
+        expect(sandbox).not.toContain('--runInBand');
         expect(sandbox).toContain('env -i');
         expect(sandbox).not.toContain('APP_PRIVATE_KEY');
         expect(sandbox).not.toContain('APP_ID');

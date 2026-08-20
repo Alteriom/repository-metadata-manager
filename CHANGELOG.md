@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pin dispatched evaluation and testing to one immutable candidate identity and bind CodeQL to its trusted App producer
 - Model ruleset conversation resolution and prohibit last-push approval deadlocks in the solo-maintainer policy
 - Override candidate npm omission settings so security audits include development, optional, and peer dependencies
+- Supervise candidate Jest execution and require complete passing results so premature termination cannot satisfy the trusted test gate
 
 ## [3.0.0] - 2026-08-19
 
