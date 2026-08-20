@@ -151,8 +151,9 @@ describe('SecurityChecker', () => {
     it('runs npm audit without inherited credentials or candidate registry control', async () => {
       const previousGitHubToken = process.env.GITHUB_TOKEN;
       const previousRuntimeToken = process.env.ACTIONS_RUNTIME_TOKEN;
-      process.env.GITHUB_TOKEN = 'privileged-app-token';
-      process.env.ACTIONS_RUNTIME_TOKEN = 'runner-service-token';
+      const credentialSentinel = String(process.pid);
+      process.env.GITHUB_TOKEN = credentialSentinel;
+      process.env.ACTIONS_RUNTIME_TOKEN = credentialSentinel;
       const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
         vulnerabilities: {},
       }));
