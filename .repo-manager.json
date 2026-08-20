@@ -1,23 +1,37 @@
 {
     "schemaVersion": 1,
     "id": "alteriom/repository-baseline",
-    "version": "1.0.0",
+    "version": "1.7.0",
     "gates": {
         "failBelow": 70,
         "maxCritical": 0,
         "maxHigh": 0,
         "checkerMinimums": {
             "security": 70,
-            "cicd": 70
-        }
+            "cicd": 70,
+            "branch-protection": 100
+        },
+        "requireVerifiedCheckers": ["branch-protection", "repository-metadata"]
     },
     "branchProtection": {
-        "requiredApprovals": 1,
+        "requiredApprovals": 0,
+        "maximumRequiredApprovals": 0,
         "requireStatusChecks": true,
+        "requiredStatusCheckContexts": [
+            "Trusted Test & Lint",
+            "Compliance Check",
+            "CodeQL"
+        ],
+        "requiredStatusCheckAppIds": {
+            "CodeQL": 57789
+        },
         "requireStrictStatusChecks": true,
-        "requireCodeOwnerReviews": true,
+        "requireCodeOwnerReviews": false,
+        "prohibitCodeOwnerReviews": true,
+        "prohibitLastPushApproval": true,
         "requireConversationResolution": true,
-        "enforceAdmins": true,
+        "enforceAdmins": false,
+        "prohibitAdminEnforcement": true,
         "requireSignedCommits": false,
         "requireLinearHistory": false
     },

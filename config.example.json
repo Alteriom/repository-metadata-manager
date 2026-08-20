@@ -24,11 +24,17 @@
     },
     "branchProtection": {
         "requiredApprovals": 1,
+        "maximumRequiredApprovals": 1,
         "requireStatusChecks": true,
+        "requiredStatusCheckContexts": [],
+        "requiredStatusCheckAppIds": {},
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": true,
+        "prohibitCodeOwnerReviews": false,
+        "prohibitLastPushApproval": false,
         "requireConversationResolution": true,
         "enforceAdmins": true,
+        "prohibitAdminEnforcement": false,
         "requireSignedCommits": false,
         "requireLinearHistory": false
     },

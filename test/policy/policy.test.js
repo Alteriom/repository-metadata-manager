@@ -46,6 +46,87 @@ describe('Policy', () => {
     expect(() => Policy.load(root)).toThrow('Unknown policy property');
   });
 
+  it('validates approval ranges', () => {
+    expect(() => Policy.validate({
+      branchProtection: { requiredApprovals: 0, maximumRequiredApprovals: 0 },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredApprovals: 1, maximumRequiredApprovals: 0 },
+    })).toThrow('must be greater than or equal to requiredApprovals');
+
+    expect(() => Policy.validate({
+      branchProtection: { maximumRequiredApprovals: 0 },
+    })).toThrow('must be greater than or equal to requiredApprovals');
+
+    expect(() => Policy.validate({
+      branchProtection: { maximumRequiredApprovals: 0.5 },
+    })).toThrow('must be a non-negative integer');
+
+    expect(() => Policy.validate({
+      branchProtection: { requireCodeOwnerReviews: true, prohibitCodeOwnerReviews: true },
+    })).toThrow('cannot require and prohibit code-owner reviews');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitCodeOwnerReviews: true },
+    })).toThrow('cannot require and prohibit code-owner reviews');
+
+    expect(() => Policy.validate({
+      branchProtection: { enforceAdmins: true, prohibitAdminEnforcement: true },
+    })).toThrow('cannot require and prohibit administrator enforcement');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitAdminEnforcement: true },
+    })).toThrow('cannot require and prohibit administrator enforcement');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitLastPushApproval: true },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitLastPushApproval: 'yes' },
+    })).toThrow('branchProtection.prohibitLastPushApproval must be boolean');
+  });
+
+  it('validates required status-check contexts', () => {
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', 'security'] },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', ''] },
+    })).toThrow('must be an array of non-empty strings');
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', 'ci'] },
+    })).toThrow('must not contain duplicates');
+
+    expect(() => Policy.validate({
+      branchProtection: { requireStatusChecks: false, requiredStatusCheckContexts: ['ci'] },
+    })).toThrow('requires requireStatusChecks');
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['Compliance Check'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 12345 },
+      },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['Compliance Check'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 0 },
+      },
+    })).toThrow('positive integer App IDs');
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['ci'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 12345 },
+      },
+    })).toThrow('must also be listed in requiredStatusCheckContexts');
+  });
+
   it('rejects policy paths outside the repository', () => {
     expect(() => Policy.load(root, path.join('..', 'policy.json'))).toThrow('must stay within');
   });

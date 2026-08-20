@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Authenticate hosted compliance checks with a repository-scoped, least-privilege GitHub App token so branch protection and security controls can be verified
+- Replace the impossible self-approval requirement with strict status, conversation-resolution, and verified-checker gates for solo maintainers
+- Keep checker-specific `--only` evaluations from failing verification gates for unrelated checkers
+- Preserve explicitly requested disabled checkers in the verification-gate scope
+- Give fork pull requests a secret-free local compliance path while reserving authoritative GitHub checks for trusted events
+- Treat Dependabot pull requests as untrusted events because GitHub withholds Actions secrets from them
+- Add a maximum required-approval constraint so solo-maintainer policies verify an exact zero-approval rule
+- Add explicit code-owner-review and administrator-enforcement prohibitions for exact solo-maintainer control verification
+- Require complete classic/ruleset enumeration, an exact branch-protection checker score, and a dedicated App source for the protected compliance check
+- Isolate npm audit from privileged workflow credentials and candidate-controlled npm configuration
+- Move merge-authority tests and linting into a protected, secret-free workflow job and publish their result through the dedicated compliance App
+- Pin dispatched evaluation and testing to one immutable candidate identity and bind CodeQL to its trusted App producer
+- Model ruleset conversation resolution and prohibit last-push approval deadlocks in the solo-maintainer policy
+- Override candidate npm omission settings so security audits include development, optional, and peer dependencies
+- Supervise candidate Jest execution and require complete passing results so premature termination cannot satisfy the trusted test gate
+- Freeze protected Jest globals and compare exact baseline test identities so candidate dummy tests cannot replace protected assertions
+- Move Jest result authority to a protected controller reporter and parent IPC channel that candidate exit handlers cannot rewrite
+- Remove branch-ref manual dispatch and isolate candidate Jest workers from the trusted controller with a separate Linux UID and disabled inspector activation
+- Capture and seal the Jest worker result channel before candidate modules load
+- Pin privileged evaluation to an administrator-selected immutable control-plane SHA, remove secret-bearing push/schedule triggers, fail closed on incomplete PR file listings, and require exact-head administrator attestation for every non-documentation change
+- Freeze Jest's matcher registries and the standard intrinsics they depend on before candidate modules load
+- Skip Checks API publication when Dependabot receives GitHub's read-only workflow token
+- Authenticate every Jest worker request and response with a per-process HMAC key and request ID, block worker self-inspection, freeze the trusted worker export, capture immutable serialization/cryptographic primitives, and hide raw IPC descriptors from candidate code
+- Clear candidate npm workspace filters and explicitly audit every configured workspace plus the repository root
+
 ## [3.0.0] - 2026-08-19
 
 ### Added
@@ -52,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GitHub Actions workflow for automated compliance checking
   - Graceful degradation when GitHub token is unavailable
   
+
 - **Local-Only Mode**: Run compliance checks without GitHub API access
   - Automatic creation of missing documentation (SECURITY.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md)
   - Issue and PR templates generation
@@ -100,6 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Multi-token support (GITHUB_TOKEN, AGENT_ORG_TOKEN, ORG_ACCESS_TOKEN)
   - `scripts/test-docs-tokens.js` for comprehensive token testing
   
+
 - **Authentication & Security**
   - Token validation across 10+ GitHub API endpoints
   - Graceful degradation with automatic fallback to local analysis

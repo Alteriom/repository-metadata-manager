@@ -70,6 +70,7 @@ Place `.repo-manager.json` in the repository root. Configuration is validated an
   "branchProtection": {
     "requiredApprovals": 1,
     "requireStatusChecks": true,
+    "requiredStatusCheckContexts": ["ci", "security"],
     "requireStrictStatusChecks": true,
     "requireCodeOwnerReviews": true,
     "requireConversationResolution": true,

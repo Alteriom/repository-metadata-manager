@@ -41,12 +41,9 @@ jobs:
               env:
                   CI: true
 
-            - name: Run health check
-              run: node bin/repo-manager.js check --format github
-
             - name: Validate CLI
               run: |
-                  node bin/repo-manager.js check --format json > /dev/null
+                  node bin/repo-manager.js check --only license --format json > /dev/null
                   node bin/repo-manager.js config > /dev/null
                   echo "CLI validation passed"
 

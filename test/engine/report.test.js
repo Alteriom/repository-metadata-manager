@@ -117,5 +117,50 @@ describe('Report', () => {
       expect(report.status).toBe('fail');
       expect(report.gates).toContainEqual(expect.objectContaining({ id: 'verified:branch-protection', passed: false }));
     });
+
+    it('does not apply verification gates outside an explicit checker scope', () => {
+      const report = Report.aggregate(
+        [{ checker: 'license', score: 100, findings: [], metadata: {} }],
+        {},
+        {
+          policy: {
+            id: 'test',
+            version: '1.0.0',
+            schemaVersion: 1,
+            gates: { requireVerifiedCheckers: ['branch-protection'] },
+          },
+          checkerScope: ['license'],
+        },
+      );
+
+      expect(report.status).toBe('pass');
+      expect(report.gates).not.toContainEqual(
+        expect.objectContaining({ id: 'verified:branch-protection' }),
+      );
+    });
+
+    it('fails when an explicitly scoped required checker has no result', () => {
+      const report = Report.aggregate(
+        [{ checker: 'license', score: 100, findings: [], metadata: {} }],
+        {},
+        {
+          policy: {
+            id: 'test',
+            version: '1.0.0',
+            schemaVersion: 1,
+            gates: { requireVerifiedCheckers: ['branch-protection'] },
+          },
+          checkerScope: ['branch-protection', 'license'],
+        },
+      );
+
+      expect(report.status).toBe('fail');
+      expect(report.gates).toContainEqual(
+        expect.objectContaining({
+          id: 'verified:branch-protection',
+          passed: false,
+        }),
+      );
+    });
   });
 });
