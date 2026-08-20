@@ -117,16 +117,27 @@ describe('workflow control configuration', () => {
             'DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}'
         );
         expect(workflow.match(/github\.rest\.pulls\.get/g)).toHaveLength(1);
+        expect(workflow).toContain('pull.base.ref === \'main\'');
+        expect(workflow).toContain(
+            'pull.base?.repo?.full_name === `${context.repo.owner}/${context.repo.repo}`'
+        );
+        expect(workflow).toContain(
+            'must target the protected main branch in this repository'
+        );
         expect(workflow).toContain("core.setOutput('archive-sha', archiveSha)");
         expect(workflow).toContain("core.setOutput('control-sha', controlSha)");
         expect(workflow).toContain("core.setOutput('report-sha', reportSha)");
         expect(workflow).toContain("core.setOutput('check-sha', checkSha)");
-        expect(workflow).toContain('github.rest.pulls.listFiles');
-        expect(workflow).toContain('files.length !== pull.changed_files');
-        expect(workflow).toContain('refusing review exemption');
+        expect(workflow).not.toContain('github.rest.pulls.listFiles');
+        expect(workflow).toContain('github.rest.git.getCommit');
+        expect(workflow).toContain('github.rest.git.getTree');
+        expect(workflow).toContain('immutableTree(baseSha)');
+        expect(workflow).toContain('immutableTree(archiveSha)');
+        expect(workflow).toContain('if (tree.truncated || !Array.isArray(tree.tree))');
+        expect(workflow).toContain('Immutable tree listing was truncated');
         expect(workflow).toContain('const documentationOnly = filename =>');
-        expect(workflow).toContain('const requiresTrustedReview = files.some');
-        expect(workflow).toContain('!documentationOnly(file.previous_filename)');
+        expect(workflow).toContain('baseTree.get(path) !== candidateTree.get(path)');
+        expect(workflow).toContain('changedPaths.some(path => !documentationOnly(path))');
         expect(workflow).toContain('if (requiresTrustedReview)');
         expect(workflow).toContain('Executable or control changes require a trusted administrator');
         expect(workflow).toContain('github.rest.issues.listComments');

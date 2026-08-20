@@ -5,7 +5,7 @@ on:
     # candidate merge tree is evaluated as data by the privileged job. Candidate
     # code executes only in the separate secret-free test job.
     pull_request_target:
-        branches: [main, develop]
+        branches: [main]
         types: [opened, synchronize, reopened, ready_for_review]
     repository_dispatch:
         types: [repository-compliance]
@@ -68,30 +68,63 @@ jobs:
                         return;
                       }
 
-                      const archiveSha = pull.merge_commit_sha;
-                      const reportSha = pull.merge_commit_sha;
-                      const checkSha = pull.head.sha;
-                      const files = await github.paginate(github.rest.pulls.listFiles, {
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        pull_number: pullNumber,
-                        per_page: 100,
-                      });
-                      if (!Number.isSafeInteger(pull.changed_files) ||
-                          files.length !== pull.changed_files) {
+                      const trustedBase =
+                        pull.base?.repo?.full_name === `${context.repo.owner}/${context.repo.repo}` &&
+                        pull.base.ref === 'main';
+                      if (!trustedBase) {
                         core.setFailed(
-                          `Pull request file listing is incomplete ` +
-                          `(${files.length}/${pull.changed_files ?? 'unknown'}); refusing review exemption`
+                          `Pull request #${pullNumber} must target the protected main branch in this repository`
                         );
                         return;
                       }
+
+                      const archiveSha = pull.merge_commit_sha;
+                      const reportSha = pull.merge_commit_sha;
+                      const checkSha = pull.head.sha;
+                      const baseSha = pull.base.sha;
+                      for (const [label, sha] of Object.entries({ archiveSha, checkSha, baseSha })) {
+                        if (!/^[0-9a-f]{40}$/.test(sha || '')) {
+                          core.setFailed(`${label} must be an immutable lowercase commit SHA`);
+                          return;
+                        }
+                      }
+
+                      const immutableTree = async commitSha => {
+                        const { data: commit } = await github.rest.git.getCommit({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          commit_sha: commitSha,
+                        });
+                        const { data: tree } = await github.rest.git.getTree({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          tree_sha: commit.tree.sha,
+                          recursive: 'true',
+                        });
+                        if (tree.truncated || !Array.isArray(tree.tree)) {
+                          return null;
+                        }
+                        return new Map(tree.tree
+                          .filter(entry => entry.type !== 'tree')
+                          .map(entry => [entry.path, `${entry.mode}:${entry.type}:${entry.sha}`]));
+                      };
+                      const [baseTree, candidateTree] = await Promise.all([
+                        immutableTree(baseSha),
+                        immutableTree(archiveSha),
+                      ]);
                       const documentationOnly = filename =>
                         /\.(?:md|mdx|rst|txt|png|jpe?g|gif|webp)$/i.test(filename) ||
                         /^(?:LICENSE|NOTICE)(?:\.[^/]*)?$/i.test(filename);
-                      const requiresTrustedReview = files.some(file =>
-                        !documentationOnly(file.filename) ||
-                        (file.previous_filename && !documentationOnly(file.previous_filename))
-                      );
+                      let requiresTrustedReview = true;
+                      if (baseTree && candidateTree) {
+                        const paths = new Set([...baseTree.keys(), ...candidateTree.keys()]);
+                        const changedPaths = [...paths].filter(
+                          path => baseTree.get(path) !== candidateTree.get(path)
+                        );
+                        requiresTrustedReview = changedPaths.some(path => !documentationOnly(path));
+                      } else {
+                        core.notice('Immutable tree listing was truncated; requiring administrator review');
+                      }
                       if (requiresTrustedReview) {
                         const command = `/approve-command-center ${checkSha}`;
                         const comments = await github.paginate(github.rest.issues.listComments, {
