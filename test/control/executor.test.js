@@ -5,7 +5,7 @@ const os = require('os');
 const path = require('path');
 const Executor = require('../../lib/control/Executor');
 
-function plan(root, operation) {
+function plan(root, operationOrOperations) {
   const Planner = require('../../lib/control/Planner');
   const value = {
     schemaVersion: '1.0.0',
@@ -13,7 +13,7 @@ function plan(root, operation) {
     id: null,
     repository: { root },
     policy: { id: 'test', version: '1.0.0' },
-    operations: [operation],
+    operations: Array.isArray(operationOrOperations) ? operationOrOperations : [operationOrOperations],
   };
   value.id = Planner.idFor(value);
   return value;
@@ -69,5 +69,25 @@ describe('Executor', () => {
     });
     targetPlan.operations[0].content = 'tampered\n';
     expect(() => Executor.apply(targetPlan, { projectRoot: root })).toThrow('deterministic id');
+  });
+
+  it('validates every operation before writing any file', () => {
+    fs.writeFileSync(path.join(root, 'changed.txt'), 'changed');
+    const targetPlan = plan(root, [
+      {
+        id: 'first', checker: 'test', type: 'write-file', path: 'first.txt', beforeHash: null, content: 'first\n',
+      },
+      {
+        id: 'stale', checker: 'test', type: 'write-file', path: 'changed.txt', beforeHash: null, content: 'new\n',
+      },
+    ]);
+
+    expect(() => Executor.apply(targetPlan, {
+      projectRoot: root,
+      dryRun: false,
+      approved: true,
+    })).toThrow('stale');
+    expect(fs.existsSync(path.join(root, 'first.txt'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'changed.txt'), 'utf8')).toBe('changed');
   });
 });

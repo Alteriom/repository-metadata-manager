@@ -40,6 +40,26 @@ describe('Context', () => {
     });
   });
 
+  describe('parseGitHubRemote()', () => {
+    it.each([
+      ['git@github.com:Alteriom/repository-metadata-manager.git'],
+      ['https://github.com/Alteriom/repository-metadata-manager.git'],
+      ['ssh://git@github.com/Alteriom/repository-metadata-manager.git'],
+    ])('parses supported GitHub remote %s', (remote) => {
+      expect(Context.parseGitHubRemote(remote)).toEqual({
+        owner: 'Alteriom',
+        repo: 'repository-metadata-manager',
+      });
+    });
+
+    it('rejects malformed, non-GitHub, and oversized remotes', () => {
+      const none = { owner: null, repo: null };
+      expect(Context.parseGitHubRemote('https://example.com/owner/repo.git')).toEqual(none);
+      expect(Context.parseGitHubRemote('github.com:../../owner/repo')).toEqual(none);
+      expect(Context.parseGitHubRemote(`git@github.com:${'a'.repeat(2048)}/repo.git`)).toEqual(none);
+    });
+  });
+
   describe('build()', () => {
     it('builds context for a node project', async () => {
       const ctx = await Context.build({ projectRoot: path.join(FIXTURES, 'healthy-project') });

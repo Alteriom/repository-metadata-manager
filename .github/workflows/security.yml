@@ -51,7 +51,7 @@ jobs:
 
             - name: Run npm audit
               run: |
-                  npm audit --json > security-audit.json
+                  npm audit --json --audit-level moderate > security-audit.json
                   npm audit --audit-level moderate
 
             - name: Run security check

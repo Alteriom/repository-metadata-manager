@@ -6,9 +6,9 @@ inputs:
         required: false
         default: 'github'
     fail-below:
-        description: 'Fail if score is below this threshold (0-100)'
+        description: 'Optional override for the policy minimum score (0-100)'
         required: false
-        default: '0'
+        default: ''
     only:
         description: 'Run only specific checkers (comma-separated)'
         required: false
@@ -51,16 +51,19 @@ runs:
           run: |
               set -u
               case "$INPUT_FORMAT" in cli|json|github) ;; *) echo "Invalid format: $INPUT_FORMAT" >&2; exit 2 ;; esac
-              if ! [[ "$INPUT_FAIL_BELOW" =~ ^([0-9]|[1-9][0-9]|100)$ ]]; then
-                echo "fail-below must be an integer from 0 to 100" >&2
-                exit 2
-              fi
               if [ -n "$INPUT_ONLY" ] && ! [[ "$INPUT_ONLY" =~ ^[a-z0-9,-]+$ ]]; then
                 echo "only contains unsupported characters" >&2
                 exit 2
               fi
 
-              ARGS=(--fail-below "$INPUT_FAIL_BELOW")
+              ARGS=()
+              if [ -n "$INPUT_FAIL_BELOW" ]; then
+                if ! [[ "$INPUT_FAIL_BELOW" =~ ^([0-9]|[1-9][0-9]|100)$ ]]; then
+                  echo "fail-below must be an integer from 0 to 100" >&2
+                  exit 2
+                fi
+                ARGS+=(--fail-below "$INPUT_FAIL_BELOW")
+              fi
               if [ -n "$INPUT_ONLY" ]; then ARGS+=(--only "$INPUT_ONLY"); fi
               REPORT_FILE=$(mktemp)
               trap 'rm -f "$REPORT_FILE"' EXIT

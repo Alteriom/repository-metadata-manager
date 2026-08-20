@@ -70,4 +70,15 @@ describe('DependenciesChecker', () => {
     });
   });
 
+  describe('non-Node project', () => {
+    it('is not applicable and emits no Node lock-file finding', async () => {
+      const ctx = buildContext('iot-project');
+      const result = await checker.check(ctx);
+
+      expect(result.metadata.applicable).toBe(false);
+      expect(result.score).toBe(100);
+      expect(result.findings.map(finding => finding.id)).toEqual(['dep-000']);
+    });
+  });
+
 });
