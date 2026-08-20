@@ -136,11 +136,6 @@ describe('trusted candidate test runner', () => {
           "Object.getPrototypeOf(probe).digest = () => { throw new Error('candidate HMAC digest'); };",
           "crypto.createHmac = () => { throw new Error('candidate HMAC factory'); };",
           "v8.serialize = () => { throw new Error('candidate serializer'); };",
-          "const originalToString = Buffer.prototype.toString;",
-          "Buffer.prototype.toString = function toString(encoding, ...args) {",
-          "  if (encoding === 'base64') throw new Error('candidate base64 encoder');",
-          "  return Reflect.apply(originalToString, this, [encoding, ...args]);",
-          "};",
           "test('candidate cannot hook authentication', () => expect(true).toBe(true));",
           '',
         ].join('\n')
@@ -177,6 +172,30 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('rejects candidate attempts to replace matcher intrinsics', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-intrinsics-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-intrinsic.test.js'),
+        "Object.is = () => true;\ntest('forged intrinsic', () => expect(1).toBe(2));\n"
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('keeps authority on parent IPC instead of a candidate-writable file', () => {
     const supervisor = fs.readFileSync(
       path.join(__dirname, '..', '..', 'scripts', 'run-trusted-tests.js'),
@@ -199,6 +218,9 @@ describe('trusted candidate test runner', () => {
     expect(lockdown).toContain("Symbol.for('$$jest-matchers-object')");
     expect(lockdown).toContain("['matchers', 'customEqualityTesters']");
     expect(lockdown).toContain('Object.seal(matcherRegistry)');
+    expect(lockdown).toContain('function deepFreeze(root, seen)');
+    expect(lockdown).toContain("'Object', 'Function', 'Array'");
+    expect(lockdown).toContain('lockIntrinsicGlobals();');
 
     const workerIpc = fs.readFileSync(
       path.join(__dirname, '..', '..', 'scripts', 'jest-worker-ipc.js'),

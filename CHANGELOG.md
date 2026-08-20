@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove branch-ref manual dispatch and isolate candidate Jest workers from the trusted controller with a separate Linux UID and disabled inspector activation
 - Capture and seal the Jest worker result channel before candidate modules load
 - Pin privileged evaluation to an administrator-selected immutable control-plane SHA, remove secret-bearing push/schedule triggers, and require an exact-head administrator attestation for workflow changes
-- Freeze Jest's internal matcher and equality-tester registries before candidate modules load
+- Freeze Jest's matcher registries and the standard intrinsics they depend on before candidate modules load
 - Skip Checks API publication when Dependabot receives GitHub's read-only workflow token
 - Authenticate every Jest worker result with a per-process HMAC key delivered through a one-use pipe, capture immutable serialization/cryptographic primitives, and hide raw IPC descriptors from candidate code
 
