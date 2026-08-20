@@ -56,6 +56,10 @@ describe('Policy', () => {
     })).toThrow('must be greater than or equal to requiredApprovals');
 
     expect(() => Policy.validate({
+      branchProtection: { maximumRequiredApprovals: 0 },
+    })).toThrow('must be greater than or equal to requiredApprovals');
+
+    expect(() => Policy.validate({
       branchProtection: { maximumRequiredApprovals: 0.5 },
     })).toThrow('must be a non-negative integer');
   });
