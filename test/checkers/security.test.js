@@ -206,7 +206,7 @@ describe('SecurityChecker', () => {
       }
     });
 
-    it('audits every configured workspace and the root from a manifest-only copy', async () => {
+    it('audits every configured workspace from a lockfile v1 manifest-only copy', async () => {
       const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-workspace-audit-'));
       fs.mkdirSync(path.join(root, 'packages', 'clean'), { recursive: true });
       fs.mkdirSync(path.join(root, 'packages', 'vulnerable'), { recursive: true });
@@ -220,12 +220,8 @@ describe('SecurityChecker', () => {
       fs.writeFileSync(path.join(root, 'package-lock.json'), JSON.stringify({
         name: 'audit-root',
         version: '1.0.0',
-        lockfileVersion: 3,
-        packages: {
-          '': { name: 'audit-root', version: '1.0.0', workspaces: ['packages/*'] },
-          'packages/clean': { name: 'clean', version: '1.0.0' },
-          'packages/vulnerable': { name: 'vulnerable', version: '1.0.0' },
-        },
+        lockfileVersion: 1,
+        dependencies: {},
       }));
       fs.writeFileSync(
         path.join(root, 'packages', 'clean', 'package.json'),
@@ -304,7 +300,10 @@ describe('SecurityChecker', () => {
       const ctx = buildContext('healthy-project', { cache });
       const result = await checker.check(ctx);
 
-      expect(result.findings.some(finding => finding.id === 'sec-013')).toBe(true);
+      const auditFailure = result.findings.find(finding => finding.id === 'sec-013');
+      expect(auditFailure).toBeDefined();
+      expect(auditFailure.severity).toBe('high');
+      expect(result.score).toBeLessThanOrEqual(70);
     });
   });
 
