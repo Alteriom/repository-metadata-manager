@@ -22,7 +22,9 @@
             "Compliance Check",
             "CodeQL"
         ],
-        "requiredStatusCheckAppIds": {},
+        "requiredStatusCheckAppIds": {
+            "CodeQL": 57789
+        },
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": false,
         "prohibitCodeOwnerReviews": true,

@@ -23,32 +23,32 @@ permissions:
     actions: read
 
 jobs:
-    trusted-candidate-tests:
-        name: Trusted Candidate Test Sandbox
+    resolve-candidate:
+        name: Resolve Immutable Candidate
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            actions: read
+        outputs:
+            archive-sha: ${{ steps.candidate.outputs.archive-sha }}
+            report-sha: ${{ steps.candidate.outputs.report-sha }}
+            check-sha: ${{ steps.candidate.outputs.check-sha }}
 
         steps:
-            - name: Checkout trusted test control plane
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-              with:
-                  ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
-                  path: control
-                  persist-credentials: false
-
-            - name: Resolve candidate test identity
-              id: test-candidate
+            - name: Resolve candidate identity once
+              id: candidate
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
                   DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}
               with:
                   script: |
                       let archiveSha = context.sha;
+                      let reportSha = context.sha;
+                      let checkSha = context.sha;
 
                       if (context.eventName === 'pull_request_target') {
                         archiveSha = context.payload.pull_request.merge_commit_sha;
+                        reportSha = context.payload.pull_request.merge_commit_sha;
+                        checkSha = context.payload.pull_request.head.sha;
                       } else if (context.eventName === 'repository_dispatch') {
                         const pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
                         if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
@@ -65,14 +65,34 @@ jobs:
                           return;
                         }
                         archiveSha = pull.merge_commit_sha;
+                        reportSha = pull.merge_commit_sha;
+                        checkSha = pull.head.sha;
                       }
 
                       core.setOutput('archive-sha', archiveSha);
+                      core.setOutput('report-sha', reportSha);
+                      core.setOutput('check-sha', checkSha);
+
+    trusted-candidate-tests:
+        name: Trusted Candidate Test Sandbox
+        needs: resolve-candidate
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            actions: read
+
+        steps:
+            - name: Checkout trusted test control plane
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+                  path: control
+                  persist-credentials: false
 
             - name: Download candidate test repository
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_REF: ${{ steps.test-candidate.outputs.archive-sha }}
+                  CANDIDATE_REF: ${{ needs.resolve-candidate.outputs.archive-sha }}
               with:
                   script: |
                       const fs = require('fs');
@@ -151,8 +171,8 @@ jobs:
 
     compliance-check:
         name: Compliance Control Plane
-        needs: trusted-candidate-tests
-        if: always()
+        needs: [resolve-candidate, trusted-candidate-tests]
+        if: always() && needs.resolve-candidate.result == 'success'
         runs-on: ubuntu-latest
         env:
             AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}
@@ -166,49 +186,10 @@ jobs:
                   path: control
                   persist-credentials: false
 
-            - name: Resolve candidate identity
-              id: candidate
-              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
-              env:
-                  DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}
-              with:
-                  script: |
-                      let archiveSha = context.sha;
-                      let reportSha = context.sha;
-                      let checkSha = context.sha;
-
-                      if (context.eventName === 'pull_request_target') {
-                        archiveSha = context.payload.pull_request.merge_commit_sha;
-                        reportSha = context.payload.pull_request.merge_commit_sha;
-                        checkSha = context.payload.pull_request.head.sha;
-                      } else if (context.eventName === 'repository_dispatch') {
-                        const pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
-                        if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
-                          core.setFailed('repository-compliance requires a positive pull_request_number');
-                          return;
-                        }
-                        const { data: pull } = await github.rest.pulls.get({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          pull_number: pullNumber,
-                        });
-                        if (pull.state !== 'open' || !pull.merge_commit_sha) {
-                          core.setFailed(`Pull request #${pullNumber} is not open and mergeable`);
-                          return;
-                        }
-                        archiveSha = pull.merge_commit_sha;
-                        reportSha = pull.merge_commit_sha;
-                        checkSha = pull.head.sha;
-                      }
-
-                      core.setOutput('archive-sha', archiveSha);
-                      core.setOutput('report-sha', reportSha);
-                      core.setOutput('check-sha', checkSha);
-
             - name: Download candidate repository as data
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_REF: ${{ steps.candidate.outputs.archive-sha }}
+                  CANDIDATE_REF: ${{ needs.resolve-candidate.outputs.archive-sha }}
               with:
                   script: |
                       const fs = require('fs');
@@ -226,7 +207,7 @@ jobs:
             - name: Extract candidate repository without executing it
               shell: bash
               env:
-                  CANDIDATE_SHA: ${{ steps.candidate.outputs.report-sha }}
+                  CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.report-sha }}
               run: |
                   mkdir candidate
                   tar \
@@ -362,7 +343,7 @@ jobs:
               if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}
+                  CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.check-sha }}
                   CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
@@ -392,7 +373,7 @@ jobs:
               if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}
+                  CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.check-sha }}
                   CHECK_CONCLUSION: ${{ needs.trusted-candidate-tests.result == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
@@ -416,7 +397,7 @@ jobs:
               if: always() && env.AUTHENTICATED_CONTEXT != 'true'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}
+                  CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.check-sha }}
                   CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:

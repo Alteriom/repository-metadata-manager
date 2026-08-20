@@ -104,12 +104,12 @@ describe('workflow control configuration', () => {
             "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
         expect(workflow).toContain(
-            'CANDIDATE_REF: ${{ steps.candidate.outputs.archive-sha }}'
+            'CANDIDATE_REF: ${{ needs.resolve-candidate.outputs.archive-sha }}'
         );
         expect(workflow).toContain(
             'DISPATCH_PR_NUMBER: ${{ github.event.client_payload.pull_request_number }}'
         );
-        expect(workflow).toContain('github.rest.pulls.get');
+        expect(workflow.match(/github\.rest\.pulls\.get/g)).toHaveLength(1);
         expect(workflow).toContain("core.setOutput('archive-sha', archiveSha)");
         expect(workflow).toContain("core.setOutput('report-sha', reportSha)");
         expect(workflow).toContain("core.setOutput('check-sha', checkSha)");
@@ -120,7 +120,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('find candidate -type l -delete');
         expect(workflow).toContain('git -C candidate init --quiet');
         expect(workflow).toContain(
-            'CANDIDATE_SHA: ${{ steps.candidate.outputs.report-sha }}'
+            'CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.report-sha }}'
         );
         expect(workflow).toContain(
             'printf \'%s\\n\' "$CANDIDATE_SHA" > candidate/.git/refs/heads/candidate'
@@ -155,7 +155,10 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain("name: 'Compliance Check'");
         expect(workflow).toContain("name: 'Trusted Test & Lint'");
         expect(workflow).toContain(
-            'CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}'
+            'CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.check-sha }}'
+        );
+        expect(workflow).toContain(
+            'needs: [resolve-candidate, trusted-candidate-tests]'
         );
     });
 
@@ -260,7 +263,7 @@ describe('workflow control configuration', () => {
                 'Compliance Check',
                 'CodeQL',
             ],
-            requiredStatusCheckAppIds: {},
+            requiredStatusCheckAppIds: { CodeQL: 57789 },
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,
