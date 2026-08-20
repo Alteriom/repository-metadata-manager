@@ -26,6 +26,7 @@
         "requiredApprovals": 1,
         "maximumRequiredApprovals": 1,
         "requireStatusChecks": true,
+        "requiredStatusCheckContexts": [],
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": true,
         "prohibitCodeOwnerReviews": false,

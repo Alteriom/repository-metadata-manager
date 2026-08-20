@@ -1,8 +1,11 @@
 name: AI Agent Compliance Check
 
 on:
-    pull_request:
+    # pull_request_target loads this workflow from the protected base branch. The
+    # candidate merge tree is checked as data and is never executed.
+    pull_request_target:
         branches: [main, develop]
+        types: [opened, synchronize, reopened, ready_for_review]
     push:
         branches: [main, develop]
     schedule:
@@ -19,25 +22,38 @@ jobs:
     compliance-check:
         name: Compliance Check
         runs-on: ubuntu-latest
-        env:
-            AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]') }}
-            LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security
 
         steps:
-            - name: Checkout repository
+            - name: Checkout trusted control plane
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+                  path: control
+                  persist-credentials: false
+
+            - name: Checkout candidate repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+              with:
+                  ref: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+                  path: candidate
+                  persist-credentials: false
 
             - name: Setup Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
                   node-version: '24.x'
                   cache: 'npm'
+                  cache-dependency-path: control/package-lock.json
 
-            - name: Install dependencies
-              run: npm ci
+            - name: Install trusted evaluator dependencies
+              working-directory: control
+              run: npm ci --ignore-scripts
+
+            - name: Stage trusted policy inside candidate worktree
+              shell: bash
+              run: cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
 
             - name: Normalize GitHub App private key
-              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: private-key
               shell: bash
               env:
@@ -74,7 +90,6 @@ jobs:
                   echo "private-key=$private_key" >> "$GITHUB_OUTPUT"
 
             - name: Create repository compliance token
-              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: app-token
               uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
               with:
@@ -90,16 +105,15 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
-                  ARGS=()
-                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
-                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
-                    echo "Fork pull request: running secret-free local compliance scope"
-                  fi
-                  node bin/repo-manager.js check "${ARGS[@]}" --format json > compliance-report.json
+                  node control/bin/repo-manager.js check \
+                    --project candidate \
+                    --policy .git/repo-manager-policy.json \
+                    --format json \
+                    --output compliance-report.json
                   SCORE=$(jq -r '.score' compliance-report.json)
                   GRADE=$(jq -r '.grade' compliance-report.json)
-                  echo "score=$SCORE" >> $GITHUB_OUTPUT
-                  echo "grade=$GRADE" >> $GITHUB_OUTPUT
+                  echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+                  echo "grade=$GRADE" >> "$GITHUB_OUTPUT"
                   echo "Repository health: $SCORE/100 ($GRADE)"
               continue-on-error: true
 
@@ -107,15 +121,14 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
-                  ARGS=()
-                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
-                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
-                  fi
-                  node bin/repo-manager.js check "${ARGS[@]}" --format github
+                  node control/bin/repo-manager.js check \
+                    --project candidate \
+                    --policy .git/repo-manager-policy.json \
+                    --format github
               continue-on-error: true
 
             - name: Comment on PR with results
-              if: github.event_name == 'pull_request' && env.AUTHENTICATED_CONTEXT == 'true'
+              if: github.event_name == 'pull_request_target'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}

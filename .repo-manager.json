@@ -1,7 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "alteriom/repository-baseline",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "gates": {
         "failBelow": 70,
         "maxCritical": 0,
@@ -16,6 +16,12 @@
         "requiredApprovals": 0,
         "maximumRequiredApprovals": 0,
         "requireStatusChecks": true,
+        "requiredStatusCheckContexts": [
+            "Test & Lint (24.x, ubuntu-latest)",
+            "Security Summary",
+            "Compliance Check",
+            "CodeQL"
+        ],
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": false,
         "prohibitCodeOwnerReviews": true,

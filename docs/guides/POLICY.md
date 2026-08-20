@@ -22,7 +22,9 @@ Command-center profiles should set `requireVerifiedCheckers` to `branch-protecti
 
 Checker-specific runs created with `--only` apply score and severity gates to that scoped result, but apply checker-specific verification gates only when the required checker is in the requested scope. A complete evaluation still requires every configured verified checker.
 
-For a solo-maintainer repository, set both `requiredApprovals` and `maximumRequiredApprovals` to `0`, set `prohibitCodeOwnerReviews` and `prohibitAdminEnforcement` to `true`, and retain strict status checks plus conversation resolution. The minimum preserves the existing baseline semantics; the optional maximum and prohibition controls prove that live rules have not drifted back to an approval deadlock or removed the emergency recovery path. Record any administrator bypass outside the repository as a command-center audit event.
+For a solo-maintainer repository, set both `requiredApprovals` and `maximumRequiredApprovals` to `0`, set `prohibitCodeOwnerReviews` and `prohibitAdminEnforcement` to `true`, and retain strict status checks plus conversation resolution. List every mandatory check by its exact GitHub context name in `requiredStatusCheckContexts`; `requireStatusChecks` alone only proves that at least one check exists. The minimum preserves the existing baseline semantics; the optional maximum and prohibition controls prove that live rules have not drifted back to an approval deadlock or removed the emergency recovery path.
+
+Classic branch protection and every active ruleset that applies to the default branch are evaluated together. For `prohibitAdminEnforcement`, every applicable ruleset must expose an organization-administrator or built-in repository-admin bypass that applies outside pull requests. GitHub hides ruleset bypass actors from tokens without write access to the ruleset, so the checker reports the control as unverified instead of guessing when those actors are unavailable. Record any administrator bypass outside the repository as a command-center audit event.
 
 ## Organization layering
 

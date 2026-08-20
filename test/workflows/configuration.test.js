@@ -76,7 +76,7 @@ describe('workflow control configuration', () => {
         );
     });
 
-    it('uses a secret-free local compliance scope for fork pull requests', () => {
+    it('evaluates pull requests with base-branch code and policy', () => {
         const workflow = fs.readFileSync(
             path.join(
                 projectRoot,
@@ -87,19 +87,24 @@ describe('workflow control configuration', () => {
             'utf8'
         );
 
+        expect(workflow).toMatch(/\n {4}pull_request_target:\r?\n/);
+        expect(workflow).not.toMatch(/\n {4}pull_request:\r?\n/);
         expect(workflow).toContain(
-            "AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]') }}"
+            "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
         expect(workflow).toContain(
-            'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
+            "ref: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}"
         );
+        expect(workflow).toContain('working-directory: control');
         expect(workflow).toContain(
-            'if: env.AUTHENTICATED_CONTEXT == \'true\''
+            'cp control/.repo-manager.json candidate/.git/repo-manager-policy.json'
         );
-        expect(workflow).toContain('ARGS+=(--only "$LOCAL_ONLY_CHECKERS")');
-        expect(workflow).toContain(
-            "if: github.event_name == 'pull_request' && env.AUTHENTICATED_CONTEXT == 'true'"
-        );
+        expect(workflow).toContain('node control/bin/repo-manager.js check');
+        expect(workflow).toContain('--project candidate');
+        expect(workflow).toContain('--policy .git/repo-manager-policy.json');
+        expect(workflow).not.toContain('node candidate/bin/repo-manager.js');
+        expect(workflow).toContain('run: npm ci --ignore-scripts');
+        expect(workflow).not.toContain('working-directory: candidate');
     });
 
     it('keeps unauthenticated CI checks inside a checker-specific scope', () => {
@@ -124,7 +129,7 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.3.0');
+        expect(policy.version).toBe('1.4.0');
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
             'repository-metadata',
@@ -133,6 +138,12 @@ describe('workflow control configuration', () => {
             requiredApprovals: 0,
             maximumRequiredApprovals: 0,
             requireStatusChecks: true,
+            requiredStatusCheckContexts: [
+                'Test & Lint (24.x, ubuntu-latest)',
+                'Security Summary',
+                'Compliance Check',
+                'CodeQL',
+            ],
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,

@@ -80,6 +80,24 @@ describe('Policy', () => {
     })).toThrow('cannot require and prohibit administrator enforcement');
   });
 
+  it('validates required status-check contexts', () => {
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', 'security'] },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', ''] },
+    })).toThrow('must be an array of non-empty strings');
+
+    expect(() => Policy.validate({
+      branchProtection: { requiredStatusCheckContexts: ['ci', 'ci'] },
+    })).toThrow('must not contain duplicates');
+
+    expect(() => Policy.validate({
+      branchProtection: { requireStatusChecks: false, requiredStatusCheckContexts: ['ci'] },
+    })).toThrow('requires requireStatusChecks');
+  });
+
   it('rejects policy paths outside the repository', () => {
     expect(() => Policy.load(root, path.join('..', 'policy.json'))).toThrow('must stay within');
   });
