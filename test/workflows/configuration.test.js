@@ -22,7 +22,6 @@ describe('workflow control configuration', () => {
             path.join(projectRoot, '.github', 'workflows', 'security.yml'),
             'utf8'
         );
-
         expect(workflow).toContain('npm audit --json --audit-level moderate');
         expect(workflow).toContain('npm audit --audit-level moderate');
     });
@@ -74,9 +73,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'github-token: ${{ steps.app-token.outputs.token }}'
         );
-        expect(workflow).toContain(
-            "name: 'Compliance Check (restricted)'"
-        );
+        expect(workflow).toContain("name: 'Compliance Check (restricted)'");
         expect(appTokenBindings).toHaveLength(2);
         expect(workflow).not.toMatch(
             /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/
@@ -93,6 +90,9 @@ describe('workflow control configuration', () => {
                 'ai-agent-compliance.yml'
             ),
             'utf8'
+        );
+        const privilegedJob = workflow.slice(
+            workflow.indexOf('    compliance-check:')
         );
 
         expect(workflow).toMatch(/\n {4}pull_request_target:\r?\n/);
@@ -141,18 +141,52 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             '.branchProtection.requiredStatusCheckAppIds["Compliance Check"] = $app_id'
         );
+        expect(workflow).toContain(
+            '.branchProtection.requiredStatusCheckAppIds["Trusted Test & Lint"] = $app_id'
+        );
         expect(workflow).toContain('node control/bin/repo-manager.js check');
         expect(workflow).toContain('--project candidate');
         expect(workflow).toContain('--policy .git/repo-manager-policy.json');
         expect(workflow).not.toContain('node candidate/bin/repo-manager.js');
         expect(workflow).toContain('run: npm ci --ignore-scripts');
-        expect(workflow).not.toContain('working-directory: candidate');
+        expect(privilegedJob).not.toContain('working-directory: candidate');
         expect(workflow).toContain('name: Compliance Control Plane');
         expect(workflow).toContain('github.rest.checks.create');
         expect(workflow).toContain("name: 'Compliance Check'");
+        expect(workflow).toContain("name: 'Trusted Test & Lint'");
         expect(workflow).toContain(
             'CANDIDATE_SHA: ${{ steps.candidate.outputs.check-sha }}'
         );
+    });
+
+    it('runs merge-authority tests from protected code without App secrets', () => {
+        const workflow = fs.readFileSync(
+            path.join(
+                projectRoot,
+                '.github',
+                'workflows',
+                'ai-agent-compliance.yml'
+            ),
+            'utf8'
+        );
+        const sandbox = workflow.slice(
+            workflow.indexOf('    trusted-candidate-tests:'),
+            workflow.indexOf('    compliance-check:')
+        );
+
+        expect(sandbox).toContain('name: Trusted Candidate Test Sandbox');
+        expect(sandbox).toContain('persist-credentials: false');
+        expect(sandbox).toContain("node-version: '24.x'");
+        expect(sandbox).toContain('npm ci --ignore-scripts');
+        expect(sandbox).toContain('rm -rf candidate/test');
+        expect(sandbox).toContain('cp -R control/test candidate/test');
+        expect(sandbox).toContain('control/eslint.config.js');
+        expect(sandbox).toContain('control/node_modules/jest/bin/jest.js');
+        expect(sandbox).toContain('env -i');
+        expect(sandbox).not.toContain('APP_PRIVATE_KEY');
+        expect(sandbox).not.toContain('APP_ID');
+        expect(sandbox).not.toMatch(/npm (?:run )?test/);
+        expect(sandbox).not.toMatch(/npm (?:run )?lint/);
     });
 
     it('uses a secret-free scoped evaluation for Dependabot', () => {
@@ -222,8 +256,7 @@ describe('workflow control configuration', () => {
             maximumRequiredApprovals: 0,
             requireStatusChecks: true,
             requiredStatusCheckContexts: [
-                'Test & Lint (24.x, ubuntu-latest)',
-                'Security Summary',
+                'Trusted Test & Lint',
                 'Compliance Check',
                 'CodeQL',
             ],

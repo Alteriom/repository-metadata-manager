@@ -17,14 +17,16 @@ The workflow uses the v3 action's legacy `app-id` input because the organization
 
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 
-Dependabot or any context without App secrets runs a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Its result is published as `Compliance Check (restricted)` by GitHub Actions and cannot satisfy the protected `Compliance Check` context. A maintainer can request the trusted, default-branch workflow for an open PR with `gh api repos/OWNER/REPOSITORY/dispatches -f event_type=repository-compliance -F 'client_payload[pull_request_number]=123'`. The dispatcher resolves the PR's current immutable merge SHA for evaluation and publishes the App-sourced result on its head SHA. Authoritative branch-protection and repository-metadata verification, the protected App-sourced check, and PR report comments require the App-backed context.
+Dependabot or any context without App secrets runs a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Its result is published as `Compliance Check (restricted)` by GitHub Actions and cannot satisfy the protected `Compliance Check` context. A maintainer can request the trusted, default-branch workflow for an open PR with `gh api repos/OWNER/REPOSITORY/dispatches -f event_type=repository-compliance -F 'client_payload[pull_request_number]=123'`. The dispatcher resolves the PR's current immutable merge SHA for evaluation and publishes the App-sourced result on its head SHA. Authoritative branch-protection and repository-metadata verification, the protected App-sourced checks, and PR report comments require the App-backed context.
+
+The same default-branch workflow runs candidate code in a separate secret-free job. It replaces candidate tests with the protected branch's tests, uses the protected lint configuration and test runner, disables lifecycle scripts, and exposes no App credentials. A different job receives only that job's GitHub result and publishes `Trusted Test & Lint` with the dedicated App. Candidate-defined `Test & Lint` and `Security Summary` workflows remain useful feedback, but they are not merge-authority controls because a pull request can edit their workflow definitions.
 
 ## Solo-maintainer controls
 
 A solo maintainer cannot provide an independent approval. Set both the minimum and maximum required approvals to zero, prohibit code-owner reviews, and prohibit administrator enforcement so those live rules are verified exactly. Then compensate with controls that do not create a self-approval deadlock:
 
 - require strict, up-to-date status checks;
-- bind the `Compliance Check` context to the dedicated compliance App rather than the generic GitHub Actions App;
+- bind both `Compliance Check` and `Trusted Test & Lint` to the dedicated compliance App rather than the generic GitHub Actions App;
 - require all review conversations to be resolved;
 - require verified `branch-protection` and `repository-metadata` checker results;
 - keep critical and high-severity compliance gates at zero;

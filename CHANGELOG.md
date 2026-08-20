@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add explicit code-owner-review and administrator-enforcement prohibitions for exact solo-maintainer control verification
 - Require complete classic/ruleset enumeration, an exact branch-protection checker score, and a dedicated App source for the protected compliance check
 - Isolate npm audit from privileged workflow credentials and candidate-controlled npm configuration
+- Move merge-authority tests and linting into a protected, secret-free workflow job and publish their result through the dedicated compliance App
 
 ## [3.0.0] - 2026-08-19
 

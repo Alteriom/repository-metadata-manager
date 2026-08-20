@@ -18,8 +18,7 @@
         "maximumRequiredApprovals": 0,
         "requireStatusChecks": true,
         "requiredStatusCheckContexts": [
-            "Test & Lint (24.x, ubuntu-latest)",
-            "Security Summary",
+            "Trusted Test & Lint",
             "Compliance Check",
             "CodeQL"
         ],
