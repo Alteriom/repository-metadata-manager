@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const {
   compareTestIdentities,
+  runJest,
   runTrustedTests,
   validateJestResult,
 } = require('../../scripts/run-trusted-tests');
@@ -57,6 +58,26 @@ describe('trusted candidate test runner', () => {
     ).toThrow(/missing: test\/a\.test\.js::suite protected assertion/);
   });
 
+  it('rejects candidate attempts to replace the Jest worker channel', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-ipc-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-ipc.test.js'),
+        "'use strict';\nprocess.send = () => {};\ntest('dummy', () => expect(true).toBe(true));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('keeps authority on parent IPC instead of a candidate-writable file', () => {
     const supervisor = fs.readFileSync(
       path.join(__dirname, '..', '..', 'scripts', 'run-trusted-tests.js'),
@@ -68,5 +89,12 @@ describe('trusted candidate test runner', () => {
     expect(supervisor).toContain("'--disable-sigusr1'");
     expect(supervisor).toContain('jest-controller-isolation.js');
     expect(supervisor).not.toContain('--outputFile');
+
+    const lockdown = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'scripts', 'jest-lockdown.js'),
+      'utf8'
+    );
+    expect(lockdown).toContain("Object.defineProperty(process, 'send'");
+    expect(lockdown).toContain('Object.freeze(protectedWorkerSend)');
   });
 });

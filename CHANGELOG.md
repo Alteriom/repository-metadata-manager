@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Freeze protected Jest globals and compare exact baseline test identities so candidate dummy tests cannot replace protected assertions
 - Move Jest result authority to a protected controller reporter and parent IPC channel that candidate exit handlers cannot rewrite
 - Remove branch-ref manual dispatch and isolate candidate Jest workers from the trusted controller with a separate Linux UID and disabled inspector activation
+- Capture and seal the Jest worker result channel before candidate modules load
 
 ## [3.0.0] - 2026-08-19
 

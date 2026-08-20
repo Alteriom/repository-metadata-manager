@@ -201,6 +201,7 @@ if (require.main === module) {
 
 module.exports = {
   compareTestIdentities,
+  runJest,
   runTrustedTests,
   testIdentities,
   validateJestResult,

@@ -33,6 +33,16 @@ for (const name of protectedGlobals) {
   });
 }
 
+if (typeof process.send === 'function') {
+  const protectedWorkerSend = process.send.bind(process);
+  Object.freeze(protectedWorkerSend);
+  Object.defineProperty(process, 'send', {
+    configurable: false,
+    value: protectedWorkerSend,
+    writable: false,
+  });
+}
+
 const blockedExit = (code) => {
   throw new Error(`Candidate code attempted to terminate the protected test process (${code})`);
 };
