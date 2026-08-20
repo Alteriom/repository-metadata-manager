@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pin privileged evaluation to an administrator-selected immutable control-plane SHA, remove secret-bearing push/schedule triggers, fail closed on incomplete PR file listings, and require exact-head administrator attestation for every non-documentation change
 - Freeze Jest's matcher registries and the standard intrinsics they depend on before candidate modules load
 - Skip Checks API publication when Dependabot receives GitHub's read-only workflow token
-- Authenticate every Jest worker request and response with a per-process HMAC key and request ID, freeze the trusted worker export, capture immutable serialization/cryptographic primitives, and hide raw IPC descriptors from candidate code
+- Authenticate every Jest worker request and response with a per-process HMAC key and request ID, block worker self-inspection, freeze the trusted worker export, capture immutable serialization/cryptographic primitives, and hide raw IPC descriptors from candidate code
 - Clear candidate npm workspace filters and explicitly audit every configured workspace plus the repository root
 
 ## [3.0.0] - 2026-08-19

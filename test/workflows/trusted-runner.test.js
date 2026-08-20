@@ -156,6 +156,36 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('blocks candidate self-inspection in Jest workers', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-inspector-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-inspector.test.js'),
+        [
+          "const realProcess = process.getBuiltinModule('process');",
+          "const inspector = realProcess.getBuiltinModule('inspector');",
+          "const inspectorPromises = realProcess.getBuiltinModule('inspector/promises');",
+          "test('worker inspector is unavailable', () => {",
+          "  expect(() => new inspector.Session()).toThrow(/cannot attach an inspector/);",
+          "  expect(() => new inspectorPromises.Session()).toThrow(/cannot attach an inspector/);",
+          "  expect(() => realProcess.binding('inspector')).toThrow(/cannot attach an inspector/);",
+          "});",
+          '',
+        ].join('\n')
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      const result = await runJest(root, trustedRoot);
+      expect(result.numPassedTests).toBe(2);
+      expect(result.numFailedTests).toBe(0);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('hides the raw Jest IPC descriptor from candidate code', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-fd-'));
     const trustedRoot = path.join(__dirname, '..', '..');
@@ -292,9 +322,12 @@ describe('trusted candidate test runner', () => {
     expect(workerIpc).toContain("Object.defineProperty(process, '_channel'");
     expect(workerIpc).toContain('AUTH_REQUEST_TYPE');
     expect(workerIpc).toContain('AUTH_RESPONSE_TYPE');
-    expect(workerIpc).toContain('issuedRequests.has(envelope.requestId)');
+    expect(workerIpc).toContain('setHas(issuedRequests, envelope.requestId)');
     expect(workerIpc).toContain('__repositoryManagerTrustedReceive(messageListener)');
-    expect(workerIpc).toContain('receivedRequests.has(envelope.requestId)');
+    expect(workerIpc).toContain('setHas(receivedRequests, envelope.requestId)');
+    expect(workerIpc).toContain('Function.call.bind(Set.prototype.has)');
     expect(workerIpc).toContain('Object.freeze(loadedModule.exports)');
+    expect(workerIpc).toContain("require('node:inspector/promises')");
+    expect(workerIpc).toContain("bindingName === 'inspector'");
   });
 });

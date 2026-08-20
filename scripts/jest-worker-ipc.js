@@ -21,6 +21,9 @@ const bufferToString = Function.call.bind(Buffer.prototype.toString);
 const hmacProbe = createHmac('sha256', Buffer.alloc(0));
 const hmacUpdate = Function.call.bind(hmacProbe.update);
 const hmacDigest = Function.call.bind(hmacProbe.digest);
+const setAdd = Function.call.bind(Set.prototype.add);
+const setDelete = Function.call.bind(Set.prototype.delete);
+const setHas = Function.call.bind(Set.prototype.has);
 const processChildPath = path.join(
   path.dirname(require.resolve('jest-worker')),
   'processChild.js'
@@ -49,6 +52,54 @@ function validEnvelope(secret, type, envelope) {
   const actual = bufferFrom(envelope.mac, 'hex');
   return expected.length === actual.length &&
     timingSafeEqual(expected, actual);
+}
+
+function blockInspectorAccess() {
+  const blockedInspector = () => {
+    throw new Error('Candidate code cannot attach an inspector to a Jest worker');
+  };
+  class BlockedInspectorSession {
+    constructor() {
+      blockedInspector();
+    }
+  }
+  Object.freeze(blockedInspector);
+  Object.freeze(BlockedInspectorSession);
+  for (const inspectorModule of [
+    require('node:inspector'),
+    require('node:inspector/promises'),
+  ]) {
+    for (const name of ['open', 'close', 'waitForDebugger']) {
+      Object.defineProperty(inspectorModule, name, {
+        configurable: false,
+        enumerable: true,
+        value: blockedInspector,
+        writable: false,
+      });
+    }
+    Object.defineProperty(inspectorModule, 'Session', {
+      configurable: false,
+      enumerable: true,
+      value: BlockedInspectorSession,
+      writable: false,
+    });
+    Object.freeze(inspectorModule);
+  }
+
+  for (const name of ['binding', '_linkedBinding']) {
+    if (typeof process[name] !== 'function') continue;
+    const originalBinding = process[name].bind(process);
+    const protectedBinding = (bindingName) => {
+      if (bindingName === 'inspector') blockedInspector();
+      return originalBinding(bindingName);
+    };
+    Object.freeze(protectedBinding);
+    Object.defineProperty(process, name, {
+      configurable: false,
+      value: protectedBinding,
+      writable: false,
+    });
+  }
 }
 
 if (!process.env.JEST_WORKER_ID) {
@@ -90,7 +141,7 @@ if (!process.env.JEST_WORKER_ID) {
     child.send = (payload, ...args) => {
       const requestId = bufferToString(randomBytes(16), 'hex');
       const body = bufferToString(serialize(payload), 'base64');
-      issuedRequests.add(requestId);
+      setAdd(issuedRequests, requestId);
       return originalChildSend({
         type: AUTH_REQUEST_TYPE,
         requestId,
@@ -103,7 +154,7 @@ if (!process.env.JEST_WORKER_ID) {
       if (event === 'message') {
         const envelope = values[0];
         if (!validEnvelope(secret, AUTH_RESPONSE_TYPE, envelope) ||
-            !issuedRequests.has(envelope.requestId)) {
+            !setHas(issuedRequests, envelope.requestId)) {
           child.kill();
           throw new Error('Jest worker emitted an unauthenticated IPC message');
         }
@@ -112,7 +163,7 @@ if (!process.env.JEST_WORKER_ID) {
           child.kill();
           throw new Error('Jest worker emitted an invalid IPC response');
         }
-        if (payload[0] !== 3) issuedRequests.delete(envelope.requestId);
+        if (payload[0] !== 3) setDelete(issuedRequests, envelope.requestId);
         values[0] = payload;
       }
       return originalEmit.call(this, event, ...values);
@@ -141,6 +192,7 @@ if (!process.env.JEST_WORKER_ID) {
   if (secretOffset !== SECRET_BYTES) {
     throw new Error('Trusted Jest worker authentication secret is invalid');
   }
+  blockInspectorAccess();
 
   const originalExtension = Module._extensions['.js'];
   const originalSend = process.send.bind(process);
@@ -148,10 +200,10 @@ if (!process.env.JEST_WORKER_ID) {
   const receivedRequests = new Set();
   const authenticatedReceive = (listener) => (envelope, ...args) => {
     if (!validEnvelope(secret, AUTH_REQUEST_TYPE, envelope) ||
-        receivedRequests.has(envelope.requestId)) {
+        setHas(receivedRequests, envelope.requestId)) {
       throw new Error('Jest worker received an unauthenticated IPC request');
     }
-    receivedRequests.add(envelope.requestId);
+    setAdd(receivedRequests, envelope.requestId);
     activeRequestId = envelope.requestId;
     const payload = deserialize(bufferFrom(envelope.body, 'base64'));
     return listener(payload, ...args);
