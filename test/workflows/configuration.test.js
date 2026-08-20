@@ -222,6 +222,11 @@ describe('workflow control configuration', () => {
         expect(sandbox).toContain('cp -R control/test candidate/test');
         expect(sandbox).toContain('control/eslint.config.js');
         expect(sandbox).toContain('control/scripts/run-trusted-tests.js');
+        expect(sandbox).toContain('TRUSTED_SANDBOX=/opt/repository-manager-trusted');
+        expect(sandbox).toContain('sudo chown -R root:root');
+        expect(sandbox).toContain('sudo chmod -R go-w');
+        expect(sandbox).toContain('sudo install -d -o 65534 -g 65534 -m 0700');
+        expect(sandbox).toContain('HOME="$TRUSTED_SANDBOX/home"');
         expect(sandbox).toContain('sudo env -i');
         expect(sandbox).toContain(
             'REPO_MANAGER_TRUSTED_TEST_ISOLATION=required'

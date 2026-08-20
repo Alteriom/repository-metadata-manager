@@ -10,6 +10,7 @@ const v8 = require('v8');
 const AUTH_FD_ENV = 'REPOSITORY_MANAGER_JEST_AUTH_FD';
 const AUTH_REQUEST_TYPE = 'repository-manager:authenticated-jest-request';
 const AUTH_RESPONSE_TYPE = 'repository-manager:authenticated-jest-response';
+const MAX_FORWARDED_STDERR_BYTES = 8192;
 const SECRET_BYTES = 32;
 const bufferFrom = Buffer.from.bind(Buffer);
 const createHmac = crypto.createHmac.bind(crypto);
@@ -135,6 +136,14 @@ if (!process.env.JEST_WORKER_ID) {
     const secretPipe = child.stdio[authFd];
     secretPipe.on('error', () => child.kill());
     secretPipe.end(secret);
+    let forwardedStderrBytes = 0;
+    child.stderr?.on('data', (chunk) => {
+      const remaining = MAX_FORWARDED_STDERR_BYTES - forwardedStderrBytes;
+      if (remaining <= 0) return;
+      const output = bufferFrom(chunk).subarray(0, remaining);
+      forwardedStderrBytes += output.length;
+      process.stderr.write(output);
+    });
 
     const issuedRequests = new Set();
     const originalChildSend = child.send.bind(child);
