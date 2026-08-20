@@ -38,7 +38,7 @@ jobs:
             - name: Download candidate repository as data
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
-                  CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+                  CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}
               with:
                   script: |
                       const fs = require('fs');

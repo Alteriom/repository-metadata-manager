@@ -94,7 +94,7 @@ describe('workflow control configuration', () => {
             "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
         expect(workflow).toContain(
-            "CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}"
+            "CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}"
         );
         expect(workflow).toContain('github.rest.repos.downloadTarballArchive');
         expect(workflow).toContain('Buffer.from(response.data)');
@@ -152,8 +152,12 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
         );
-        expect(workflow.match(/if: env\.AUTHENTICATED_CONTEXT == 'true'/g)).toHaveLength(2);
-        expect(workflow.match(/ARGS\+=\(--only "\$LOCAL_ONLY_CHECKERS"\)/g)).toHaveLength(2);
+        expect(
+            workflow.match(/if: env\.AUTHENTICATED_CONTEXT == 'true'/g)
+        ).toHaveLength(2);
+        expect(
+            workflow.match(/ARGS\+=\(--only "\$LOCAL_ONLY_CHECKERS"\)/g)
+        ).toHaveLength(2);
         expect(workflow).toContain(
             "if: github.event_name == 'pull_request_target' && env.AUTHENTICATED_CONTEXT == 'true'"
         );
