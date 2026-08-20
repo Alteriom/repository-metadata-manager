@@ -173,12 +173,16 @@ describe('SecurityChecker', () => {
         expect(audit).toHaveBeenCalledTimes(1);
         const [command, options] = audit.mock.calls[0];
         expect(command).toContain('--ignore-scripts');
+        expect(command).toContain('--include=dev');
+        expect(command).toContain('--include=optional');
+        expect(command).toContain('--include=peer');
         expect(command).not.toContain('--registry=');
         expect(options.env.GITHUB_TOKEN).toBeUndefined();
         expect(options.env.ACTIONS_RUNTIME_TOKEN).toBeUndefined();
         expect(options.env.NPM_CONFIG_REGISTRY).toBe('https://registry.corp.example/');
         expect(options.env.HTTPS_PROXY).toBe('http://proxy.corp.example:8080');
         expect(options.env.NODE_EXTRA_CA_CERTS).toBe('certificates/corporate-ca.pem');
+        expect(options.env.NPM_CONFIG_OMIT).toBe('');
         expect(options.env.HOME).toBe(options.env.USERPROFILE);
         expect(options.env.HOME).not.toBe(process.env.HOME);
       } finally {

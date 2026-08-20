@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move merge-authority tests and linting into a protected, secret-free workflow job and publish their result through the dedicated compliance App
 - Pin dispatched evaluation and testing to one immutable candidate identity and bind CodeQL to its trusted App producer
 - Model ruleset conversation resolution and prohibit last-push approval deadlocks in the solo-maintainer policy
+- Override candidate npm omission settings so security audits include development, optional, and peer dependencies
 
 ## [3.0.0] - 2026-08-19
 
