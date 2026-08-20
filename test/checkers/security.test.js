@@ -1,6 +1,8 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const childProcess = require('child_process');
 const SecurityChecker = require('../../lib/checkers/security');
 const Context = require('../../lib/engine/Context');
@@ -118,8 +120,6 @@ describe('SecurityChecker', () => {
     });
 
     it('scans nested source files while allowing documented example env files', async () => {
-      const fs = require('fs');
-      const os = require('os');
       const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-security-'));
       fs.mkdirSync(path.join(root, 'src'));
       fs.writeFileSync(path.join(root, '.env.example'), 'GITHUB_TOKEN=replace_me\n');
@@ -162,9 +162,15 @@ describe('SecurityChecker', () => {
       process.env.NPM_CONFIG_REGISTRY = 'https://registry.corp.example/';
       process.env.HTTPS_PROXY = 'http://proxy.corp.example:8080';
       process.env.NODE_EXTRA_CA_CERTS = 'certificates/corporate-ca.pem';
-      const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
-        vulnerabilities: {},
-      }));
+      let copiedManifests;
+      const audit = jest.spyOn(childProcess, 'execSync').mockImplementation((command, options) => {
+        copiedManifests = {
+          hasProjectConfig: fs.existsSync(path.join(options.cwd, '.npmrc')),
+          packageText: fs.readFileSync(path.join(options.cwd, 'package.json'), 'utf8'),
+          lockText: fs.readFileSync(path.join(options.cwd, 'package-lock.json'), 'utf8'),
+        };
+        return JSON.stringify({ vulnerabilities: {} });
+      });
 
       try {
         const ctx = buildContext('healthy-project', { cache: new Cache() });
@@ -183,7 +189,12 @@ describe('SecurityChecker', () => {
         expect(options.env.HTTPS_PROXY).toBe('http://proxy.corp.example:8080');
         expect(options.env.NODE_EXTRA_CA_CERTS).toBe('certificates/corporate-ca.pem');
         expect(options.env.NPM_CONFIG_OMIT).toBe('');
-        expect(options.env.NPM_CONFIG_WORKSPACE).toBe('');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBeUndefined();
+        expect(options.env.NPM_CONFIG_CACHE).toContain('repo-manager-npm-audit-');
+        expect(options.cwd).not.toBe(ctx.projectRoot);
+        expect(copiedManifests.hasProjectConfig).toBe(false);
+        expect(copiedManifests.packageText).toBe(ctx.readFile('package.json'));
+        expect(copiedManifests.lockText).toBe(ctx.readFile('package-lock.json'));
         expect(options.env.HOME).toBe(options.env.USERPROFILE);
         expect(options.env.HOME).not.toBe(process.env.HOME);
       } finally {
@@ -195,21 +206,58 @@ describe('SecurityChecker', () => {
       }
     });
 
-    it('audits every configured workspace and the root', async () => {
-      const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
-        vulnerabilities: {},
+    it('audits every configured workspace and the root from a manifest-only copy', async () => {
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-workspace-audit-'));
+      fs.mkdirSync(path.join(root, 'packages', 'clean'), { recursive: true });
+      fs.mkdirSync(path.join(root, 'packages', 'vulnerable'), { recursive: true });
+      fs.writeFileSync(path.join(root, '.npmrc'), 'workspace=clean\n');
+      fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({
+        name: 'audit-root',
+        version: '1.0.0',
+        license: 'MIT',
+        workspaces: ['packages/*'],
       }));
-      const packageJson = Context.readPackageJson(
-        path.join(fixturesDir, 'healthy-project')
+      fs.writeFileSync(path.join(root, 'package-lock.json'), JSON.stringify({
+        name: 'audit-root',
+        version: '1.0.0',
+        lockfileVersion: 3,
+        packages: {
+          '': { name: 'audit-root', version: '1.0.0', workspaces: ['packages/*'] },
+          'packages/clean': { name: 'clean', version: '1.0.0' },
+          'packages/vulnerable': { name: 'vulnerable', version: '1.0.0' },
+        },
+      }));
+      fs.writeFileSync(
+        path.join(root, 'packages', 'clean', 'package.json'),
+        JSON.stringify({ name: 'clean', version: '1.0.0' })
       );
+      fs.writeFileSync(
+        path.join(root, 'packages', 'vulnerable', 'package.json'),
+        JSON.stringify({ name: 'vulnerable', version: '1.0.0' })
+      );
+      let copiedWorkspaceState;
+      const audit = jest.spyOn(childProcess, 'execSync').mockImplementation((command, options) => {
+        copiedWorkspaceState = {
+          hasProjectConfig: fs.existsSync(path.join(options.cwd, '.npmrc')),
+          hasClean: fs.existsSync(
+            path.join(options.cwd, 'packages', 'clean', 'package.json')
+          ),
+          hasVulnerable: fs.existsSync(
+            path.join(options.cwd, 'packages', 'vulnerable', 'package.json')
+          ),
+        };
+        return JSON.stringify({ vulnerabilities: {} });
+      });
 
       try {
-        const ctx = buildContext('healthy-project', {
+        const ctx = new Context({
+          projectRoot: root,
+          projectType: 'node',
+          github: null,
           cache: new Cache(),
-          packageJson: {
-            ...packageJson,
-            workspaces: ['packages/clean', 'packages/vulnerable'],
-          },
+          packageJson: Context.readPackageJson(root),
+          gitInfo: null,
+          config: {},
         });
         await checker.check(ctx);
 
@@ -217,9 +265,16 @@ describe('SecurityChecker', () => {
         expect(command).toContain('--workspaces');
         expect(command).toContain('--include-workspace-root');
         expect(command).not.toContain('--workspace=');
-        expect(options.env.NPM_CONFIG_WORKSPACE).toBe('');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBeUndefined();
+        expect(options.cwd).not.toBe(root);
+        expect(copiedWorkspaceState).toEqual({
+          hasProjectConfig: false,
+          hasClean: true,
+          hasVulnerable: true,
+        });
       } finally {
         audit.mockRestore();
+        fs.rmSync(root, { recursive: true, force: true });
       }
     });
 
