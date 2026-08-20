@@ -68,12 +68,13 @@ describe('workflow control configuration', () => {
             'repositories: ${{ github.event.repository.name }}'
         );
         expect(workflow).toContain('base64 --decode');
-        expect(workflow).toContain('permission-administration: read');
+        expect(workflow).toContain('permission-administration: write');
         expect(workflow).toContain('permission-contents: read');
         expect(appTokenBindings).toHaveLength(2);
         expect(workflow).not.toMatch(
             /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/
         );
+        expect(workflow).toContain('checks: write');
     });
 
     it('evaluates pull requests with base-branch code and policy', () => {
@@ -114,6 +115,12 @@ describe('workflow control configuration', () => {
         expect(workflow).not.toContain('node candidate/bin/repo-manager.js');
         expect(workflow).toContain('run: npm ci --ignore-scripts');
         expect(workflow).not.toContain('working-directory: candidate');
+        expect(workflow).toContain('name: Compliance Control Plane');
+        expect(workflow).toContain('github.rest.checks.create');
+        expect(workflow).toContain("name: 'Compliance Check'");
+        expect(workflow).toContain(
+            "CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}"
+        );
     });
 
     it('keeps unauthenticated CI checks inside a checker-specific scope', () => {

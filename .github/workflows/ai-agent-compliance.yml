@@ -14,13 +14,14 @@ on:
 
 permissions:
     contents: read
+    checks: write
     pull-requests: write
     issues: write
     actions: read
 
 jobs:
     compliance-check:
-        name: Compliance Check
+        name: Compliance Control Plane
         runs-on: ubuntu-latest
 
         steps:
@@ -128,7 +129,7 @@ jobs:
                   private-key: ${{ steps.private-key.outputs.private-key }}
                   owner: ${{ github.repository_owner }}
                   repositories: ${{ github.event.repository.name }}
-                  permission-administration: read
+                  permission-administration: write
                   permission-contents: read
 
             - name: Run compliance check
@@ -157,6 +158,36 @@ jobs:
                     --policy .git/repo-manager-policy.json \
                     --format github
               continue-on-error: true
+
+            - name: Publish candidate compliance check
+              if: always()
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+              env:
+                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+                  CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
+                  DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const fs = require('fs');
+                      let report = { score: 0, grade: 'F', status: 'fail' };
+                      try {
+                        report = JSON.parse(fs.readFileSync('compliance-report.json', 'utf8'));
+                      } catch { /* the failed control-plane run is reported below */ }
+
+                      await github.rest.checks.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        name: 'Compliance Check',
+                        head_sha: process.env.CANDIDATE_SHA,
+                        status: 'completed',
+                        conclusion: process.env.CHECK_CONCLUSION,
+                        details_url: process.env.DETAILS_URL,
+                        output: {
+                          title: `Repository compliance: ${report.status}`,
+                          summary: `Score: ${report.score}/100 (${report.grade})`,
+                        },
+                      });
 
             - name: Comment on PR with results
               if: github.event_name == 'pull_request_target'
