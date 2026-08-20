@@ -93,8 +93,15 @@ describe('workflow control configuration', () => {
             "ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}"
         );
         expect(workflow).toContain(
-            "ref: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}"
+            "CANDIDATE_REF: ${{ github.event_name == 'pull_request_target' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}"
         );
+        expect(workflow).toContain('github.rest.repos.downloadTarballArchive');
+        expect(workflow).toContain('Buffer.from(response.data)');
+        expect(workflow).toContain('--no-same-owner');
+        expect(workflow).toContain('--no-same-permissions');
+        expect(workflow).toContain('find candidate -type l -delete');
+        expect(workflow).toContain('git -C candidate init --quiet');
+        expect(workflow).not.toMatch(/Checkout candidate repository/);
         expect(workflow).toContain('working-directory: control');
         expect(workflow).toContain(
             'cp control/.repo-manager.json candidate/.git/repo-manager-policy.json'
