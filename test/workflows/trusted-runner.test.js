@@ -78,6 +78,26 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('rejects candidate attempts to invoke the Jest worker channel', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-send-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-send.test.js'),
+        "'use strict';\nprocess.send([0, { numFailedTests: 0, numPassedTests: 1 }]);\ntest('dummy', () => expect(true).toBe(true));\n"
+      );
+      await expect(runJest(root, trustedRoot)).rejects.toThrow(
+        /Trusted Jest process/
+      );
+    } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('rejects candidate attempts to replace protected Jest matchers', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-matchers-'));
     const trustedRoot = path.join(__dirname, '..', '..');
@@ -108,6 +128,7 @@ describe('trusted candidate test runner', () => {
     expect(supervisor).toContain('jest-authority-reporter.js');
     expect(supervisor).toContain("'--disable-sigusr1'");
     expect(supervisor).toContain('jest-controller-isolation.js');
+    expect(supervisor).toContain('jest-worker-ipc.js');
     expect(supervisor).not.toContain('--outputFile');
 
     const lockdown = fs.readFileSync(
@@ -119,5 +140,13 @@ describe('trusted candidate test runner', () => {
     expect(lockdown).toContain("Symbol.for('$$jest-matchers-object')");
     expect(lockdown).toContain("['matchers', 'customEqualityTesters']");
     expect(lockdown).toContain('Object.seal(matcherRegistry)');
+
+    const workerIpc = fs.readFileSync(
+      path.join(__dirname, '..', '..', 'scripts', 'jest-worker-ipc.js'),
+      'utf8'
+    );
+    expect(workerIpc).toContain("process.env.JEST_WORKER_ID");
+    expect(workerIpc).toContain("'__repositoryManagerTrustedSend'");
+    expect(workerIpc).toContain("'Candidate code cannot send Jest worker results'");
   });
 });

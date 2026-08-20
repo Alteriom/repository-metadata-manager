@@ -86,16 +86,26 @@ function runJest(root, trustedRoot) {
     );
   }
   const controllerEnvironment = { ...process.env };
+  const ipcModule = path.join(
+    trustedRoot,
+    'scripts',
+    'jest-worker-ipc.js'
+  );
+  const nodeOptions = [`--require=${ipcModule}`];
   if (requireIsolation) {
     const isolationModule = path.join(
       trustedRoot,
       'scripts',
       'jest-controller-isolation.js'
     );
-    controllerEnvironment.NODE_OPTIONS = `--require=${isolationModule}`;
+    nodeOptions.push(`--require=${isolationModule}`);
     controllerEnvironment.REPO_MANAGER_TRUSTED_WORKER_UID = '65534';
     controllerEnvironment.REPO_MANAGER_TRUSTED_WORKER_GID = '65534';
   }
+  controllerEnvironment.NODE_OPTIONS = [
+    controllerEnvironment.NODE_OPTIONS,
+    ...nodeOptions,
+  ].filter(Boolean).join(' ');
   return new Promise((resolve, reject) => {
     const child = childProcess.spawn(
       process.execPath,
