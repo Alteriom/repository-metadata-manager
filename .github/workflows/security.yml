@@ -23,10 +23,10 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Dependency Review
-              uses: actions/dependency-review-action@v4
+              uses: actions/dependency-review-action@v5
               with:
                   fail-on-severity: critical
                   allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC, BSD-2-Clause, Python-2.0, CC-BY-4.0, CC0-1.0, 0BSD, AGPL-3.0
@@ -38,7 +38,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -94,12 +94,12 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
               with:
                   fetch-depth: 0
 
             - name: Run TruffleHog OSS
-              uses: trufflesecurity/trufflehog@v3.94.1
+              uses: trufflesecurity/trufflehog@v3.97.0
               with:
                   path: ./
                   base: main
@@ -127,7 +127,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
@@ -164,7 +164,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Security Summary
               run: |
