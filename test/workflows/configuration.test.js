@@ -111,6 +111,9 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'git -C candidate symbolic-ref HEAD refs/heads/candidate'
         );
+        expect(workflow).toContain(
+            'test "$(git -C candidate rev-parse HEAD)" = "$CANDIDATE_SHA"'
+        );
         expect(workflow).not.toContain('commit --allow-empty');
         expect(workflow).not.toContain('git -C candidate add');
         expect(workflow).not.toMatch(/Checkout candidate repository/);

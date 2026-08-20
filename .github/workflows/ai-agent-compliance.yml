@@ -73,6 +73,7 @@ jobs:
                   mkdir -p candidate/.git/refs/heads
                   printf '%s\n' "$CANDIDATE_SHA" > candidate/.git/refs/heads/candidate
                   git -C candidate symbolic-ref HEAD refs/heads/candidate
+                  test "$(git -C candidate rev-parse HEAD)" = "$CANDIDATE_SHA"
 
             - name: Setup Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
