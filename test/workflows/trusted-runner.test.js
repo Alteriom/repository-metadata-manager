@@ -122,6 +122,41 @@ describe('trusted candidate test runner', () => {
     }
   }, 30000);
 
+  it('keeps authentication primitives private from candidate monkeypatches', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-auth-'));
+    const trustedRoot = path.join(__dirname, '..', '..');
+    try {
+      fs.writeFileSync(
+        path.join(root, 'candidate-auth.test.js'),
+        [
+          "const crypto = require('crypto');",
+          "const v8 = require('v8');",
+          "const probe = crypto.createHmac('sha256', 'candidate');",
+          "Object.getPrototypeOf(probe).update = () => { throw new Error('candidate HMAC update'); };",
+          "Object.getPrototypeOf(probe).digest = () => { throw new Error('candidate HMAC digest'); };",
+          "crypto.createHmac = () => { throw new Error('candidate HMAC factory'); };",
+          "v8.serialize = () => { throw new Error('candidate serializer'); };",
+          "const originalToString = Buffer.prototype.toString;",
+          "Buffer.prototype.toString = function toString(encoding, ...args) {",
+          "  if (encoding === 'base64') throw new Error('candidate base64 encoder');",
+          "  return Reflect.apply(originalToString, this, [encoding, ...args]);",
+          "};",
+          "test('candidate cannot hook authentication', () => expect(true).toBe(true));",
+          '',
+        ].join('\n')
+      );
+      fs.writeFileSync(
+        path.join(root, 'benign.test.js'),
+        "test('benign worker peer', () => expect(true).toBe(true));\n"
+      );
+      const result = await runJest(root, trustedRoot);
+      expect(result.numPassedTests).toBe(2);
+      expect(result.numFailedTests).toBe(0);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  }, 30000);
+
   it('rejects candidate attempts to replace protected Jest matchers', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-matchers-'));
     const trustedRoot = path.join(__dirname, '..', '..');
@@ -172,8 +207,11 @@ describe('trusted candidate test runner', () => {
     expect(workerIpc).toContain("process.env.JEST_WORKER_ID");
     expect(workerIpc).toContain("'__repositoryManagerTrustedSend'");
     expect(workerIpc).toContain("'Candidate code cannot send Jest worker results'");
-    expect(workerIpc).toContain("crypto.randomBytes(SECRET_BYTES)");
-    expect(workerIpc).toContain("crypto.createHmac('sha256', secret)");
+    expect(workerIpc).toContain('crypto.randomBytes.bind(crypto)');
+    expect(workerIpc).toContain('randomBytes(SECRET_BYTES)');
+    expect(workerIpc).toContain("createHmac('sha256', secret)");
+    expect(workerIpc).toContain('Function.call.bind(hmacProbe.update)');
+    expect(workerIpc).toContain('bufferToString(serialize(payload)');
     expect(workerIpc).toContain('Object.getPrototypeOf(workerChannel)');
     expect(workerIpc).toContain("Object.defineProperty(process, '_channel'");
     expect(workerIpc).toContain('if (!validEnvelope(secret, values[0]))');

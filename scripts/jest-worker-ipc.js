@@ -10,6 +10,15 @@ const v8 = require('v8');
 const AUTH_FD_ENV = 'REPOSITORY_MANAGER_JEST_AUTH_FD';
 const AUTH_MESSAGE_TYPE = 'repository-manager:authenticated-jest-worker';
 const SECRET_BYTES = 32;
+const createHmac = crypto.createHmac.bind(crypto);
+const randomBytes = crypto.randomBytes.bind(crypto);
+const timingSafeEqual = crypto.timingSafeEqual.bind(crypto);
+const serialize = v8.serialize.bind(v8);
+const deserialize = v8.deserialize.bind(v8);
+const bufferToString = Function.call.bind(Buffer.prototype.toString);
+const hmacProbe = createHmac('sha256', Buffer.alloc(0));
+const hmacUpdate = Function.call.bind(hmacProbe.update);
+const hmacDigest = Function.call.bind(hmacProbe.digest);
 const processChildPath = path.join(
   path.dirname(require.resolve('jest-worker')),
   'processChild.js'
@@ -17,24 +26,19 @@ const processChildPath = path.join(
 const jestWorkerIndexPath = require.resolve('jest-worker');
 
 function sign(secret, body) {
-  return crypto.createHmac('sha256', secret)
-    .update(body, 'utf8')
-    .digest('hex');
-}
-
-function keyId(secret) {
-  return crypto.createHash('sha256').update(secret).digest('hex');
+  const hmac = createHmac('sha256', secret);
+  hmacUpdate(hmac, body, 'utf8');
+  return hmacDigest(hmac, 'hex');
 }
 
 function validEnvelope(secret, envelope) {
   if (!envelope || envelope.type !== AUTH_MESSAGE_TYPE ||
-      envelope.keyId !== keyId(secret) ||
       typeof envelope.body !== 'string' ||
       typeof envelope.mac !== 'string') return false;
   const expected = Buffer.from(sign(secret, envelope.body), 'hex');
   const actual = Buffer.from(envelope.mac, 'hex');
   return expected.length === actual.length &&
-    crypto.timingSafeEqual(expected, actual);
+    timingSafeEqual(expected, actual);
 }
 
 if (!process.env.JEST_WORKER_ID) {
@@ -58,7 +62,7 @@ if (!process.env.JEST_WORKER_ID) {
         : ['inherit', 'inherit', 'inherit', 'ipc'];
     const authFd = stdio.length;
     stdio.push('pipe');
-    const secret = crypto.randomBytes(SECRET_BYTES);
+    const secret = randomBytes(SECRET_BYTES);
     const child = originalFork(modulePath, forkArgs, {
       ...forkOptions,
       env: {
@@ -78,7 +82,7 @@ if (!process.env.JEST_WORKER_ID) {
           child.kill();
           throw new Error('Jest worker emitted an unauthenticated IPC message');
         }
-        values[0] = v8.deserialize(Buffer.from(values[0].body, 'base64'));
+        values[0] = deserialize(Buffer.from(values[0].body, 'base64'));
       }
       return originalEmit.call(this, event, ...values);
     };
@@ -110,10 +114,9 @@ if (!process.env.JEST_WORKER_ID) {
   const originalExtension = Module._extensions['.js'];
   const originalSend = process.send.bind(process);
   const authenticatedSend = (payload) => {
-    const body = v8.serialize(payload).toString('base64');
+    const body = bufferToString(serialize(payload), 'base64');
     return originalSend({
       type: AUTH_MESSAGE_TYPE,
-      keyId: keyId(secret),
       body,
       mac: sign(secret, body),
     });
