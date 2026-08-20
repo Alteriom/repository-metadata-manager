@@ -96,6 +96,27 @@ describe('Policy', () => {
     expect(() => Policy.validate({
       branchProtection: { requireStatusChecks: false, requiredStatusCheckContexts: ['ci'] },
     })).toThrow('requires requireStatusChecks');
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['Compliance Check'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 12345 },
+      },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['Compliance Check'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 0 },
+      },
+    })).toThrow('positive integer App IDs');
+
+    expect(() => Policy.validate({
+      branchProtection: {
+        requiredStatusCheckContexts: ['ci'],
+        requiredStatusCheckAppIds: { 'Compliance Check': 12345 },
+      },
+    })).toThrow('must also be listed in requiredStatusCheckContexts');
   });
 
   it('rejects policy paths outside the repository', () => {

@@ -88,7 +88,16 @@ jobs:
 
             - name: Stage trusted policy inside candidate worktree
               shell: bash
-              run: cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
+              env:
+                  APP_ID: ${{ secrets.APP_ID }}
+              run: |
+                  if [[ "$AUTHENTICATED_CONTEXT" == "true" ]]; then
+                    jq --argjson app_id "$APP_ID" \
+                      '.branchProtection.requiredStatusCheckAppIds["Compliance Check"] = $app_id' \
+                      control/.repo-manager.json > candidate/.git/repo-manager-policy.json
+                  else
+                    cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
+                  fi
 
             - name: Normalize GitHub App private key
               if: env.AUTHENTICATED_CONTEXT == 'true'
@@ -137,6 +146,7 @@ jobs:
                   owner: ${{ github.repository_owner }}
                   repositories: ${{ github.event.repository.name }}
                   permission-administration: write
+                  permission-checks: write
                   permission-contents: read
 
             - name: Run compliance check
@@ -178,14 +188,14 @@ jobs:
               continue-on-error: true
 
             - name: Publish candidate compliance check
-              if: always()
+              if: always() && env.AUTHENTICATED_CONTEXT == 'true'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
                   CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
                   CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
                   DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  github-token: ${{ steps.app-token.outputs.token }}
                   script: |
                       const fs = require('fs');
                       let report = { score: 0, grade: 'F', status: 'fail' };
@@ -204,6 +214,36 @@ jobs:
                         output: {
                           title: `Repository compliance: ${report.status}`,
                           summary: `Score: ${report.score}/100 (${report.grade})`,
+                        },
+                      });
+
+            - name: Publish restricted candidate compliance check
+              if: always() && env.AUTHENTICATED_CONTEXT != 'true'
+              uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+              env:
+                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+                  CHECK_CONCLUSION: ${{ steps.check.outcome == 'success' && 'success' || 'failure' }}
+                  DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const fs = require('fs');
+                      let report = { score: 0, grade: 'F', status: 'fail' };
+                      try {
+                        report = JSON.parse(fs.readFileSync('compliance-report.json', 'utf8'));
+                      } catch { /* the failed restricted run is reported below */ }
+
+                      await github.rest.checks.create({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        name: 'Compliance Check (restricted)',
+                        head_sha: process.env.CANDIDATE_SHA,
+                        status: 'completed',
+                        conclusion: process.env.CHECK_CONCLUSION,
+                        details_url: process.env.DETAILS_URL,
+                        output: {
+                          title: `Restricted repository compliance: ${report.status}`,
+                          summary: `Local-only score: ${report.score}/100 (${report.grade})`,
                         },
                       });
 

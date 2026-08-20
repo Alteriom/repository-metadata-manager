@@ -6,7 +6,7 @@ Use a GitHub App with separate read and write installations or tokens. Evaluatio
 
 Do not provide user-supplied tokens to CLI or MCP arguments. Inject short-lived credentials through the executor environment.
 
-For GitHub Actions, mint the evaluation token with the official `actions/create-github-app-token` action and scope it to the repository being checked. The app needs `Administration: read` for branch protection and security settings plus `Contents: read` for repository evaluation. This repository expects these organization Actions secrets:
+For GitHub Actions, mint the evaluation token with the official `actions/create-github-app-token` action and scope it to the repository being checked. The app needs `Administration: write` to audit ruleset bypass actors, `Checks: write` to publish the trusted compliance result under its own App identity, and `Contents: read` for repository evaluation. This repository expects these organization Actions secrets:
 
 - `APP_ID`
 - `APP_PRIVATE_KEY`
@@ -17,13 +17,14 @@ The workflow uses the v3 action's legacy `app-id` input because the organization
 
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 
-Fork and Dependabot pull requests never receive the App secrets. They run a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Authoritative branch-protection and repository-metadata verification runs only for trusted same-repository pull requests, pushes, schedules, and manual dispatches. The workflow also skips PR comment writes for untrusted pull requests because their built-in token is read-only.
+Dependabot or any context without App secrets runs a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Its result is published as `Compliance Check (restricted)` by GitHub Actions and cannot satisfy the protected `Compliance Check` context. A maintainer can run the trusted workflow manually for that candidate. Authoritative branch-protection and repository-metadata verification, the protected App-sourced check, and PR report comments require the App-backed context.
 
 ## Solo-maintainer controls
 
 A solo maintainer cannot provide an independent approval. Set both the minimum and maximum required approvals to zero, prohibit code-owner reviews, and prohibit administrator enforcement so those live rules are verified exactly. Then compensate with controls that do not create a self-approval deadlock:
 
 - require strict, up-to-date status checks;
+- bind the `Compliance Check` context to the dedicated compliance App rather than the generic GitHub Actions App;
 - require all review conversations to be resolved;
 - require verified `branch-protection` and `repository-metadata` checker results;
 - keep critical and high-severity compliance gates at zero;

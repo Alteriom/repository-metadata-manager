@@ -69,7 +69,14 @@ describe('workflow control configuration', () => {
         );
         expect(workflow).toContain('base64 --decode');
         expect(workflow).toContain('permission-administration: write');
+        expect(workflow).toContain('permission-checks: write');
         expect(workflow).toContain('permission-contents: read');
+        expect(workflow).toContain(
+            'github-token: ${{ steps.app-token.outputs.token }}'
+        );
+        expect(workflow).toContain(
+            "name: 'Compliance Check (restricted)'"
+        );
         expect(appTokenBindings).toHaveLength(2);
         expect(workflow).not.toMatch(
             /GITHUB_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/
@@ -121,6 +128,9 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'cp control/.repo-manager.json candidate/.git/repo-manager-policy.json'
         );
+        expect(workflow).toContain(
+            '.branchProtection.requiredStatusCheckAppIds["Compliance Check"] = $app_id'
+        );
         expect(workflow).toContain('node control/bin/repo-manager.js check');
         expect(workflow).toContain('--project candidate');
         expect(workflow).toContain('--policy .git/repo-manager-policy.json');
@@ -155,6 +165,12 @@ describe('workflow control configuration', () => {
         expect(
             workflow.match(/if: env\.AUTHENTICATED_CONTEXT == 'true'/g)
         ).toHaveLength(2);
+        expect(workflow).toContain(
+            "if: always() && env.AUTHENTICATED_CONTEXT == 'true'"
+        );
+        expect(workflow).toContain(
+            "if: always() && env.AUTHENTICATED_CONTEXT != 'true'"
+        );
         expect(
             workflow.match(/ARGS\+=\(--only "\$LOCAL_ONLY_CHECKERS"\)/g)
         ).toHaveLength(2);
@@ -185,7 +201,8 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.4.0');
+        expect(policy.version).toBe('1.5.0');
+        expect(policy.gates.checkerMinimums['branch-protection']).toBe(100);
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
             'repository-metadata',
@@ -200,6 +217,7 @@ describe('workflow control configuration', () => {
                 'Compliance Check',
                 'CodeQL',
             ],
+            requiredStatusCheckAppIds: {},
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,

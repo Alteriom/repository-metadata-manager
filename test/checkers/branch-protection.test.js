@@ -153,6 +153,43 @@ describe('BranchProtectionChecker', () => {
       }));
     });
 
+    it('requires configured status checks to come from the trusted App', async () => {
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: { getBranchProtection: jest.fn().mockResolvedValue({ data: {
+          required_status_checks: {
+            strict: true,
+            contexts: [],
+            checks: [{ context: 'Compliance Check', app_id: 15368 }],
+          },
+          required_pull_request_reviews: { required_approving_review_count: 0, require_code_owner_reviews: false },
+          required_conversation_resolution: { enabled: true },
+          enforce_admins: { enabled: false },
+        } }), getBranchRules: jest.fn().mockResolvedValue({ data: [] }) } },
+        config: { branchProtection: {
+          requiredApprovals: 0,
+          requireStatusChecks: true,
+          requiredStatusCheckContexts: ['Compliance Check'],
+          requiredStatusCheckAppIds: { 'Compliance Check': 424242 },
+          requireStrictStatusChecks: true,
+          requireCodeOwnerReviews: false,
+          requireConversationResolution: true,
+          enforceAdmins: false,
+          requireSignedCommits: false,
+          requireLinearHistory: false,
+        } },
+      });
+
+      const result = await checker.check(ctx);
+      expect(result.metadata.actual.statusCheckAppIds).toEqual({ 'Compliance Check': [15368] });
+      expect(result.findings).toContainEqual(expect.objectContaining({
+        id: 'bp-010',
+        severity: 'high',
+        message: expect.stringContaining('Compliance Check (expected App 424242)'),
+      }));
+    });
+
     it('fails verification when applicable branch rules cannot be enumerated', async () => {
       const ctx = buildContext('healthy-project', {
         gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
