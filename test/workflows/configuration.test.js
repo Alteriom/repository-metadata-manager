@@ -166,7 +166,7 @@ describe('workflow control configuration', () => {
             workflow.match(/if: env\.AUTHENTICATED_CONTEXT == 'true'/g)
         ).toHaveLength(2);
         expect(workflow).toContain(
-            "if: always() && env.AUTHENTICATED_CONTEXT == 'true'"
+            "if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'"
         );
         expect(workflow).toContain(
             "if: always() && env.AUTHENTICATED_CONTEXT != 'true'"

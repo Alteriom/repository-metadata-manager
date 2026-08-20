@@ -188,7 +188,7 @@ jobs:
               continue-on-error: true
 
             - name: Publish candidate compliance check
-              if: always() && env.AUTHENTICATED_CONTEXT == 'true'
+              if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
                   CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
