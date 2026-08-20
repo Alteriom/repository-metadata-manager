@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const childProcess = require('child_process');
 const SecurityChecker = require('../../lib/checkers/security');
 const Context = require('../../lib/engine/Context');
 const Cache = require('../../lib/engine/Cache');
@@ -147,6 +148,37 @@ describe('SecurityChecker', () => {
   });
 
   describe('npm audit integration', () => {
+    it('runs npm audit without inherited credentials or candidate registry control', async () => {
+      const previousGitHubToken = process.env.GITHUB_TOKEN;
+      const previousRuntimeToken = process.env.ACTIONS_RUNTIME_TOKEN;
+      process.env.GITHUB_TOKEN = 'privileged-app-token';
+      process.env.ACTIONS_RUNTIME_TOKEN = 'runner-service-token';
+      const audit = jest.spyOn(childProcess, 'execSync').mockReturnValue(JSON.stringify({
+        vulnerabilities: {},
+      }));
+
+      try {
+        const ctx = buildContext('healthy-project', { cache: new Cache() });
+        await checker.check(ctx);
+
+        expect(audit).toHaveBeenCalledTimes(1);
+        const [command, options] = audit.mock.calls[0];
+        expect(command).toContain('--registry=https://registry.npmjs.org/');
+        expect(command).toContain('--ignore-scripts');
+        expect(options.env.GITHUB_TOKEN).toBeUndefined();
+        expect(options.env.ACTIONS_RUNTIME_TOKEN).toBeUndefined();
+        expect(options.env.NPM_CONFIG_REGISTRY).toBe('https://registry.npmjs.org/');
+        expect(options.env.HOME).toBe(options.env.USERPROFILE);
+        expect(options.env.HOME).not.toBe(process.env.HOME);
+      } finally {
+        audit.mockRestore();
+        if (previousGitHubToken === undefined) delete process.env.GITHUB_TOKEN;
+        else process.env.GITHUB_TOKEN = previousGitHubToken;
+        if (previousRuntimeToken === undefined) delete process.env.ACTIONS_RUNTIME_TOKEN;
+        else process.env.ACTIONS_RUNTIME_TOKEN = previousRuntimeToken;
+      }
+    });
+
     it('reports critical CVEs from cached audit', async () => {
       const cache = new Cache();
       cache.set('npm-audit', {

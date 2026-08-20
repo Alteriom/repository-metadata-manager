@@ -102,7 +102,16 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain('--no-same-permissions');
         expect(workflow).toContain('find candidate -type l -delete');
         expect(workflow).toContain('git -C candidate init --quiet');
-        expect(workflow).toContain('commit --allow-empty --quiet');
+        expect(workflow).toContain(
+            "CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}"
+        );
+        expect(workflow).toContain(
+            'printf \'%s\\n\' "$CANDIDATE_SHA" > candidate/.git/refs/heads/candidate'
+        );
+        expect(workflow).toContain(
+            'git -C candidate symbolic-ref HEAD refs/heads/candidate'
+        );
+        expect(workflow).not.toContain('commit --allow-empty');
         expect(workflow).not.toContain('git -C candidate add');
         expect(workflow).not.toMatch(/Checkout candidate repository/);
         expect(workflow).toContain('working-directory: control');
@@ -120,6 +129,30 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain("name: 'Compliance Check'");
         expect(workflow).toContain(
             "CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}"
+        );
+    });
+
+    it('uses a secret-free scoped evaluation for Dependabot', () => {
+        const workflow = fs.readFileSync(
+            path.join(
+                projectRoot,
+                '.github',
+                'workflows',
+                'ai-agent-compliance.yml'
+            ),
+            'utf8'
+        );
+
+        expect(workflow).toContain(
+            "AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}"
+        );
+        expect(workflow).toContain(
+            'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
+        );
+        expect(workflow.match(/if: env\.AUTHENTICATED_CONTEXT == 'true'/g)).toHaveLength(2);
+        expect(workflow.match(/ARGS\+=\(--only "\$LOCAL_ONLY_CHECKERS"\)/g)).toHaveLength(2);
+        expect(workflow).toContain(
+            "if: github.event_name == 'pull_request_target' && env.AUTHENTICATED_CONTEXT == 'true'"
         );
     });
 

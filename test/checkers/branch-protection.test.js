@@ -69,6 +69,7 @@ describe('BranchProtectionChecker', () => {
               required_signatures: { enabled: false },
               required_linear_history: { enabled: false },
             } }),
+            getBranchRules: jest.fn().mockResolvedValue({ data: [] }),
           },
         },
         config: {
@@ -102,7 +103,7 @@ describe('BranchProtectionChecker', () => {
           enforce_admins: { enabled: false },
           required_signatures: { enabled: false },
           required_linear_history: { enabled: false },
-        } }) } },
+        } }), getBranchRules: jest.fn().mockResolvedValue({ data: [] }) } },
         config: {
           branchProtection: {
             requiredApprovals: 1, requireStatusChecks: true, requireStrictStatusChecks: true,
@@ -127,7 +128,7 @@ describe('BranchProtectionChecker', () => {
           required_pull_request_reviews: { required_approving_review_count: 0, require_code_owner_reviews: false },
           required_conversation_resolution: { enabled: true },
           enforce_admins: { enabled: false },
-        } }) } },
+        } }), getBranchRules: jest.fn().mockResolvedValue({ data: [] }) } },
         config: {
           branchProtection: {
             requiredApprovals: 0,
@@ -149,6 +150,43 @@ describe('BranchProtectionChecker', () => {
         id: 'bp-010',
         severity: 'high',
         message: expect.stringContaining('missing required contexts: ci, security'),
+      }));
+    });
+
+    it('fails verification when applicable branch rules cannot be enumerated', async () => {
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: {
+          getBranchProtection: jest.fn().mockResolvedValue({ data: {
+            required_status_checks: { strict: true, contexts: ['ci'], checks: [] },
+            required_pull_request_reviews: { required_approving_review_count: 0, require_code_owner_reviews: false },
+            required_conversation_resolution: { enabled: true },
+            enforce_admins: { enabled: false },
+          } }),
+          getBranchRules: jest.fn().mockRejectedValue(new Error('rules endpoint denied')),
+        } },
+        config: {
+          branchProtection: {
+            requiredApprovals: 0,
+            requireStatusChecks: true,
+            requireStrictStatusChecks: true,
+            requireCodeOwnerReviews: false,
+            requireConversationResolution: true,
+            enforceAdmins: false,
+            requireSignedCommits: false,
+            requireLinearHistory: false,
+          },
+        },
+      });
+
+      const result = await checker.check(ctx);
+      expect(result.metadata.verified).toBe(false);
+      expect(result.metadata.branchRulesVerified).toBe(false);
+      expect(result.metadata.branchRulesError).toBe('rules endpoint denied');
+      expect(result.findings).toContainEqual(expect.objectContaining({
+        id: 'bp-019',
+        severity: 'high',
       }));
     });
 
@@ -316,7 +354,7 @@ describe('BranchProtectionChecker', () => {
           enforce_admins: { enabled: false },
           required_signatures: { enabled: false },
           required_linear_history: { enabled: false },
-        } }) } },
+        } }), getBranchRules: jest.fn().mockResolvedValue({ data: [] }) } },
         config: {
           branchProtection: {
             requiredApprovals: 0, maximumRequiredApprovals: 0,
@@ -347,7 +385,7 @@ describe('BranchProtectionChecker', () => {
           enforce_admins: { enabled: true },
           required_signatures: { enabled: false },
           required_linear_history: { enabled: false },
-        } }) } },
+        } }), getBranchRules: jest.fn().mockResolvedValue({ data: [] }) } },
         config: {
           branchProtection: {
             requiredApprovals: 0, maximumRequiredApprovals: 0,

@@ -23,6 +23,9 @@ jobs:
     compliance-check:
         name: Compliance Control Plane
         runs-on: ubuntu-latest
+        env:
+            AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}
+            LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security
 
         steps:
             - name: Checkout trusted control plane
@@ -52,6 +55,8 @@ jobs:
 
             - name: Extract candidate repository without executing it
               shell: bash
+              env:
+                  CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.merge_commit_sha || github.sha }}
               run: |
                   mkdir candidate
                   tar \
@@ -65,10 +70,9 @@ jobs:
                   find candidate -type l -delete
                   git -C candidate init --quiet
                   git -C candidate remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-                  git -C candidate \
-                    -c user.name=repository-metadata-manager \
-                    -c user.email=repository-metadata-manager@users.noreply.github.com \
-                    commit --allow-empty --quiet --message="Candidate metadata"
+                  mkdir -p candidate/.git/refs/heads
+                  printf '%s\n' "$CANDIDATE_SHA" > candidate/.git/refs/heads/candidate
+                  git -C candidate symbolic-ref HEAD refs/heads/candidate
 
             - name: Setup Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -86,6 +90,7 @@ jobs:
               run: cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
 
             - name: Normalize GitHub App private key
+              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: private-key
               shell: bash
               env:
@@ -122,6 +127,7 @@ jobs:
                   echo "private-key=$private_key" >> "$GITHUB_OUTPUT"
 
             - name: Create repository compliance token
+              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: app-token
               uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
               with:
@@ -137,7 +143,13 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
+                  ARGS=()
+                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
+                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
+                    echo "Restricted actor: running secret-free local compliance scope"
+                  fi
                   node control/bin/repo-manager.js check \
+                    "${ARGS[@]}" \
                     --project candidate \
                     --policy .git/repo-manager-policy.json \
                     --format json \
@@ -153,7 +165,12 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
+                  ARGS=()
+                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
+                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
+                  fi
                   node control/bin/repo-manager.js check \
+                    "${ARGS[@]}" \
                     --project candidate \
                     --policy .git/repo-manager-policy.json \
                     --format github
@@ -190,7 +207,7 @@ jobs:
                       });
 
             - name: Comment on PR with results
-              if: github.event_name == 'pull_request_target'
+              if: github.event_name == 'pull_request_target' && env.AUTHENTICATED_CONTEXT == 'true'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
