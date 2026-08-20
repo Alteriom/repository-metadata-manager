@@ -20,11 +20,11 @@ describe('Checker', () => {
     });
   });
 
-  describe('fix()', () => {
-    it('returns empty applied and skipped arrays', async () => {
+  describe('plan()', () => {
+    it('returns an empty safe plan by default', async () => {
       const c = new Checker({ name: 'base', version: '1.0.0', description: '', defaultWeight: 10 });
-      const result = await c.fix();
-      expect(result).toEqual({ checker: 'base', applied: [], skipped: [] });
+      const result = await c.plan();
+      expect(result).toEqual({ checker: 'base', operations: [], unsupported: [] });
     });
   });
 
@@ -69,7 +69,15 @@ describe('Checker', () => {
       expect(result.checker).toBe('test');
       expect(result.score).toBe(85);
       expect(result.grade).toBe('B');
-      expect(result.findings).toEqual(findings);
+      expect(result.findings).toEqual([
+        expect.objectContaining({
+          ...findings[0],
+          checker: 'test',
+          fixable: false,
+          fix: null,
+          line: null,
+        }),
+      ]);
       expect(result.metadata).toEqual({ foo: 'bar' });
       expect(typeof result.duration).toBe('number');
     });

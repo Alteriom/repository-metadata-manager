@@ -57,7 +57,7 @@ Describe your goal or use case.
 
 ```bash
 # Paste commands you've already attempted
-repository-manager health
+repo-manager check
 ```
 
 ## 📚 What You've Already Tried

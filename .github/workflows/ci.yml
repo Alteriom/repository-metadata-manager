@@ -16,16 +16,16 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                node-version: [18.x, 20.x, 22.x]
+                node-version: [24.x]
                 os: [ubuntu-latest]
             fail-fast: false
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'npm'
@@ -37,13 +37,12 @@ jobs:
               run: npm run lint
 
             - name: Run tests
-              run: npx jest test/engine/ test/checkers/ test/interfaces/ --verbose
+              run: npm run test:core -- --verbose
               env:
                   CI: true
 
             - name: Run health check
-              run: node bin/repo-manager.js check --format github --fail-below 50
-              continue-on-error: true
+              run: node bin/repo-manager.js check --format github
 
             - name: Validate CLI
               run: |
@@ -55,5 +54,4 @@ jobs:
               run: npm pack --dry-run
 
             - name: Security audit
-              run: npm audit --audit-level high
-              continue-on-error: true
+              run: npm audit --audit-level moderate

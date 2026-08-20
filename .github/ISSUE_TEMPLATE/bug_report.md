@@ -99,7 +99,7 @@ Paste relevant console output here
 
 ```bash
 # Run this command and paste output
-repository-manager health --version
+repo-manager --version
 ```
 
 ## 🔍 Additional Context

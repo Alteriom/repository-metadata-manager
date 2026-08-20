@@ -19,15 +19,22 @@ class TestChecker extends Checker {
 
 class FixableChecker extends Checker {
   constructor() {
-    super({ name: 'fixable', version: '1.0.0', description: 'Fixable', defaultWeight: 10 });
+    super({ name: 'fixable', version: '1.0.0', description: 'Fixable', defaultWeight: 10, fixableFindingIds: ['fix1'] });
   }
   async check() {
     return this.createResult(50, [
       { id: 'fix1', severity: 'medium', message: 'Can fix', fixable: true, fix: 'Apply fix' },
     ]);
   }
-  async fix(/* context, findings */) {
-    return { checker: this.name, applied: [{ id: 'fix1' }], skipped: [] };
+  async plan() {
+    return {
+      checker: this.name,
+      operations: [{
+        id: 'fixable:write', checker: this.name, findingId: 'fix1', type: 'write-file',
+        path: 'generated.txt', description: 'Generate test file', beforeHash: null, content: 'generated\n',
+      }],
+      unsupported: [],
+    };
   }
 }
 
@@ -84,25 +91,22 @@ describe('Engine', () => {
   });
 
   describe('fix()', () => {
-    it('returns report and fix results', async () => {
+    it('returns a report, plan, and dry-run audit by default', async () => {
       const engine = new Engine({ projectRoot: path.join(FIXTURES, 'healthy-project') });
       engine.register(new FixableChecker());
 
-      const { report, fixes } = await engine.fix();
+      const { report, plan, application } = await engine.fix();
       expect(report).toBeDefined();
-      expect(fixes).toHaveLength(1);
-      expect(fixes[0].applied).toHaveLength(1);
+      expect(plan.operations).toHaveLength(1);
+      expect(application.dryRun).toBe(true);
+      expect(application.results[0].status).toBe('previewed');
     });
 
-    it('respects dryRun flag', async () => {
+    it('requires approval when dryRun is disabled', async () => {
       const engine = new Engine({ projectRoot: path.join(FIXTURES, 'healthy-project') });
       engine.register(new FixableChecker());
 
-      const { fixes } = await engine.fix({ dryRun: true });
-      expect(fixes).toHaveLength(1);
-      expect(fixes[0].applied).toHaveLength(0);
-      expect(fixes[0].skipped).toHaveLength(1);
-      expect(fixes[0].skipped[0].reason).toBe('Dry run');
+      await expect(engine.fix({ dryRun: false })).rejects.toThrow('explicit approval');
     });
   });
 });

@@ -1,177 +1,169 @@
-# Repository Metadata Manager v2.0
+# Repository Metadata Manager v3
 
 [![npm version](https://img.shields.io/npm/v/@alteriom/repository-metadata-manager.svg)](https://www.npmjs.com/package/@alteriom/repository-metadata-manager)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-A modular repository health and compliance analysis tool. Runs offline against any local repository -- no GitHub token required for core checks. Extensible via a checker plugin architecture.
+A policy-driven repository compliance evaluator and controlled-remediation layer for GitHub command-center automation.
+
+Version 3 separates observation, planning, approval, execution, and verification. Evaluation is read-only. A remediation is applied only from an exact plan, against the repository state for which it was created, after explicit approval.
+
+## Requirements
+
+- Node.js 24 or newer
+- `GITHUB_TOKEN` only when GitHub-hosted settings or organization inventory are required
+
+Tokens are read from the environment. They are not accepted as CLI or MCP tool arguments.
 
 ## Installation
-
-```bash
-npm install -g @alteriom/repository-metadata-manager
-```
-
-Or as a dev dependency:
 
 ```bash
 npm install --save-dev @alteriom/repository-metadata-manager
 ```
 
-## Quick Start
+## Usage
 
 ```bash
-# Run health checks on the current repository
-repo-manager check
+# Evaluate the current repository and enforce policy gates
+npx repo-manager check
 
-# Output as JSON (for CI pipelines)
-repo-manager check --format json
+# Machine-readable evaluation
+npx repo-manager check --format json --output compliance-report.json
 
-# Auto-fix detected issues (dry run)
-repo-manager fix --dry-run
+# Produce a deterministic plan without changing files
+npx repo-manager plan --output remediation-plan.json
 
-# Apply fixes
-repo-manager fix
+# Preview the exact plan (still read-only)
+npx repo-manager apply remediation-plan.json
 
-# Show loaded configuration
-repo-manager config
+# Apply after reviewing it
+npx repo-manager apply remediation-plan.json --approve --audit-log ../command-center-audit.jsonl
+
+# Verify the repository after remediation
+npx repo-manager verify --format github
+
+# Inventory one local repository or a complete GitHub organization
+npx repo-manager inventory
+GITHUB_TOKEN=... npx repo-manager inventory --organization my-org --output inventory.json
 ```
 
-## CLI Commands
+`fix` remains as a compatibility command, but it previews by default. Use the explicit `plan` and `apply` workflow for automation.
 
-### `repo-manager check`
+## Policy
 
-Run all health checkers and display a scored report.
+Place `.repo-manager.json` in the repository root. Configuration is validated and malformed or unknown policy properties fail closed.
 
-| Flag | Description |
-|------|-------------|
-| `-o, --only <checkers>` | Comma-separated list of checkers to run |
-| `-f, --format <format>` | Output format: `cli` (default) or `json` |
-| `--project <path>` | Path to repository root (default: cwd) |
-
-```bash
-repo-manager check --only documentation,security
-repo-manager check --format json --project /path/to/repo
+```json
+{
+  "schemaVersion": 1,
+  "id": "my-org/repository-baseline",
+  "version": "1.0.0",
+  "gates": {
+    "failBelow": 70,
+    "maxCritical": 0,
+    "maxHigh": 0,
+    "checkerMinimums": {
+      "security": 70,
+      "cicd": 70
+    },
+    "requireVerifiedCheckers": []
+  },
+  "branchProtection": {
+    "requiredApprovals": 1,
+    "requireStatusChecks": true,
+    "requireStrictStatusChecks": true,
+    "requireCodeOwnerReviews": true,
+    "requireConversationResolution": true,
+    "enforceAdmins": true,
+    "requireSignedCommits": false,
+    "requireLinearHistory": false
+  }
+}
 ```
 
-### `repo-manager fix`
+See [Policy Guide](docs/guides/POLICY.md) for the complete schema and inheritance guidance.
 
-Auto-fix issues that have fixable remediation.
+## Built-in checks
 
-| Flag | Description |
-|------|-------------|
-| `--dry-run` | Preview what would be fixed without writing |
-| `--project <path>` | Path to repository root (default: cwd) |
+| Checker | Evaluates |
+| --- | --- |
+| `security` | Recursive secret patterns, environment-file exposure, policy, Docker controls, npm audit |
+| `documentation` | README quality, changelog, contributing guide, license, exported-code documentation |
+| `cicd` | Workflows and composite Actions, triggers, permissions, tests, matrices, injection patterns |
+| `dependencies` | Lock files, runtime declaration, direct dependency health, registry hygiene |
+| `branch-protection` | Local review assets and effective default-branch settings from GitHub |
+| `license` | License presence, SPDX metadata, content consistency, dependency conflicts |
+| `repository-metadata` | GitHub description, topics, merge hygiene, and hosted security controls |
+| `iot` | PlatformIO and firmware conventions; excluded from scoring when not applicable |
 
-### `repo-manager config`
+Scores summarize posture; policy gates determine pass or fail. A critical or high finding can fail a repository even when its weighted score is high.
 
-Display the resolved configuration and detected project type.
+## Stable automation contracts
+
+Reports, plans, inventory, and audit records include `schemaVersion`, `kind`, repository identity, policy identity, and timestamps.
+
+```text
+inventory → evaluate → plan → approval → apply → verify → audit
+```
+
+Plans include pre-change hashes. Apply rejects stale plans and paths outside the repository root.
+
+## GitHub Action
+
+```yaml
+- uses: Alteriom/repository-metadata-manager@v3
+  with:
+    format: github
+    fail-below: 70
+    only: security,cicd,branch-protection
+```
+
+The Action installs the code from its pinned Action revision, validates every input, and returns `score` and `grade` outputs.
+
+## MCP server
+
+The package installs `repo-manager-mcp`. It is read-only by default.
+
+```json
+{
+  "mcpServers": {
+    "repository-manager": {
+      "command": "repo-manager-mcp",
+      "env": {
+        "REPO_MANAGER_ALLOWED_ROOTS": "/workspace/repos"
+      }
+    }
+  }
+}
+```
+
+To expose `apply`, the server process must explicitly set `REPO_MANAGER_ENABLE_APPLY=true`; the caller must also submit the exact plan with `approved: true`. See [MCP Server](mcp-server/README.md).
 
 ## Programmatic API
 
 ```javascript
 const { Engine } = require('@alteriom/repository-metadata-manager');
 
-const engine = new Engine({ projectRoot: '/path/to/repo' });
-
-// Run checks
+const engine = new Engine({ projectRoot: '/workspace/repository' });
 const report = await engine.run();
-console.log(report.score, report.grade);
+const plan = await engine.plan();
 
-// Run specific checkers
-const partial = await engine.run(['documentation', 'security']);
+// Read-only preview
+const preview = await engine.applyPlan(plan);
 
-// Fix issues
-const { report: r, fixes } = await engine.fix({ dryRun: false });
+// Explicit controlled apply
+const audit = await engine.applyPlan(plan, { approved: true, dryRun: false });
 ```
 
-### Custom Checkers
+See [API Reference](docs/development/API.md) and [Command Center Integration](docs/COMMAND_CENTER.md).
 
-```javascript
-const { Checker } = require('@alteriom/repository-metadata-manager');
-
-class MyChecker extends Checker {
-  constructor() {
-    super({ name: 'my-check', version: '1.0.0', description: 'Custom check', defaultWeight: 10 });
-  }
-
-  async check(context) {
-    const findings = [];
-    if (!context.fileExists('CODEOWNERS')) {
-      findings.push({
-        id: 'missing-codeowners',
-        severity: 'medium',
-        message: 'No CODEOWNERS file',
-        fixable: false,
-        fix: null,
-      });
-    }
-    return this.createResult(findings.length === 0 ? 100 : 60, findings);
-  }
-}
-
-const engine = new Engine({ projectRoot: '.' });
-engine.register(new MyChecker());
-const report = await engine.run();
-```
-
-## Configuration
-
-Create `.repo-manager.json` in your repository root:
-
-```json
-{
-  "checkers": {
-    "documentation": { "weight": 30 },
-    "security": { "weight": 25 },
-    "cicd": { "weight": 20 },
-    "dependencies": { "weight": 15 },
-    "branch-protection": { "weight": 10 },
-    "iot": { "enabled": false }
-  },
-  "thresholds": {
-    "fail": 50
-  }
-}
-```
-
-## Built-in Checkers
-
-| Checker | Description |
-|---------|-------------|
-| `documentation` | Checks for README, CHANGELOG, CONTRIBUTING, LICENSE, SECURITY.md |
-| `security` | npm audit, .env exposure, SECURITY.md policy, secrets scanning |
-| `cicd` | GitHub Actions workflows, test/lint/build steps, workflow quality |
-| `dependencies` | Lock file presence, outdated deps, dependency count |
-| `branch-protection` | CODEOWNERS, protected branch config, review requirements |
-| `iot` | PlatformIO config, firmware structure (auto-skips non-IoT projects) |
-
-## MCP Server
-
-An MCP server is included for integration with AI assistants (Claude, GitHub Copilot).
+## Development
 
 ```bash
-cd mcp-server && npm install
-node mcp-server/index.js
-```
-
-Exposes three tools: `check`, `fix`, and `findings`. See `mcp-server/` for details.
-
-## CI Integration
-
-```yaml
-name: Health Check
-on: [push, pull_request]
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - run: npm install
-      - run: npx repo-manager check --format json
+npm ci
+npm run lint
+npm test
+npm run test:coverage
+npm pack --dry-run
 ```
 
 ## License

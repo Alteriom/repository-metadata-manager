@@ -107,5 +107,15 @@ describe('Report', () => {
       expect(report.timestamp).toBeTruthy();
       expect(() => new Date(report.timestamp)).not.toThrow();
     });
+
+    it('fails when policy requires an authoritative checker that was not verified', () => {
+      const report = Report.aggregate(
+        [{ checker: 'branch-protection', score: 100, findings: [], metadata: { verified: false } }],
+        {},
+        { policy: { id: 'test', version: '1.0.0', schemaVersion: 1, gates: { requireVerifiedCheckers: ['branch-protection'] } } },
+      );
+      expect(report.status).toBe('fail');
+      expect(report.gates).toContainEqual(expect.objectContaining({ id: 'verified:branch-protection', passed: false }));
+    });
   });
 });

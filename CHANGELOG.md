@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-08-19
+
+### Added
+
+- Versioned, validated repository policy with hard compliance gates
+- Stable report, inventory, remediation-plan, and execution-audit schemas
+- Deterministic plan/apply/verify workflow with explicit approval
+- Path containment, stale-plan detection, and optional JSONL audit logging
+- Organization inventory with complete GitHub API pagination
+- MCP allowed-root boundary, tool safety annotations, and disabled-by-default apply capability
+- Recursive secret scanning with configurable size and path exclusions
+- Effective default-branch protection evaluation against desired controls
+
+### Changed
+
+- Raised the supported runtime to Node.js 24+
+- Consolidated MCP dependencies into the root package
+- Made `fix` preview-only unless `--approve` is provided
+- Made policy and security CI checks enforce their result
+- Replaced legacy automation documentation and commands with the v3 control model
+
+### Removed
+
+- Unsafe legacy organization scripts that directly modified repository settings or default branches
+- Nested MCP package metadata and duplicate dependency lock
+- Obsolete v1/v2 CLI, automation-manager, and enhanced-CLI documentation
+
+### Security
+
+- Removed scripts that printed complete npm credentials
+- Eliminated raw composite-Action input interpolation into shell commands
+- Removed CLI and MCP token arguments
+
 ## [1.2.6] - 2025-12-12
 
 ### Added
