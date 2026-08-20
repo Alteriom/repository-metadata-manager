@@ -26,7 +26,7 @@ For a solo-maintainer repository, set both `requiredApprovals` and `maximumRequi
 
 Classic branch protection and every active ruleset that applies to the default branch are evaluated together. For `prohibitAdminEnforcement`, every applicable ruleset must expose an organization-administrator or built-in repository-admin bypass that applies outside pull requests. GitHub hides ruleset bypass actors from tokens without write access to the ruleset, so hosted verification requires a GitHub App token with repository Administration write permission; the checker reports the control as unverified instead of guessing when those actors are unavailable. Record any administrator bypass outside the repository as a command-center audit event.
 
-The effective branch-rules query must also succeed even when classic branch protection is readable. A failed or unavailable ruleset query makes branch-protection verification fail closed because an unseen organization ruleset could impose stricter controls.
+The classic-protection query and every page of the effective branch-rules query must succeed. A confirmed classic-protection `404` is accepted as proof that classic protection is absent when a ruleset protects the branch. Any other failed or unavailable query makes branch-protection verification fail closed because an unseen classic rule or organization ruleset could impose stricter controls.
 
 ## Organization layering
 

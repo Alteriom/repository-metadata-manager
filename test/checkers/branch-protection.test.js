@@ -190,6 +190,83 @@ describe('BranchProtectionChecker', () => {
       }));
     });
 
+    it('fails verification when classic protection is unreadable even if branch rules exist', async () => {
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: {
+          getBranchProtection: jest.fn().mockRejectedValue(
+            Object.assign(new Error('classic protection denied'), { status: 403 })
+          ),
+          getBranchRules: jest.fn().mockResolvedValue({ data: [{
+            type: 'pull_request',
+            parameters: { required_approving_review_count: 0 },
+          }] }),
+        } },
+        config: { branchProtection: {
+          requiredApprovals: 0,
+          requireStatusChecks: false,
+          requireStrictStatusChecks: false,
+          requireCodeOwnerReviews: false,
+          requireConversationResolution: false,
+          enforceAdmins: false,
+          requireSignedCommits: false,
+          requireLinearHistory: false,
+        } },
+      });
+
+      const result = await checker.check(ctx);
+      expect(result.metadata.verified).toBe(false);
+      expect(result.metadata.classicProtectionVerified).toBe(false);
+      expect(result.metadata.classicProtectionError).toBe('classic protection denied');
+      expect(result.findings).toContainEqual(expect.objectContaining({
+        id: 'bp-020',
+        severity: 'high',
+      }));
+    });
+
+    it('paginates every effective branch rule before evaluating controls', async () => {
+      const firstPage = Array.from({ length: 100 }, () => ({ type: 'creation' }));
+      const getBranchRules = jest.fn().mockImplementation(({ page }) => Promise.resolve({
+        data: page === 1 ? firstPage : [{
+          type: 'pull_request',
+          parameters: { required_approving_review_count: 1 },
+        }],
+      }));
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: {
+          getBranchProtection: jest.fn().mockRejectedValue(
+            Object.assign(new Error('Not Found'), { status: 404 })
+          ),
+          getBranchRules,
+        } },
+        config: { branchProtection: {
+          requiredApprovals: 0,
+          maximumRequiredApprovals: 0,
+          requireStatusChecks: false,
+          requireStrictStatusChecks: false,
+          requireCodeOwnerReviews: false,
+          requireConversationResolution: false,
+          enforceAdmins: false,
+          requireSignedCommits: false,
+          requireLinearHistory: false,
+        } },
+      });
+
+      const result = await checker.check(ctx);
+      expect(getBranchRules).toHaveBeenCalledTimes(2);
+      expect(getBranchRules).toHaveBeenNthCalledWith(1, expect.objectContaining({ page: 1, per_page: 100 }));
+      expect(getBranchRules).toHaveBeenNthCalledWith(2, expect.objectContaining({ page: 2, per_page: 100 }));
+      expect(result.metadata.effectiveRuleCount).toBe(101);
+      expect(result.metadata.verified).toBe(true);
+      expect(result.findings).toContainEqual(expect.objectContaining({
+        id: 'bp-012',
+        severity: 'high',
+      }));
+    });
+
     it('aggregates pull-request and status-check controls across every applicable ruleset', async () => {
       const branchRules = [
         {
