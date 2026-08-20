@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Capture and seal the Jest worker result channel before candidate modules load
 - Pin privileged evaluation to an administrator-selected immutable control-plane SHA, remove secret-bearing push/schedule triggers, and require an exact-head administrator attestation for workflow changes
 - Freeze Jest's internal matcher and equality-tester registries before candidate modules load
+- Skip Checks API publication when Dependabot receives GitHub's read-only workflow token
 
 ## [3.0.0] - 2026-08-19
 

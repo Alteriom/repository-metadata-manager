@@ -235,7 +235,7 @@ describe('workflow control configuration', () => {
             "if: always() && env.AUTHENTICATED_CONTEXT == 'true' && steps.app-token.outcome == 'success'"
         );
         expect(workflow).toContain(
-            "if: always() && env.AUTHENTICATED_CONTEXT != 'true'"
+            "if: always() && env.AUTHENTICATED_CONTEXT != 'true' && github.actor != 'dependabot[bot]'"
         );
         expect(
             workflow.match(/ARGS\+=\(--only "\$LOCAL_ONLY_CHECKERS"\)/g)

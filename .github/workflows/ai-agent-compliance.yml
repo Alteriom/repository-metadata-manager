@@ -436,7 +436,7 @@ jobs:
                       });
 
             - name: Publish restricted candidate compliance check
-              if: always() && env.AUTHENTICATED_CONTEXT != 'true'
+              if: always() && env.AUTHENTICATED_CONTEXT != 'true' && github.actor != 'dependabot[bot]'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               env:
                   CANDIDATE_SHA: ${{ needs.resolve-candidate.outputs.check-sha }}
