@@ -21,7 +21,7 @@ Fork and Dependabot pull requests never receive the App secrets. They run a secr
 
 ## Solo-maintainer controls
 
-A solo maintainer cannot provide an independent approval. Set both the minimum and maximum required approvals to zero so the live rule is verified exactly, then compensate with controls that do not create a self-approval deadlock:
+A solo maintainer cannot provide an independent approval. Set both the minimum and maximum required approvals to zero, prohibit code-owner reviews, and prohibit administrator enforcement so those live rules are verified exactly. Then compensate with controls that do not create a self-approval deadlock:
 
 - require strict, up-to-date status checks;
 - require all review conversations to be resolved;

@@ -124,7 +124,7 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.2.0');
+        expect(policy.version).toBe('1.3.0');
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
             'repository-metadata',
@@ -135,8 +135,10 @@ describe('workflow control configuration', () => {
             requireStatusChecks: true,
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
+            prohibitCodeOwnerReviews: true,
             requireConversationResolution: true,
             enforceAdmins: false,
+            prohibitAdminEnforcement: true,
         });
     });
 });

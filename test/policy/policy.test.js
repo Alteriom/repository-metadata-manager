@@ -62,6 +62,22 @@ describe('Policy', () => {
     expect(() => Policy.validate({
       branchProtection: { maximumRequiredApprovals: 0.5 },
     })).toThrow('must be a non-negative integer');
+
+    expect(() => Policy.validate({
+      branchProtection: { requireCodeOwnerReviews: true, prohibitCodeOwnerReviews: true },
+    })).toThrow('cannot require and prohibit code-owner reviews');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitCodeOwnerReviews: true },
+    })).toThrow('cannot require and prohibit code-owner reviews');
+
+    expect(() => Policy.validate({
+      branchProtection: { enforceAdmins: true, prohibitAdminEnforcement: true },
+    })).toThrow('cannot require and prohibit administrator enforcement');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitAdminEnforcement: true },
+    })).toThrow('cannot require and prohibit administrator enforcement');
   });
 
   it('rejects policy paths outside the repository', () => {

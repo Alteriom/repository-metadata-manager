@@ -28,8 +28,10 @@
         "requireStatusChecks": true,
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": true,
+        "prohibitCodeOwnerReviews": false,
         "requireConversationResolution": true,
         "enforceAdmins": true,
+        "prohibitAdminEnforcement": false,
         "requireSignedCommits": false,
         "requireLinearHistory": false
     },

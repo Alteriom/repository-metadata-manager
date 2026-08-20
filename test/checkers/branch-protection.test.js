@@ -148,5 +148,37 @@ describe('BranchProtectionChecker', () => {
         message: 'Required approvals are 1; policy requires 0 to 0',
       }));
     });
+
+    it('fails when controls prohibited by a solo profile are enabled', async () => {
+      const ctx = buildContext('healthy-project', {
+        gitInfo: { owner: 'example', repo: 'healthy', branch: 'main' },
+        githubRepo: { default_branch: 'main' },
+        github: { repos: { getBranchProtection: jest.fn().mockResolvedValue({ data: {
+          required_status_checks: { strict: true, contexts: ['ci'], checks: [] },
+          required_pull_request_reviews: { required_approving_review_count: 0, require_code_owner_reviews: true },
+          required_conversation_resolution: { enabled: true },
+          enforce_admins: { enabled: true },
+          required_signatures: { enabled: false },
+          required_linear_history: { enabled: false },
+        } }) } },
+        config: {
+          branchProtection: {
+            requiredApprovals: 0, maximumRequiredApprovals: 0,
+            requireStatusChecks: true, requireStrictStatusChecks: true,
+            requireCodeOwnerReviews: false, prohibitCodeOwnerReviews: true,
+            requireConversationResolution: true,
+            enforceAdmins: false, prohibitAdminEnforcement: true,
+            requireSignedCommits: false, requireLinearHistory: false,
+          },
+        },
+      });
+
+      const result = await checker.check(ctx);
+      expect(result.metadata.verified).toBe(true);
+      expect(result.findings).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: 'bp-013', severity: 'high' }),
+        expect.objectContaining({ id: 'bp-015', severity: 'high' }),
+      ]));
+    });
   });
 });
