@@ -17,6 +17,8 @@ The workflow uses the v3 action's legacy `app-id` input because the organization
 
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 
+Fork pull requests never receive the App secrets. They run a secret-free local checker scope covering CI/CD, dependencies, documentation, IoT applicability, licensing, and security. Authoritative branch-protection and repository-metadata verification runs only for trusted same-repository pull requests, pushes, schedules, and manual dispatches. The workflow also skips PR comment writes for forks because their built-in token is read-only.
+
 ## Solo-maintainer controls
 
 A solo maintainer cannot provide an independent approval. Use zero required approvals and compensate with controls that do not create a self-approval deadlock:

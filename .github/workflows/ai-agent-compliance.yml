@@ -19,6 +19,9 @@ jobs:
     compliance-check:
         name: Compliance Check
         runs-on: ubuntu-latest
+        env:
+            AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+            LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security
 
         steps:
             - name: Checkout repository
@@ -34,6 +37,7 @@ jobs:
               run: npm ci
 
             - name: Normalize GitHub App private key
+              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: private-key
               shell: bash
               env:
@@ -70,6 +74,7 @@ jobs:
                   echo "private-key=$private_key" >> "$GITHUB_OUTPUT"
 
             - name: Create repository compliance token
+              if: env.AUTHENTICATED_CONTEXT == 'true'
               id: app-token
               uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
               with:
@@ -85,7 +90,12 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
               run: |
-                  node bin/repo-manager.js check --format json > compliance-report.json
+                  ARGS=()
+                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
+                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
+                    echo "Fork pull request: running secret-free local compliance scope"
+                  fi
+                  node bin/repo-manager.js check "${ARGS[@]}" --format json > compliance-report.json
                   SCORE=$(jq -r '.score' compliance-report.json)
                   GRADE=$(jq -r '.grade' compliance-report.json)
                   echo "score=$SCORE" >> $GITHUB_OUTPUT
@@ -96,11 +106,16 @@ jobs:
             - name: Run with GitHub annotations
               env:
                   GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-              run: node bin/repo-manager.js check --format github
+              run: |
+                  ARGS=()
+                  if [[ "$AUTHENTICATED_CONTEXT" != "true" ]]; then
+                    ARGS+=(--only "$LOCAL_ONLY_CHECKERS")
+                  fi
+                  node bin/repo-manager.js check "${ARGS[@]}" --format github
               continue-on-error: true
 
             - name: Comment on PR with results
-              if: github.event_name == 'pull_request'
+              if: github.event_name == 'pull_request' && env.AUTHENTICATED_CONTEXT == 'true'
               uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}

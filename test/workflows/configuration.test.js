@@ -76,6 +76,32 @@ describe('workflow control configuration', () => {
         );
     });
 
+    it('uses a secret-free local compliance scope for fork pull requests', () => {
+        const workflow = fs.readFileSync(
+            path.join(
+                projectRoot,
+                '.github',
+                'workflows',
+                'ai-agent-compliance.yml'
+            ),
+            'utf8'
+        );
+
+        expect(workflow).toContain(
+            "AUTHENTICATED_CONTEXT: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}"
+        );
+        expect(workflow).toContain(
+            'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
+        );
+        expect(workflow).toContain(
+            'if: env.AUTHENTICATED_CONTEXT == \'true\''
+        );
+        expect(workflow).toContain('ARGS+=(--only "$LOCAL_ONLY_CHECKERS")');
+        expect(workflow).toContain(
+            "if: github.event_name == 'pull_request' && env.AUTHENTICATED_CONTEXT == 'true'"
+        );
+    });
+
     it('keeps unauthenticated CI checks inside a checker-specific scope', () => {
         const workflow = fs.readFileSync(
             path.join(projectRoot, '.github', 'workflows', 'ci.yml'),
