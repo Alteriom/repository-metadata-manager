@@ -3,20 +3,26 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { runTrustedTests, validateJestResult } = require('../../scripts/run-trusted-tests');
+const {
+  compareTestIdentities,
+  runTrustedTests,
+  validateJestResult,
+} = require('../../scripts/run-trusted-tests');
 
 describe('trusted candidate test runner', () => {
   it('fails when candidate code exits a Jest worker before assertions complete', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-worker-exit-'));
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
     try {
       fs.writeFileSync(
         path.join(root, 'candidate-exit.test.js'),
         "'use strict';\nprocess.exit(0);\n"
       );
-      expect(() => runTrustedTests(root)).toThrow(
-        'Trusted Jest process exited without a result document'
-      );
+      expect(() => runTrustedTests(root)).toThrow(/Trusted Jest process/);
     } finally {
+      stdout.mockRestore();
+      stderr.mockRestore();
       fs.rmSync(root, { recursive: true, force: true });
     }
   }, 35000);
@@ -40,5 +46,14 @@ describe('trusted candidate test runner', () => {
         numTodoTests: 0,
       })
     ).toThrow('did not complete every assertion');
+  });
+
+  it('requires the exact protected test identity multiset', () => {
+    expect(() =>
+      compareTestIdentities(
+        ['test/a.test.js::suite protected assertion'],
+        ['test/a.test.js::suite candidate dummy']
+      )
+    ).toThrow(/missing: test\/a\.test\.js::suite protected assertion/);
   });
 });

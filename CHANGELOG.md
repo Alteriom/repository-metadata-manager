@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model ruleset conversation resolution and prohibit last-push approval deadlocks in the solo-maintainer policy
 - Override candidate npm omission settings so security audits include development, optional, and peer dependencies
 - Supervise candidate Jest execution and require complete passing results so premature termination cannot satisfy the trusted test gate
+- Freeze protected Jest globals and compare exact baseline test identities so candidate dummy tests cannot replace protected assertions
 
 ## [3.0.0] - 2026-08-19
 
