@@ -78,6 +78,14 @@ describe('Policy', () => {
     expect(() => Policy.validate({
       branchProtection: { prohibitAdminEnforcement: true },
     })).toThrow('cannot require and prohibit administrator enforcement');
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitLastPushApproval: true },
+    })).not.toThrow();
+
+    expect(() => Policy.validate({
+      branchProtection: { prohibitLastPushApproval: 'yes' },
+    })).toThrow('branchProtection.prohibitLastPushApproval must be boolean');
   });
 
   it('validates required status-check contexts', () => {

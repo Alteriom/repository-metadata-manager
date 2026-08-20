@@ -309,12 +309,20 @@ describe('BranchProtectionChecker', () => {
         {
           type: 'pull_request',
           ruleset_id: 101,
-          parameters: { required_approving_review_count: 0, require_code_owner_review: false },
+          parameters: {
+            required_approving_review_count: 0,
+            require_code_owner_review: false,
+            required_review_thread_resolution: true,
+          },
         },
         {
           type: 'pull_request',
           ruleset_id: 102,
-          parameters: { required_approving_review_count: 2, require_code_owner_review: true },
+          parameters: {
+            required_approving_review_count: 2,
+            require_code_owner_review: true,
+            require_last_push_approval: true,
+          },
         },
         {
           type: 'required_status_checks',
@@ -354,7 +362,8 @@ describe('BranchProtectionChecker', () => {
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,
-            requireConversationResolution: false,
+            prohibitLastPushApproval: true,
+            requireConversationResolution: true,
             enforceAdmins: false,
             prohibitAdminEnforcement: true,
             requireSignedCommits: false,
@@ -366,7 +375,9 @@ describe('BranchProtectionChecker', () => {
       const result = await checker.check(ctx);
       expect(result.metadata.actual).toMatchObject({
         approvals: 2,
+        lastPushApproval: true,
         codeOwnerReviews: true,
+        conversationResolution: true,
         statusCheckContexts: ['ci', 'security'],
         strictStatusChecks: true,
         enforceAdmins: false,
@@ -375,6 +386,7 @@ describe('BranchProtectionChecker', () => {
         expect.objectContaining({ id: 'bp-012', severity: 'high' }),
         expect.objectContaining({ id: 'bp-013', severity: 'high' }),
       ]));
+      expect(result.findings.some(finding => finding.id === 'bp-014')).toBe(false);
       expect(ctx.github.request).toHaveBeenCalledTimes(2);
     });
 
@@ -494,7 +506,11 @@ describe('BranchProtectionChecker', () => {
         githubRepo: { default_branch: 'main' },
         github: { repos: { getBranchProtection: jest.fn().mockResolvedValue({ data: {
           required_status_checks: { strict: true, contexts: ['ci'], checks: [] },
-          required_pull_request_reviews: { required_approving_review_count: 0, require_code_owner_reviews: true },
+          required_pull_request_reviews: {
+            required_approving_review_count: 0,
+            require_code_owner_reviews: true,
+            require_last_push_approval: true,
+          },
           required_conversation_resolution: { enabled: true },
           enforce_admins: { enabled: true },
           required_signatures: { enabled: false },
@@ -505,6 +521,7 @@ describe('BranchProtectionChecker', () => {
             requiredApprovals: 0, maximumRequiredApprovals: 0,
             requireStatusChecks: true, requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false, prohibitCodeOwnerReviews: true,
+            prohibitLastPushApproval: true,
             requireConversationResolution: true,
             enforceAdmins: false, prohibitAdminEnforcement: true,
             requireSignedCommits: false, requireLinearHistory: false,
@@ -514,7 +531,13 @@ describe('BranchProtectionChecker', () => {
 
       const result = await checker.check(ctx);
       expect(result.metadata.verified).toBe(true);
+      expect(result.metadata.actual.lastPushApproval).toBe(true);
       expect(result.findings).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: 'bp-012',
+          severity: 'high',
+          message: 'Last-push approval is enabled; policy requires it disabled',
+        }),
         expect.objectContaining({ id: 'bp-013', severity: 'high' }),
         expect.objectContaining({ id: 'bp-015', severity: 'high' }),
       ]));

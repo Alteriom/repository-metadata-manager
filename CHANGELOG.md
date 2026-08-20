@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Isolate npm audit from privileged workflow credentials and candidate-controlled npm configuration
 - Move merge-authority tests and linting into a protected, secret-free workflow job and publish their result through the dedicated compliance App
 - Pin dispatched evaluation and testing to one immutable candidate identity and bind CodeQL to its trusted App producer
+- Model ruleset conversation resolution and prohibit last-push approval deadlocks in the solo-maintainer policy
 
 ## [3.0.0] - 2026-08-19
 

@@ -31,6 +31,7 @@
         "requireStrictStatusChecks": true,
         "requireCodeOwnerReviews": true,
         "prohibitCodeOwnerReviews": false,
+        "prohibitLastPushApproval": false,
         "requireConversationResolution": true,
         "enforceAdmins": true,
         "prohibitAdminEnforcement": false,

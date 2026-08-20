@@ -27,6 +27,7 @@ A solo maintainer cannot provide an independent approval. Set both the minimum a
 
 - require strict, up-to-date status checks;
 - bind both `Compliance Check` and `Trusted Test & Lint` to the dedicated compliance App, and bind `CodeQL` to GitHub's Advanced Security App (ID `57789`), rather than accepting those contexts from any producer;
+- prohibit last-push approval so the sole maintainer is never required to obtain another person's review;
 - require all review conversations to be resolved;
 - require verified `branch-protection` and `repository-metadata` checker results;
 - keep critical and high-severity compliance gates at zero;

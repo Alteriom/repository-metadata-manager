@@ -248,7 +248,7 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.5.0');
+        expect(policy.version).toBe('1.6.0');
         expect(policy.gates.checkerMinimums['branch-protection']).toBe(100);
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
@@ -267,6 +267,7 @@ describe('workflow control configuration', () => {
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,
+            prohibitLastPushApproval: true,
             requireConversationResolution: true,
             enforceAdmins: false,
             prohibitAdminEnforcement: true,
