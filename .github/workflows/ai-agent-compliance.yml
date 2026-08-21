@@ -289,7 +289,7 @@ jobs:
         if: always() && needs.resolve-candidate.result == 'success'
         runs-on: ubuntu-latest
         env:
-            AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}
+            AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_CLIENT_ID != '' && secrets.APP_PRIVATE_KEY != '' }}
             LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security
 
         steps:
@@ -353,17 +353,8 @@ jobs:
 
             - name: Stage trusted policy inside candidate worktree
               shell: bash
-              env:
-                  APP_ID: ${{ secrets.APP_ID }}
               run: |
-                  if [[ "$AUTHENTICATED_CONTEXT" == "true" ]]; then
-                    jq --argjson app_id "$APP_ID" \
-                      '.branchProtection.requiredStatusCheckAppIds["Compliance Check"] = $app_id |
-                       .branchProtection.requiredStatusCheckAppIds["Trusted Test & Lint"] = $app_id' \
-                      control/.repo-manager.json > candidate/.git/repo-manager-policy.json
-                  else
-                    cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
-                  fi
+                  cp control/.repo-manager.json candidate/.git/repo-manager-policy.json
 
             - name: Normalize GitHub App private key
               if: env.AUTHENTICATED_CONTEXT == 'true'
@@ -407,7 +398,7 @@ jobs:
               id: app-token
               uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
               with:
-                  app-id: ${{ secrets.APP_ID }}
+                  client-id: ${{ secrets.APP_CLIENT_ID }}
                   private-key: ${{ steps.private-key.outputs.private-key }}
                   owner: ${{ github.repository_owner }}
                   repositories: ${{ github.event.repository.name }}
