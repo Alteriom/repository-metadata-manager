@@ -8,12 +8,12 @@ Do not provide user-supplied tokens to CLI or MCP arguments. Inject short-lived 
 
 For GitHub Actions, mint the evaluation token with the official `actions/create-github-app-token` action and scope it to the repository being checked. The app needs `Administration: write` to audit ruleset bypass actors, `Checks: write` to publish the trusted compliance result under its own App identity, and `Contents: read` for repository evaluation. This repository expects these organization Actions secrets:
 
-- `APP_ID`
+- `APP_CLIENT_ID`
 - `APP_PRIVATE_KEY`
 
 `APP_PRIVATE_KEY` can contain the PEM text or its base64 encoding. The workflow normalizes either representation without printing the key.
 
-The workflow uses the v3 action's legacy `app-id` input because the organization currently exposes `APP_ID`. A future credential rotation can migrate this to the recommended GitHub App client ID without changing the token's repository or permission scope.
+The workflow uses the v3 action's recommended `client-id` input. The production App's numeric ID is pinned separately in the versioned repository policy so credential rotation cannot redefine the trusted source for required checks.
 
 `APP_INSTALLATION_ID` may remain available for other integrations, but the official action discovers the installation from the app and repository owner.
 

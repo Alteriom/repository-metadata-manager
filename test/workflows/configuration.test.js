@@ -56,7 +56,10 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0'
         );
-        expect(workflow).toContain('app-id: ${{ secrets.APP_ID }}');
+        expect(workflow).toContain(
+            'client-id: ${{ secrets.APP_CLIENT_ID }}'
+        );
+        expect(workflow).not.toContain('app-id:');
         expect(workflow).toContain(
             'APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}'
         );
@@ -175,12 +178,7 @@ describe('workflow control configuration', () => {
         expect(workflow).toContain(
             'cp control/.repo-manager.json candidate/.git/repo-manager-policy.json'
         );
-        expect(workflow).toContain(
-            '.branchProtection.requiredStatusCheckAppIds["Compliance Check"] = $app_id'
-        );
-        expect(workflow).toContain(
-            '.branchProtection.requiredStatusCheckAppIds["Trusted Test & Lint"] = $app_id'
-        );
+        expect(workflow).not.toContain('jq --argjson app_id');
         expect(workflow).toContain('node control/bin/repo-manager.js check');
         expect(workflow).toContain('--project candidate');
         expect(workflow).toContain('--policy .git/repo-manager-policy.json');
@@ -251,7 +249,7 @@ describe('workflow control configuration', () => {
         );
 
         expect(workflow).toContain(
-            "AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_ID != '' && secrets.APP_PRIVATE_KEY != '' }}"
+            "AUTHENTICATED_CONTEXT: ${{ github.actor != 'dependabot[bot]' && secrets.APP_CLIENT_ID != '' && secrets.APP_PRIVATE_KEY != '' }}"
         );
         expect(workflow).toContain(
             'LOCAL_ONLY_CHECKERS: cicd,dependencies,documentation,iot,license,security'
@@ -295,7 +293,7 @@ describe('workflow control configuration', () => {
             )
         );
 
-        expect(policy.version).toBe('1.7.0');
+        expect(policy.version).toBe('1.8.0');
         expect(policy.gates.checkerMinimums['branch-protection']).toBe(100);
         expect(policy.gates.requireVerifiedCheckers).toEqual([
             'branch-protection',
@@ -310,7 +308,11 @@ describe('workflow control configuration', () => {
                 'Compliance Check',
                 'CodeQL',
             ],
-            requiredStatusCheckAppIds: { CodeQL: 57789 },
+            requiredStatusCheckAppIds: {
+                'Trusted Test & Lint': 1875352,
+                'Compliance Check': 1875352,
+                CodeQL: 57789,
+            },
             requireStrictStatusChecks: true,
             requireCodeOwnerReviews: false,
             prohibitCodeOwnerReviews: true,
