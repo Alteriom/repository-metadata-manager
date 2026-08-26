@@ -1,208 +1,164 @@
 #!/usr/bin/env node
 /**
- * Repository Manager MCP Server v2.0
+ * Repository Manager MCP Server
  *
- * Model Context Protocol server that provides tools for repository health
- * analysis using the v2.0 Engine API.
+ * Read-only by default. Applying an approved remediation plan additionally
+ * requires REPO_MANAGER_ENABLE_APPLY=true in the server environment.
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { createRequire } from 'module';
+import path from 'path';
+import fs from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const parentDir = join(__dirname, '..');
+const require = createRequire(import.meta.url);
+const Engine = require('../lib/engine/Engine');
+const Context = require('../lib/engine/Context');
+const Inventory = require('../lib/control/Inventory');
+const pkg = require('../package.json');
 
 const SERVER_NAME = 'repository-manager-mcp';
-const SERVER_VERSION = '2.0.0';
+const APPLY_ENABLED = process.env.REPO_MANAGER_ENABLE_APPLY === 'true';
+const ALLOWED_ROOTS = (process.env.REPO_MANAGER_ALLOWED_ROOTS || process.cwd())
+  .split(path.delimiter)
+  .filter(Boolean)
+  .map(root => path.resolve(root));
 
-/**
- * Create an Engine instance and optionally set a token.
- */
-async function createEngine(args) {
-  const engineModule = await import(join(parentDir, 'lib', 'engine', 'Engine.js'));
-  const Engine = engineModule.default;
+function allowedProjectRoot(candidate) {
+  const resolved = path.resolve(candidate || process.cwd());
+  const allowed = ALLOWED_ROOTS.some(root => resolved === root || resolved.startsWith(`${root}${path.sep}`));
+  if (!allowed) throw new Error(`Project root is outside REPO_MANAGER_ALLOWED_ROOTS: ${resolved}`);
+  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) {
+    throw new Error(`Project root is not a directory: ${resolved}`);
+  }
+  return resolved;
+}
+
+function createEngine(args) {
   return new Engine({
-    projectRoot: args.projectRoot || process.cwd(),
-    token: args.token || process.env.GITHUB_TOKEN || null,
+    projectRoot: allowedProjectRoot(args.projectRoot),
+    config: args.policy || '.repo-manager.json',
   });
 }
 
-/**
- * Execute a tool using the Engine API.
- */
+function result(value) {
+  return {
+    content: [{ type: 'text', text: JSON.stringify(value, null, 2) }],
+    structuredContent: value,
+  };
+}
+
 async function executeTool(toolName, args) {
   switch (toolName) {
-    case 'check': {
-      const engine = await createEngine(args);
-      const report = await engine.run(args.only || undefined);
-      return {
-        content: [{ type: 'text', text: JSON.stringify(report, null, 2) }],
-      };
+    case 'evaluate': {
+      return result(await createEngine(args).run(args.only));
     }
-
-    case 'fix': {
-      const engine = await createEngine(args);
-      const result = await engine.fix({ dryRun: args.dryRun === true });
-      return {
-        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-      };
-    }
-
     case 'findings': {
-      const engine = await createEngine(args);
-      const report = await engine.run();
-
-      // Collect all findings across checkers
-      let findings = [];
-      for (const [checkerName, result] of Object.entries(report.checkers)) {
-        for (const f of result.findings || []) {
-          findings.push({ ...f, checker: checkerName });
-        }
-      }
-
-      // Filter by severity
-      if (args.severity) {
-        findings = findings.filter(f => f.severity === args.severity);
-      }
-      // Filter by checker
-      if (args.checker) {
-        findings = findings.filter(f => f.checker === args.checker);
-      }
-
-      return {
-        content: [{ type: 'text', text: JSON.stringify({ total: findings.length, findings }, null, 2) }],
-      };
+      const report = await createEngine(args).run(args.only);
+      let findings = Object.values(report.checkers).flatMap(checker => checker.findings || []);
+      if (args.severity) findings = findings.filter(finding => finding.severity === args.severity);
+      if (args.checker) findings = findings.filter(finding => finding.checker === args.checker);
+      return result({ schemaVersion: report.schemaVersion, repository: report.repository, policy: report.policy, total: findings.length, findings });
     }
-
+    case 'inventory': {
+      const projectRoot = allowedProjectRoot(args.projectRoot);
+      const context = await Context.build({
+        projectRoot,
+        token: process.env.GITHUB_TOKEN || null,
+        configPath: args.policy || '.repo-manager.json',
+      });
+      return result(Inventory.local(context));
+    }
+    case 'plan': {
+      return result(await createEngine(args).plan({ only: args.only }));
+    }
+    case 'apply': {
+      if (!APPLY_ENABLED) throw new Error('Apply capability is disabled; set REPO_MANAGER_ENABLE_APPLY=true when starting the server');
+      if (args.approved !== true) throw new Error('Apply requires approved=true and an exact previously reviewed plan');
+      const engine = createEngine({ projectRoot: args.plan?.repository?.root, policy: args.policy });
+      return result(await engine.applyPlan(args.plan, { approved: true, dryRun: false }));
+    }
     default:
       throw new Error(`Unknown tool: ${toolName}`);
   }
 }
 
-/**
- * Main server setup
- */
+const projectProperties = {
+  projectRoot: { type: 'string', description: 'Repository path within REPO_MANAGER_ALLOWED_ROOTS' },
+  policy: { type: 'string', description: 'Policy path relative to the repository root' },
+  only: { type: 'array', items: { type: 'string' }, description: 'Optional checker names' },
+};
+
+const tools = [
+  {
+    name: 'evaluate',
+    description: 'Evaluate a repository against its validated policy and return hard-gate status.',
+    inputSchema: { type: 'object', properties: projectProperties },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+  },
+  {
+    name: 'findings',
+    description: 'Return normalized policy findings with optional filters.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ...projectProperties,
+        severity: { type: 'string', enum: ['critical', 'high', 'medium', 'low', 'info'] },
+        checker: { type: 'string' },
+      },
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+  },
+  {
+    name: 'inventory',
+    description: 'Return normalized identity and metadata for a local repository.',
+    inputSchema: { type: 'object', properties: { projectRoot: projectProperties.projectRoot, policy: projectProperties.policy } },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+  },
+  {
+    name: 'plan',
+    description: 'Create a deterministic remediation plan without changing repository state.',
+    inputSchema: { type: 'object', properties: projectProperties },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+  },
+  {
+    name: 'apply',
+    description: 'Apply an exact approved plan. Disabled unless the server explicitly enables apply capability.',
+    inputSchema: {
+      type: 'object',
+      required: ['plan', 'approved'],
+      properties: {
+        plan: { type: 'object', description: 'Exact RepositoryRemediationPlan returned by plan' },
+        approved: { type: 'boolean', const: true },
+        policy: projectProperties.policy,
+      },
+    },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false },
+  },
+];
+
 async function main() {
   const server = new Server(
-    {
-      name: SERVER_NAME,
-      version: SERVER_VERSION,
-    },
-    {
-      capabilities: {
-        tools: {},
-      },
-    }
+    { name: SERVER_NAME, version: pkg.version },
+    { capabilities: { tools: {} } },
   );
 
-  // List available tools
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return {
-      tools: [
-        {
-          name: 'check',
-          description: 'Run health checks on a repository. Returns a full report with scores, grades, findings, and recommendations.',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              projectRoot: {
-                type: 'string',
-                description: 'Absolute path to the repository root',
-              },
-              only: {
-                type: 'array',
-                items: { type: 'string' },
-                description: 'Run only these checkers (e.g. ["documentation", "security"])',
-              },
-              token: {
-                type: 'string',
-                description: 'GitHub token for API-based checks (optional)',
-              },
-            },
-          },
-        },
-        {
-          name: 'fix',
-          description: 'Auto-fix detected issues in a repository. Returns the report and a list of applied/skipped fixes.',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              projectRoot: {
-                type: 'string',
-                description: 'Absolute path to the repository root',
-              },
-              dryRun: {
-                type: 'boolean',
-                description: 'Preview fixes without applying (default: false)',
-              },
-              token: {
-                type: 'string',
-                description: 'GitHub token for API-based fixes (optional)',
-              },
-            },
-          },
-        },
-        {
-          name: 'findings',
-          description: 'List findings from health checks, optionally filtered by severity or checker name.',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              projectRoot: {
-                type: 'string',
-                description: 'Absolute path to the repository root',
-              },
-              severity: {
-                type: 'string',
-                enum: ['critical', 'high', 'medium', 'low', 'info'],
-                description: 'Filter findings by severity level',
-              },
-              checker: {
-                type: 'string',
-                description: 'Filter findings by checker name',
-              },
-              token: {
-                type: 'string',
-                description: 'GitHub token for API-based checks (optional)',
-              },
-            },
-          },
-        },
-      ],
-    };
-  });
-
-  // Handle tool execution
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
+  server.setRequestHandler(CallToolRequestSchema, async request => {
     try {
-      const { name, arguments: args } = request.params;
-      return await executeTool(name, args || {});
+      return await executeTool(request.params.name, request.params.arguments || {});
     } catch (error) {
-      return {
-        content: [{
-          type: 'text',
-          text: `Error: ${error.message}`,
-        }],
-        isError: true,
-      };
+      return { content: [{ type: 'text', text: `Error: ${error.message}` }], isError: true };
     }
   });
 
-  // Start server
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-
-  console.error(`${SERVER_NAME} v${SERVER_VERSION} running on stdio`);
+  await server.connect(new StdioServerTransport());
+  console.error(`${SERVER_NAME} v${pkg.version} running on stdio (apply=${APPLY_ENABLED ? 'enabled' : 'disabled'})`);
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('Server error:', error);
   process.exit(1);
 });

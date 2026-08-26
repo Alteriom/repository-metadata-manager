@@ -17,21 +17,21 @@ fi
 echo "📦 Installing @alteriom/repository-metadata-manager..."
 npm install --save-dev @alteriom/repository-metadata-manager
 
-# Add scripts to package.json
+# Add safe, supported scripts to package.json
 echo "⚙️ Adding scripts to package.json..."
-npm pkg set scripts.metadata:report="alteriom-metadata report"
-npm pkg set scripts.metadata:validate="alteriom-metadata validate"
-npm pkg set scripts.metadata:apply="alteriom-metadata apply"
-npm pkg set scripts.metadata:dry-run="alteriom-metadata dry-run"
+npm pkg set scripts.repository:check="repo-manager check"
+npm pkg set scripts.repository:verify="repo-manager verify"
+npm pkg set scripts.repository:plan="repo-manager plan --output .repo-manager-plan.json"
 
 echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "🚀 Quick Start:"
-echo "  npm run metadata:report    # Generate compliance report"
-echo "  npm run metadata:validate  # Check current status"
-echo "  npm run metadata:apply     # Apply fixes automatically"
-echo "  npm run metadata:dry-run   # Preview changes"
+echo "  npm run repository:check   # Evaluate policy and show findings"
+echo "  npm run repository:verify  # Enforce policy gates"
+echo "  npm run repository:plan    # Generate a reviewable remediation plan"
+echo "  npx repo-manager apply .repo-manager-plan.json --approve"
+echo "                              # Apply only after reviewing the exact plan"
 echo ""
 echo "📚 For more information, see: https://github.com/Alteriom/repository-metadata-manager"
 echo ""

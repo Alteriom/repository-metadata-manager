@@ -172,11 +172,16 @@ describe('CLI formatFixResult', () => {
 
 describe('CLI file output (--output flag)', () => {
   const fs = require('fs');
+  const os = require('os');
   const path = require('path');
-  const tmpFile = path.join(__dirname, '..', 'fixtures', '__tmp_output.json');
+  const tmpFile = path.join(os.tmpdir(), `repository-metadata-manager-cli-${process.pid}.json`);
 
   afterEach(() => {
-    try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(tmpFile);
+    } catch {
+      // The test may fail before creating the temporary output.
+    }
   });
 
   it('can write JSON report to file', () => {

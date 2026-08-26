@@ -18,16 +18,16 @@ jobs:
         strategy:
             matrix:
                 # Adjust based on repository language
-                node-version: [18.x, 20.x, 22.x]
+                node-version: [24.x]
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
                   fetch-depth: 0
 
             - name: Setup Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'npm'
@@ -52,20 +52,19 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
-                  node-version: '20.x'
+                  node-version: '24.x'
                   cache: 'npm'
 
             - name: Install dependencies
               run: npm ci
 
             - name: Build
-              run: npm run build || echo "No build script available"
-              continue-on-error: true
+              run: npm run build
 
             - name: Validate package
               run: npm pack --dry-run
@@ -78,12 +77,14 @@ jobs:
 
         steps:
             - name: Check status
+              env:
+                  TEST_RESULT: ${{ needs.test.result }}
+                  BUILD_RESULT: ${{ needs.build.result }}
               run: |
-                  echo "Test: ${{ needs.test.result }}"
-                  echo "Build: ${{ needs.build.result }}"
+                  echo "Test: $TEST_RESULT"
+                  echo "Build: $BUILD_RESULT"
 
-                  if [[ "${{ needs.test.result }}" == "success" && 
-                        "${{ needs.build.result }}" == "success" ]]; then
+                  if [[ "$TEST_RESULT" == "success" && "$BUILD_RESULT" == "success" ]]; then
                     echo "✅ All checks passed!"
                   else
                     echo "❌ Some checks failed"

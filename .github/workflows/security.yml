@@ -23,13 +23,15 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Dependency Review
-              uses: actions/dependency-review-action@v5
+              uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
               with:
                   fail-on-severity: critical
                   allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC, BSD-2-Clause, Python-2.0, CC-BY-4.0, CC0-1.0, 0BSD, AGPL-3.0
+                  # Version-scoped transitive exception for @modelcontextprotocol/sdk.
+                  allow-dependencies-licenses: pkg:npm/json-schema-typed@8.0.2
               continue-on-error: false
 
     security-audit:
@@ -38,12 +40,12 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup Node.js
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
-                  node-version: '20.x'
+                  node-version: '24.x'
                   cache: 'npm'
 
             - name: Install dependencies
@@ -51,15 +53,11 @@ jobs:
 
             - name: Run npm audit
               run: |
-                  echo "Running npm security audit..."
-                  npm audit --audit-level moderate || true
-                  echo "Generating audit report..."
-                  npm audit --json > security-audit.json || true
+                  npm audit --json --audit-level moderate > security-audit.json
+                  npm audit --audit-level moderate
 
             - name: Run security check
-              run: |
-                  echo "Running security check..."
-                  node bin/repo-manager.js check --only security --format json || true
+              run: node bin/repo-manager.js check --only security --format json
 
             - name: Check for security policy
               run: |
@@ -80,7 +78,7 @@ jobs:
                   fi
 
             - name: Upload security audit results
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
               if: always()
               with:
                   name: security-audit-results
@@ -94,32 +92,15 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
               with:
                   fetch-depth: 0
 
             - name: Run TruffleHog OSS
-              uses: trufflesecurity/trufflehog@v3.97.0
+              uses: trufflesecurity/trufflehog@bcfcf73aaf4759d4dadc2783177c245a02792318 # v3.97.0
               with:
                   path: ./
-                  base: main
-                  head: HEAD
                   extra_args: --debug --only-verified
-              continue-on-error: true
-
-            - name: Manual secrets check
-              run: |
-                  echo "Running manual secrets detection..."
-
-                  # Check for potential secrets in files
-                  echo "Checking for API keys, tokens, and passwords..."
-
-                  # Look for common secret patterns (excluding test files)
-                  if grep -r -E "(api[_-]?key|secret|token|password|pwd)" --include="*.js" --include="*.json" --include="*.yml" --include="*.yaml" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tests . | grep -v -E "(test|spec|example|demo)" | head -10; then
-                    echo "⚠️ Potential secrets found - please review"
-                  else
-                    echo "✅ No obvious secrets detected"
-                  fi
 
     license-check:
         name: License Compliance
@@ -127,34 +108,19 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Setup Node.js
-              uses: actions/setup-node@v7
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
               with:
-                  node-version: '20.x'
+                  node-version: '24.x'
                   cache: 'npm'
 
             - name: Install dependencies
               run: npm ci
 
             - name: Check licenses
-              run: |
-                  echo "Checking dependency licenses..."
-
-                  # Install license checker
-                  npm install -g license-checker || echo "Failed to install license-checker"
-
-                  # Run license check
-                  license-checker --summary || echo "License check completed with warnings"
-
-                  # Check our own license
-                  if [ -f "LICENSE" ]; then
-                    echo "✅ License file found"
-                    head -3 LICENSE
-                  else
-                    echo "⚠️ No LICENSE file found"
-                  fi
+              run: node bin/repo-manager.js check --only license --format json
 
     security-summary:
         name: Security Summary
@@ -164,58 +130,29 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v7
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Security Summary
+              env:
+                  EVENT_NAME: ${{ github.event_name }}
+                  DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+                  SECURITY_AUDIT_RESULT: ${{ needs.security-audit.result }}
+                  SECRETS_SCAN_RESULT: ${{ needs.secrets-scan.result }}
+                  LICENSE_CHECK_RESULT: ${{ needs.license-check.result }}
               run: |
                   echo "🔒 SECURITY SCAN SUMMARY"
                   echo "========================"
-                  echo "Dependency Review: ${{ needs.dependency-review.result }}"
-                  echo "Security Audit: ${{ needs.security-audit.result }}"
-                  echo "Secrets Scan: ${{ needs.secrets-scan.result }}"
-                  echo "License Check: ${{ needs.license-check.result }}"
+                  echo "Dependency Review: $DEPENDENCY_REVIEW_RESULT"
+                  echo "Security Audit: $SECURITY_AUDIT_RESULT"
+                  echo "Secrets Scan: $SECRETS_SCAN_RESULT"
+                  echo "License Check: $LICENSE_CHECK_RESULT"
                   echo "CodeQL Analysis: Handled by GitHub default setup"
                   echo ""
 
-                  # Count successful jobs (accounting for conditional dependency-review)
-                  success_count=0
-                  total_jobs=3
-
-                  # Dependency review only runs on PRs
-                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-                    total_jobs=4
-                    if [[ "${{ needs.dependency-review.result }}" == "success" ]]; then 
-                      success_count=$((success_count + 1))
-                    fi
-                  else
-                    echo "ℹ️  Dependency Review skipped (not a pull request)"
+                  test "$SECURITY_AUDIT_RESULT" = "success"
+                  test "$SECRETS_SCAN_RESULT" = "success"
+                  test "$LICENSE_CHECK_RESULT" = "success"
+                  if [[ "$EVENT_NAME" == "pull_request" ]]; then
+                    test "$DEPENDENCY_REVIEW_RESULT" = "success"
                   fi
-
-                  if [[ "${{ needs.security-audit.result }}" == "success" ]]; then 
-                    success_count=$((success_count + 1))
-                  fi
-                  if [[ "${{ needs.secrets-scan.result }}" == "success" ]]; then 
-                    success_count=$((success_count + 1))
-                  fi
-                  if [[ "${{ needs.license-check.result }}" == "success" ]]; then 
-                    success_count=$((success_count + 1))
-                  fi
-
-                  echo "Successful security checks: $success_count/$total_jobs"
-
-                  # Require all jobs to pass for the event type
-                  if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-                    required_success=3  # Allow 1 failure in PR (dependency-review is additional)
-                  else
-                    required_success=3  # All 3 core jobs must pass on push
-                  fi
-
-                  echo "Required successes: $required_success"
-
-                  if [[ $success_count -ge $required_success ]]; then
-                    echo "✅ Security scan PASSED"
-                    exit 0
-                  else
-                    echo "⚠️ Security scan needs attention ($success_count/$required_success)"
-                    exit 1
-                  fi
+                  echo "✅ All required security jobs passed"

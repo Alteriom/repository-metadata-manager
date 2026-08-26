@@ -1,54 +1,38 @@
-# CLAUDE.md — repository-metadata-manager
+# Repository Metadata Manager contributor context
 
-Node.js CLI for repo health and compliance checking. v2.0+ uses a pluggable engine architecture.
+This is the v3 policy and controlled-remediation engine.
 
 ## Architecture
 
+```text
+Context + Policy
+      ↓
+Engine → Checkers → Compliance Report
+      ↓
+Planner → reviewed plan → Executor → Audit record
+      ↓
+CLI / GitHub Action / MCP
 ```
-Engine (lib/engine/) → Checkers (lib/checkers/) → Interfaces (lib/interfaces/)
-```
 
-- Engine orchestrates checker runs and scoring
-- Each checker is independent, returns findings + score
-- Interfaces: CLI, JSON, GitHub Annotations
+## Safety invariants
 
-## Built-in Checkers (lib/checkers/)
+- Evaluation and planning never mutate repository state.
+- Apply defaults to preview and requires explicit approval for writes.
+- Every write is relative to, and contained within, the selected project root.
+- Apply rejects a plan when the target content has changed since planning.
+- Tokens come from process environment or workload identity, never command/tool arguments.
+- MCP is read-only unless its process enables the apply capability.
+- Configuration errors fail closed.
 
-1. `security.js` — SECURITY.md, vulnerability policies
-2. `documentation.js` — README, CONTRIBUTING, CHANGELOG presence
-3. `cicd.js` — GitHub Actions workflows
-4. `branch-protection.js` — branch rules (requires GitHub token)
-5. `dependencies.js` — outdated/vulnerable deps
-6. `iot.js` — Alteriom IoT-specific checks
-7. `license.js` — LICENSE file presence and type
-
-## CLI Usage
+## Commands
 
 ```bash
-repo-manager check [--format cli|json|github] [--fail-below N] [--verbose] [--output file] [--token TOKEN]
-repo-manager fix
+repo-manager check|evaluate
+repo-manager inventory
+repo-manager plan
+repo-manager apply <plan> [--approve]
+repo-manager verify
 repo-manager config
 ```
 
-- `--format github` for CI annotation output
-- Auto-detected when `GITHUB_ACTIONS=true`
-- All checkers work locally **without** a GitHub token (branch-protection degrades gracefully)
-
-## Reusable GitHub Action
-
-Has `action.yml` at root — other repos can use:
-```yaml
-uses: Alteriom/repository-metadata-manager@v2
-```
-
-## Test
-
-```bash
-npx jest test/engine/ test/checkers/ test/interfaces/
-```
-
-Uses Jest 30.
-
-## Version
-
-Current: **2.1.0**
+Use Node.js 24 or newer. Run `npm run lint && npm test` before proposing changes.

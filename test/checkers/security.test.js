@@ -1,6 +1,9 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
+const childProcess = require('child_process');
 const SecurityChecker = require('../../lib/checkers/security');
 const Context = require('../../lib/engine/Context');
 const Cache = require('../../lib/engine/Cache');
@@ -115,9 +118,162 @@ describe('SecurityChecker', () => {
       const secretFindings = result.findings.filter((f) => f.id === 'sec-010');
       expect(secretFindings).toHaveLength(0);
     });
+
+    it('scans nested source files while allowing documented example env files', async () => {
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-security-'));
+      fs.mkdirSync(path.join(root, 'src'));
+      fs.writeFileSync(path.join(root, '.env.example'), 'GITHUB_TOKEN=replace_me\n');
+      const syntheticAwsKey = ['AKIA', '1234567890ABCDEF'].join('');
+      fs.writeFileSync(path.join(root, 'src', 'config.js'), `const key = "${syntheticAwsKey}";\n`);
+      fs.writeFileSync(path.join(root, '.gitignore'), '.env\n.env*\n');
+      fs.writeFileSync(path.join(root, 'SECURITY.md'), 'Report vulnerabilities privately using the documented security process.');
+
+      try {
+        const ctx = new Context({
+          projectRoot: root,
+          projectType: 'generic',
+          github: null,
+          packageJson: null,
+          gitInfo: null,
+          config: { security: { ignoredDirectories: [], ignoredPaths: [], maxFileSizeBytes: 1048576 } },
+          cache: new Cache(),
+        });
+        const result = await checker.check(ctx);
+        expect(result.findings.some(finding => finding.file === 'src/config.js' && finding.id === 'sec-010')).toBe(true);
+        expect(result.findings.some(finding => finding.file === '.env.example' && finding.id === 'sec-005')).toBe(false);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('npm audit integration', () => {
+    it('runs npm audit without inherited credentials or candidate registry control', async () => {
+      const environmentNames = [
+        'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'NPM_CONFIG_REGISTRY',
+        'HTTPS_PROXY', 'NODE_EXTRA_CA_CERTS',
+      ];
+      const previousEnvironment = Object.fromEntries(
+        environmentNames.map(name => [name, process.env[name]])
+      );
+      const credentialSentinel = String(process.pid);
+      process.env.GITHUB_TOKEN = credentialSentinel;
+      process.env.ACTIONS_RUNTIME_TOKEN = credentialSentinel;
+      process.env.NPM_CONFIG_REGISTRY = 'https://registry.corp.example/';
+      process.env.HTTPS_PROXY = 'http://proxy.corp.example:8080';
+      process.env.NODE_EXTRA_CA_CERTS = 'certificates/corporate-ca.pem';
+      let copiedManifests;
+      const audit = jest.spyOn(childProcess, 'execSync').mockImplementation((command, options) => {
+        copiedManifests = {
+          hasProjectConfig: fs.existsSync(path.join(options.cwd, '.npmrc')),
+          packageText: fs.readFileSync(path.join(options.cwd, 'package.json'), 'utf8'),
+          lockText: fs.readFileSync(path.join(options.cwd, 'package-lock.json'), 'utf8'),
+        };
+        return JSON.stringify({ vulnerabilities: {} });
+      });
+
+      try {
+        const ctx = buildContext('healthy-project', { cache: new Cache() });
+        await checker.check(ctx);
+
+        expect(audit).toHaveBeenCalledTimes(1);
+        const [command, options] = audit.mock.calls[0];
+        expect(command).toContain('--ignore-scripts');
+        expect(command).toContain('--include=dev');
+        expect(command).toContain('--include=optional');
+        expect(command).toContain('--include=peer');
+        expect(command).not.toContain('--registry=');
+        expect(options.env.GITHUB_TOKEN).toBeUndefined();
+        expect(options.env.ACTIONS_RUNTIME_TOKEN).toBeUndefined();
+        expect(options.env.NPM_CONFIG_REGISTRY).toBe('https://registry.corp.example/');
+        expect(options.env.HTTPS_PROXY).toBe('http://proxy.corp.example:8080');
+        expect(options.env.NODE_EXTRA_CA_CERTS).toBe('certificates/corporate-ca.pem');
+        expect(options.env.NPM_CONFIG_OMIT).toBe('');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBeUndefined();
+        expect(options.env.NPM_CONFIG_CACHE).toContain('repo-manager-npm-audit-');
+        expect(options.cwd).not.toBe(ctx.projectRoot);
+        expect(copiedManifests.hasProjectConfig).toBe(false);
+        expect(copiedManifests.packageText).toBe(ctx.readFile('package.json'));
+        expect(copiedManifests.lockText).toBe(ctx.readFile('package-lock.json'));
+        expect(options.env.HOME).toBe(options.env.USERPROFILE);
+        expect(options.env.HOME).not.toBe(process.env.HOME);
+      } finally {
+        audit.mockRestore();
+        for (const [name, value] of Object.entries(previousEnvironment)) {
+          if (value === undefined) delete process.env[name];
+          else process.env[name] = value;
+        }
+      }
+    });
+
+    it('audits every configured workspace from a lockfile v1 manifest-only copy', async () => {
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-manager-workspace-audit-'));
+      fs.mkdirSync(path.join(root, 'packages', 'clean'), { recursive: true });
+      fs.mkdirSync(path.join(root, 'packages', 'vulnerable'), { recursive: true });
+      fs.writeFileSync(path.join(root, '.npmrc'), 'workspace=clean\n');
+      fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({
+        name: 'audit-root',
+        version: '1.0.0',
+        license: 'MIT',
+        workspaces: ['packages/*'],
+      }));
+      fs.writeFileSync(path.join(root, 'package-lock.json'), JSON.stringify({
+        name: 'audit-root',
+        version: '1.0.0',
+        lockfileVersion: 1,
+        dependencies: {},
+      }));
+      fs.writeFileSync(
+        path.join(root, 'packages', 'clean', 'package.json'),
+        JSON.stringify({ name: 'clean', version: '1.0.0' })
+      );
+      fs.writeFileSync(
+        path.join(root, 'packages', 'vulnerable', 'package.json'),
+        JSON.stringify({ name: 'vulnerable', version: '1.0.0' })
+      );
+      let copiedWorkspaceState;
+      const audit = jest.spyOn(childProcess, 'execSync').mockImplementation((command, options) => {
+        copiedWorkspaceState = {
+          hasProjectConfig: fs.existsSync(path.join(options.cwd, '.npmrc')),
+          hasClean: fs.existsSync(
+            path.join(options.cwd, 'packages', 'clean', 'package.json')
+          ),
+          hasVulnerable: fs.existsSync(
+            path.join(options.cwd, 'packages', 'vulnerable', 'package.json')
+          ),
+        };
+        return JSON.stringify({ vulnerabilities: {} });
+      });
+
+      try {
+        const ctx = new Context({
+          projectRoot: root,
+          projectType: 'node',
+          github: null,
+          cache: new Cache(),
+          packageJson: Context.readPackageJson(root),
+          gitInfo: null,
+          config: {},
+        });
+        await checker.check(ctx);
+
+        const [command, options] = audit.mock.calls[0];
+        expect(command).toContain('--workspaces');
+        expect(command).toContain('--include-workspace-root');
+        expect(command).not.toContain('--workspace=');
+        expect(options.env.NPM_CONFIG_WORKSPACE).toBeUndefined();
+        expect(options.cwd).not.toBe(root);
+        expect(copiedWorkspaceState).toEqual({
+          hasProjectConfig: false,
+          hasClean: true,
+          hasVulnerable: true,
+        });
+      } finally {
+        audit.mockRestore();
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    });
+
     it('reports critical CVEs from cached audit', async () => {
       const cache = new Cache();
       cache.set('npm-audit', {
@@ -138,38 +294,31 @@ describe('SecurityChecker', () => {
       expect(highFinding.severity).toBe('high');
     });
 
-    it('handles null audit result gracefully', async () => {
+    it('reports when npm audit cannot be verified', async () => {
       const cache = new Cache();
       cache.set('npm-audit', null);
       const ctx = buildContext('healthy-project', { cache });
       const result = await checker.check(ctx);
 
-      const auditFindings = result.findings.filter(
-        (f) => f.id === 'sec-011' || f.id === 'sec-012',
-      );
-      expect(auditFindings).toHaveLength(0);
+      const auditFailure = result.findings.find(finding => finding.id === 'sec-013');
+      expect(auditFailure).toBeDefined();
+      expect(auditFailure.severity).toBe('high');
+      expect(result.score).toBeLessThanOrEqual(70);
     });
   });
 
-  describe('fix()', () => {
-    it('creates .gitignore when missing', async () => {
-      const fs = require('fs');
-      const tmpDir = path.join(fixturesDir, '__tmp_sec_fix');
-      fs.mkdirSync(tmpDir, { recursive: true });
+  describe('plan()', () => {
+    it('plans .gitignore creation without changing the repository', async () => {
+      const ctx = buildContext('insecure-project');
+      const result = await checker.plan(ctx, [{ id: 'sec-003' }]);
 
-      try {
-        const ctx = buildContext('insecure-project');
-        ctx.projectRoot = tmpDir;
-
-        const fixFindings = [{ id: 'sec-003', severity: 'high', message: '.gitignore is missing' }];
-        const fixResult = await checker.fix(ctx, fixFindings);
-
-        expect(fixResult.applied).toHaveLength(1);
-        expect(fixResult.applied[0].id).toBe('sec-003');
-        expect(fs.existsSync(path.join(tmpDir, '.gitignore'))).toBe(true);
-      } finally {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-      }
+      expect(result.operations).toHaveLength(1);
+      expect(result.operations[0]).toEqual(expect.objectContaining({
+        type: 'write-file',
+        path: '.gitignore',
+        beforeHash: null,
+      }));
+      expect(ctx.fileExists('.gitignore')).toBe(false);
     });
   });
 });

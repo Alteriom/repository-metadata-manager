@@ -5,12 +5,14 @@
 # Core application files
 /lib/                   @Alteriom
 /bin/                   @Alteriom
-/scripts/               @Alteriom
+/mcp-server/            @Alteriom
 index.js                @Alteriom
 
 # Configuration files
 package.json            @Alteriom
 config.json             @Alteriom
+.repo-manager.json      @Alteriom
+config.example.json     @Alteriom
 .env.example           @Alteriom
 
 # Documentation
@@ -24,7 +26,7 @@ CHANGELOG.md           @Alteriom
 /.github/              @Alteriom
 
 # Test files
-/tests/                @Alteriom
+/test/                 @Alteriom
 
 # Release related files
 RELEASE_NOTES_*.md     @Alteriom

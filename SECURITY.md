@@ -4,8 +4,9 @@
 
 | Version  | Supported          |
 | -------- | ------------------ |
-| 1.2.x   | :white_check_mark: |
-| < 1.2.x | :x:                |
+| 3.x     | :white_check_mark: |
+| 2.x     | Security fixes only |
+| < 2.x   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -20,6 +21,7 @@ If you discover a security vulnerability, please report it to:
 2. Steps to reproduce
 3. Potential impact
 4. Suggested fix (if any)
+5. Whether the issue crosses the evaluator, planner, executor, MCP, or GitHub Action trust boundary
 
 ### Response Timeline
 
@@ -37,6 +39,7 @@ We appreciate responsible disclosure and will acknowledge your contribution.
 2. **Keep dependencies updated** regularly
 3. **Follow secure coding practices**
 4. **Use strong authentication** (2FA enabled)
+5. **Never add a write path without approval, containment, and stale-state tests**
 
 ### For Users
 
@@ -53,6 +56,9 @@ This repository implements several security measures:
 - **Secret detection** in commits and code
 - **Automated security updates** (when configured)
 - **Security policy** (this document)
+- **Read-only evaluation and planning** separated from approved execution
+- **Project-root containment and precondition hashes** for file operations
+- **MCP root allowlisting** with apply disabled by default
 
 ## Contact Information
 
