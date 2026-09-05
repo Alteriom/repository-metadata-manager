@@ -63,8 +63,8 @@ jobs:
                           pull_number: pullNumber,
                         }));
                       }
-                      if (!pull || pull.state !== 'open' || !pull.merge_commit_sha) {
-                        core.setFailed(`Pull request #${pullNumber || 'unknown'} is not open and mergeable`);
+                      if (!pull || pull.state !== 'open' || !pull.head?.sha) {
+                        core.setFailed(`Pull request #${pullNumber || 'unknown'} is not open or has no head commit`);
                         return;
                       }
 
@@ -78,8 +78,8 @@ jobs:
                         return;
                       }
 
-                      const archiveSha = pull.merge_commit_sha;
-                      const reportSha = pull.merge_commit_sha;
+                      const archiveSha = pull.head.sha;
+                      const reportSha = pull.head.sha;
                       const checkSha = pull.head.sha;
                       const baseSha = pull.base.sha;
                       for (const [label, sha] of Object.entries({ archiveSha, checkSha, baseSha })) {

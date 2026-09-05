@@ -125,6 +125,12 @@ describe('workflow control configuration', () => {
             'pull.base?.repo?.full_name === `${context.repo.owner}/${context.repo.repo}`'
         );
         expect(workflow).toContain(
+            "pull.state !== 'open' || !pull.head?.sha"
+        );
+        expect(workflow).toContain('const archiveSha = pull.head.sha');
+        expect(workflow).toContain('const reportSha = pull.head.sha');
+        expect(workflow).not.toContain('!pull.merge_commit_sha');
+        expect(workflow).toContain(
             'must target the protected main branch in this repository'
         );
         expect(workflow).toContain("core.setOutput('archive-sha', archiveSha)");
