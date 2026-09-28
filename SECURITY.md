@@ -12,8 +12,8 @@
 
 If you discover a security vulnerability, please report it to:
 
-- **Email**: <security@alteriom.com>
-- **GitHub**: Use private vulnerability reporting (if enabled)
+- **GitHub** (preferred): [report a vulnerability privately](https://github.com/Alteriom/repository-metadata-manager/security/advisories/new)
+- **Email**: <admin@alteriom.ca>, with "Security" in the subject line
 
 ### What to include
 
@@ -65,5 +65,5 @@ This repository implements several security measures:
 For security-related questions or concerns:
 
 - Create a private security advisory
-- Email: <security@alteriom.com>
-- Security team response time: 24-48 hours
+- Email: <admin@alteriom.ca>
+- We aim to acknowledge reports within 5 business days
