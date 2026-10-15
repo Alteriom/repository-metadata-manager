@@ -1,6 +1,6 @@
 ---
 verified_at: 2026-10-15
-verified_commit: d5daf2275e14b98526f8b4b61ac7bda226efa9da
+verified_commit: 6600a74a243c9dc9e8c49af0f61f282ce7cca7e0
 ---
 
 # Documents — what a contributor reads, and who owns its facts
@@ -19,16 +19,9 @@ The agent-facing files are `CLAUDE.md` (the entry) and this `_shared/` folder; `
 | [docs/development/VERSIONING.md](../../../docs/development/VERSIONING.md) | how a release is cut | `.github/workflows/release.yml` | 2026-08-19 |
 | [docs/COMMAND_CENTER.md](../../../docs/COMMAND_CENTER.md) | the trust model, solo-maintainer controls, reconciliation, MCP deployment | `.github/workflows/ai-agent-compliance.yml`, `.repo-manager.json`, `mcp-server/index.js` | 2026-08-20 |
 | [mcp-server/README.md](../../../mcp-server/README.md) | configuring the MCP server and its apply capability | `mcp-server/index.js` | 2026-08-19 |
+| [CONTRIBUTING.md](../../../CONTRIBUTING.md) | development setup, the per-area check commands, code style | `.repo-manager.json`, `package.json` "scripts", `.prettierrc` | 2026-10-15 |
 
 ## Not pinned, on purpose
 
 - `docs/releases/RELEASE_NOTES_v1.*.md` describe 1.x releases; history only.
 - `docs/superpowers/` holds the March 2026 v2 rewrite's design and plan ([architecture.md](architecture.md)).
-- `CONTRIBUTING.md` is pinned nowhere until its drift is fixed (below).
-
-## Known drift
-
-| Where | What it says | What is true, and who owns it |
-|---|---|---|
-| `CONTRIBUTING.md` "Development Setup" | `npm run docs`, `security`, `branchprotection`, `cicd`, `test:features`; copy `config.example.json` to `config.json` | none of those scripts exist (`package.json` "scripts"); policy lives in `.repo-manager.json` ([docs/guides/POLICY.md](../../../docs/guides/POLICY.md)) |
-| `CONTRIBUTING.md` "Use a Consistent Coding Style" | 2-space indentation | 4 (`.prettierrc`) |

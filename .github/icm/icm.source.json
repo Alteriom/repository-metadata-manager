@@ -64,6 +64,19 @@
       ]
     },
     {
+      "id": "doc-CONTRIBUTING.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "CONTRIBUTING.md"
+      ]
+    },
+    {
       "id": "doc-README.md",
       "revision": 1,
       "kind": "fact",
@@ -523,7 +536,7 @@
     },
     {
       "id": "shared-documents.md",
-      "revision": 1,
+      "revision": 2,
       "kind": "fact",
       "layer": "L3",
       "state": "accepted",
@@ -537,113 +550,108 @@
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/copilot-instructions.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/ai-agent-compliance.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/release.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".prettierrc",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".repo-manager.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "CHANGELOG.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "CONTRIBUTING.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "README.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "action.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "bin/repo-manager.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
-        },
-        {
-          "repo": "Alteriom/repository-metadata-manager",
-          "path": "config.example.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "docs/COMMAND_CENTER.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "docs/development/API.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "docs/development/VERSIONING.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "docs/guides/CLI.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "docs/guides/POLICY.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "index.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "lib/policy/Policy.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "mcp-server/README.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "mcp-server/index.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "package.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         }
       ]
     },
     {
       "id": "shared-gotchas.md",
-      "revision": 2,
+      "revision": 3,
       "kind": "fact",
       "layer": "L3",
       "state": "accepted",
@@ -656,38 +664,33 @@
       "evidence": [
         {
           "repo": "Alteriom/repository-metadata-manager",
-          "path": ".gitignore",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "path": ".github/workflows/ai-agent-compliance.yml",
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
-          "path": ".prettierrc",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "path": ".gitignore",
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".repo-manager.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
-        },
-        {
-          "repo": "Alteriom/repository-metadata-manager",
-          "path": "CONTRIBUTING.md",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "package.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "test/fixtures/insecure-project/config.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "test/workflows/trusted-runner.test.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
         }
       ]
     },
