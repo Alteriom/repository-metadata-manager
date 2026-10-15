@@ -47,23 +47,51 @@ jobs:
                       }
                       let pull;
                       let pullNumber;
+                      let eventHeadSha;
 
                       if (context.eventName === 'pull_request_target') {
-                        pull = context.payload.pull_request;
-                        pullNumber = pull.number;
+                        pullNumber = context.payload.pull_request.number;
+                        eventHeadSha = context.payload.pull_request.head.sha;
                       } else if (context.eventName === 'repository_dispatch') {
                         pullNumber = Number(process.env.DISPATCH_PR_NUMBER);
                         if (!Number.isSafeInteger(pullNumber) || pullNumber <= 0) {
                           core.setFailed('repository-compliance requires a positive pull_request_number');
                           return;
                         }
-                        ({ data: pull } = await github.rest.pulls.get({
+                      }
+
+                      // The event payload's merge_commit_sha is GitHub's previous test merge
+                      // until mergeability is recomputed after a push, base change or reopen.
+                      // Read the pull request now, and wait until its test merge is built on
+                      // the head this run evaluates.
+                      const pullHasCurrentMerge = async candidate => {
+                        if (!candidate.merge_commit_sha || candidate.mergeable === null) return false;
+                        const { data: merge } = await github.rest.git.getCommit({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
-                          pull_number: pullNumber,
-                        }));
+                          commit_sha: candidate.merge_commit_sha,
+                        });
+                        return merge.parents.some(parent => parent.sha === candidate.head.sha);
+                      };
+                      if (pullNumber) {
+                        for (let attempt = 1; attempt <= 10; attempt++) {
+                          ({ data: pull } = await github.rest.pulls.get({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            pull_number: pullNumber,
+                          }));
+                          if (pull.state !== 'open' || (eventHeadSha && pull.head.sha !== eventHeadSha)) break;
+                          if (await pullHasCurrentMerge(pull)) break;
+                          await new Promise(resolve => setTimeout(resolve, 3000 * attempt));
+                        }
                       }
-                      if (!pull || pull.state !== 'open' || !pull.merge_commit_sha) {
+                      if (eventHeadSha && pull && pull.head.sha !== eventHeadSha) {
+                        core.setFailed(
+                          `Pull request #${pullNumber} moved to ${pull.head.sha}; the run for that push evaluates it`
+                        );
+                        return;
+                      }
+                      if (!pull || pull.state !== 'open' || !(await pullHasCurrentMerge(pull))) {
                         core.setFailed(`Pull request #${pullNumber || 'unknown'} is not open and mergeable`);
                         return;
                       }
