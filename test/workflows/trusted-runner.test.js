@@ -3,6 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { stripVTControlCharacters } = require('util');
 const {
   compareTestIdentities,
   runJest,
@@ -108,9 +109,12 @@ describe('trusted candidate test runner', () => {
     const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
     try {
+      // Since Jest 30.5 the sandbox's process.getBuiltinModule('process')
+      // returns the sandboxed process copy, which has no worker listener.
+      // A host-realm Function still reaches the worker's real process.
       fs.writeFileSync(
         path.join(root, 'candidate-request.test.js'),
-        "process.getBuiltinModule('process').emit('message', [1, false, 'worker', []]);\ntest('dummy', () => expect(true).toBe(true));\n"
+        "Buffer.constructor('return process')().emit('message', [1, false, 'worker', []]);\ntest('dummy', () => expect(true).toBe(true));\n"
       );
       fs.writeFileSync(
         path.join(root, 'benign.test.js'),
@@ -118,6 +122,14 @@ describe('trusted candidate test runner', () => {
       );
       await expect(runJest(root, trustedRoot)).rejects.toThrow(
         /Trusted Jest process/
+      );
+      // The suite must fail on the authentication check itself, not on the
+      // worker crashing over the forged request's missing arguments.
+      const candidateOutput = stripVTControlCharacters(
+        stderr.mock.calls.map(([chunk]) => String(chunk)).join('')
+      );
+      expect(candidateOutput).toMatch(
+        /Test suite failed to run\s+Jest worker received an unauthenticated IPC request/
       );
     } finally {
       stdout.mockRestore();

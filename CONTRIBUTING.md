@@ -34,9 +34,10 @@ To get started with local development:
 4. **Configuration**
 
     ```bash
-    # Copy the example configuration
-    cp config.example.json config.json
-    # Edit config.json with your settings
+    # The policy is .repo-manager.json in the repository root (this
+    # repository's own is committed). config.example.json is the complete
+    # example; see docs/guides/POLICY.md. Try another policy file with:
+    node bin/repo-manager.js check --policy path/to/policy.json
     ```
 
 5. **Run Tests**
@@ -45,17 +46,17 @@ To get started with local development:
     # Run all tests
     npm test
 
-    # Run comprehensive health assessment
+    # Run the tests serially, as CI does
+    npm run test:core
+
+    # Run the full compliance check against this repository
     npm run health
 
-    # Run category-specific audits
-    npm run docs              # Documentation compliance
-    npm run security          # Security assessment
-    npm run branchprotection  # Branch protection
-    npm run cicd             # CI/CD analysis
-
-    # Run feature integration tests
-    npm run test:features
+    # Run specific checkers
+    npm run check -- --only documentation
+    npm run check -- --only security
+    npm run check -- --only branch-protection
+    npm run check -- --only cicd
     ```
 
 6. **Lint Your Code**
@@ -102,8 +103,8 @@ People _love_ thorough bug reports. I'm not even kidding.
 
 ## Use a Consistent Coding Style
 
-- Use 2 spaces for indentation rather than tabs
-- You can try running `npm run lint` for style unification
+- Use 4 spaces for indentation rather than tabs (`.prettierrc` sets `tabWidth: 4`)
+- Run `npm run format` to apply Prettier and `npm run lint` for ESLint
 
 ## License
 
