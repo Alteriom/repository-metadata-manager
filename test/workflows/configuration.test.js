@@ -322,4 +322,120 @@ describe('workflow control configuration', () => {
             prohibitAdminEnforcement: true,
         });
     });
+
+    it('resolves the candidate from the current test merge, not the event payload', () => {
+        const workflow = fs.readFileSync(
+            path.join(projectRoot, '.github', 'workflows', 'ai-agent-compliance.yml'),
+            'utf8'
+        );
+
+        expect(workflow).not.toContain('pull = context.payload.pull_request;');
+        expect(workflow).toContain('eventHeadSha = context.payload.pull_request.head.sha;');
+        expect(workflow).toContain("candidate.mergeable === null");
+        expect(workflow).toContain(
+            'merge.parents.some(parent => parent.sha === candidate.head.sha)'
+        );
+        expect(workflow).toContain('the run for that push evaluates it');
+    });
+
+    describe('candidate resolution against GitHub responses', () => {
+        const HEAD = 'a'.repeat(40);
+        const NEWER_HEAD = 'b'.repeat(40);
+        const OLD_HEAD = 'c'.repeat(40);
+        const STALE_MERGE = 'd'.repeat(40);
+        const CURRENT_MERGE = 'e'.repeat(40);
+        const mergeParents = {
+            [STALE_MERGE]: ['f'.repeat(40), OLD_HEAD],
+            [CURRENT_MERGE]: ['f'.repeat(40), HEAD],
+        };
+
+        // The resolve step's script up to the base-branch check, run as
+        // actions/github-script runs it.
+        const resolutionScript = () => {
+            const workflow = fs.readFileSync(
+                path.join(projectRoot, '.github', 'workflows', 'ai-agent-compliance.yml'),
+                'utf8'
+            ).replace(/\r\n/g, '\n');
+            const step = workflow.indexOf('- name: Resolve candidate identity once');
+            const start = workflow.indexOf('script: |\n', step) + 'script: |\n'.length;
+            const end = workflow.indexOf('const trustedBase', start);
+            const body = workflow
+                .slice(start, end)
+                .split('\n')
+                .map(line => line.slice(22))
+                .join('\n');
+            const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
+            return new AsyncFunction(
+                'github', 'context', 'core', 'process', 'setTimeout',
+                `${body}\nreturn pull.merge_commit_sha;`
+            );
+        };
+
+        const pullRequest = (mergeSha, { head = HEAD, mergeable = true, state = 'open' } = {}) => ({
+            number: 7,
+            state,
+            mergeable,
+            merge_commit_sha: mergeSha,
+            head: { sha: head },
+        });
+
+        const resolve = async responses => {
+            let calls = 0;
+            let failure = null;
+            const github = {
+                rest: {
+                    pulls: {
+                        get: async () => ({
+                            data: responses[Math.min(calls++, responses.length - 1)],
+                        }),
+                    },
+                    git: {
+                        getCommit: async ({ commit_sha: sha }) => ({
+                            data: { parents: (mergeParents[sha] || []).map(parent => ({ sha: parent })) },
+                        }),
+                    },
+                },
+            };
+            const context = {
+                eventName: 'pull_request_target',
+                repo: { owner: 'Alteriom', repo: 'repository-metadata-manager' },
+                payload: {
+                    pull_request: { number: 7, head: { sha: HEAD }, merge_commit_sha: STALE_MERGE },
+                },
+            };
+            const core = { setFailed: message => { failure = message; } };
+            const env = { env: { TRUSTED_CONTROL_SHA: '0'.repeat(40) } };
+            const archiveSha = await resolutionScript()(github, context, core, env, done => done());
+            return { archiveSha, calls, failure };
+        };
+
+        it('uses the current merge instead of the stale one in the payload', async () => {
+            await expect(resolve([pullRequest(CURRENT_MERGE)])).resolves.toEqual({
+                archiveSha: CURRENT_MERGE,
+                calls: 1,
+                failure: null,
+            });
+        });
+
+        it('waits while GitHub rebuilds the test merge', async () => {
+            const result = await resolve([
+                pullRequest(STALE_MERGE),
+                pullRequest(null, { mergeable: null }),
+                pullRequest(CURRENT_MERGE),
+            ]);
+            expect(result).toEqual({ archiveSha: CURRENT_MERGE, calls: 3, failure: null });
+        });
+
+        it('fails rather than evaluate a merge of an older head', async () => {
+            const result = await resolve([pullRequest(STALE_MERGE)]);
+            expect(result.failure).toBe('Pull request #7 is not open and mergeable');
+            expect(result.calls).toBe(10);
+        });
+
+        it('leaves a newer push to its own run', async () => {
+            const result = await resolve([pullRequest(CURRENT_MERGE, { head: NEWER_HEAD })]);
+            expect(result.failure).toContain(`moved to ${NEWER_HEAD}`);
+            expect(result.calls).toBe(1);
+        });
+    });
 });
