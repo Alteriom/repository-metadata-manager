@@ -476,7 +476,7 @@
     },
     {
       "id": "shared-build-and-test.md",
-      "revision": 1,
+      "revision": 2,
       "kind": "fact",
       "layer": "L3",
       "state": "accepted",
@@ -490,47 +490,47 @@
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/ai-agent-compliance.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/ci.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/icm-check.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/security.yml",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".nvmrc",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".repo-manager.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "eslint.config.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "package.json",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "test/workflows/configuration.test.js",
-          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         }
       ]
     },
@@ -651,7 +651,7 @@
     },
     {
       "id": "shared-gotchas.md",
-      "revision": 3,
+      "revision": 4,
       "kind": "fact",
       "layer": "L3",
       "state": "accepted",
@@ -665,32 +665,37 @@
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".github/workflows/ai-agent-compliance.yml",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".gitignore",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".repo-manager.json",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/COMMAND_CENTER.md",
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "package.json",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "test/fixtures/insecure-project/config.js",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": "test/workflows/trusted-runner.test.js",
-          "commit": "6600a74a243c9dc9e8c49af0f61f282ce7cca7e0"
+          "commit": "418b42fe2f2b88d9b9606e27c261ea7ac7a69386"
         }
       ]
     },
