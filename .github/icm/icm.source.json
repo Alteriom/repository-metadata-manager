@@ -643,7 +643,7 @@
     },
     {
       "id": "shared-gotchas.md",
-      "revision": 1,
+      "revision": 2,
       "kind": "fact",
       "layer": "L3",
       "state": "accepted",
@@ -654,6 +654,11 @@
         ".github/icm/_shared/gotchas.md"
       ],
       "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".gitignore",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
         {
           "repo": "Alteriom/repository-metadata-manager",
           "path": ".prettierrc",
