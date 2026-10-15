@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Evaluate a pull request's current test merge in the compliance check: after a push or a reopen, the event payload named GitHub's previous merge commit (a merge of the old head), so the check audited code the pull request no longer contained or failed with "not open and mergeable". The resolver now reads the pull request when it runs and waits until its merge commit is built on the evaluated head
 - Authenticate hosted compliance checks with a repository-scoped, least-privilege GitHub App token so branch protection and security controls can be verified
 - Replace the impossible self-approval requirement with strict status, conversation-resolution, and verified-checker gates for solo maintainers
 - Keep checker-specific `--only` evaluations from failing verification gates for unrelated checkers
