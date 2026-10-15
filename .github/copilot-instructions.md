@@ -1,39 +1,9 @@
 # Copilot instructions
 
-Repository Metadata Manager v3 is a policy evaluator and controlled-remediation engine for Node.js 24+.
+The entry for this repository, for every agent, is [CLAUDE.md](../CLAUDE.md): what the repository is, where things live, and the route to take for what just happened. Each route names the stage contract to follow and the shared facts in [`.github/icm/_shared/`](icm/_shared/CONTEXT.md) to load. When this file and a file it points at disagree, the file pointed at is right.
 
-## Architecture
+What is specific to Copilot:
 
-```text
-lib/policy/Policy.js       validates and resolves policy
-lib/engine/                builds context, runs checkers, aggregates reports
-lib/checkers/              read-only repository and GitHub observations
-lib/control/Planner.js     creates deterministic remediation plans
-lib/control/Executor.js    previews or applies approved plans
-lib/control/Inventory.js   normalizes local and organization inventory
-bin/repo-manager.js        CLI
-mcp-server/index.js        allowlisted MCP boundary
-```
-
-## Required invariants
-
-- `check`, `inventory`, and `plan` are read-only.
-- Writes require an exact plan plus explicit approval.
-- All operation paths remain inside `projectRoot`.
-- Apply verifies before-state hashes and rejects stale plans.
-- Configuration failures are errors, not empty defaults.
-- Tokens come from environment or workload identity, never arguments or logs.
-- Only findings with a real `plan()` implementation may be marked fixable.
-- Not-applicable checkers remain visible but do not affect weighted score.
-
-## Development
-
-```bash
-npm ci
-npm run lint
-npm test
-npm run test:coverage
-npm pack --dry-run
-```
-
-Add tests for policy validation, path containment, stale state, and authorization whenever changing a trust boundary.
+- **Trust boundaries.** Before suggesting a change in `lib/control/`, `lib/policy/`, `mcp-server/`, `bin/` or a workflow, read [invariants.md](icm/_shared/invariants.md); add tests for policy validation, path containment, stale state and authorization whenever a change touches one.
+- **Checks.** `npm ci`, `npm run lint`, `npm test`, `npm run test:coverage`, `npm pack --dry-run` ([build-and-test.md](icm/_shared/build-and-test.md)); one test fails on `main` today ([gotchas.md](icm/_shared/gotchas.md)).
+- **MCP for the coding agent.** `.github/copilot-mcp.json` starts this repository's own MCP server read-only (`REPO_MANAGER_ENABLE_APPLY` is `false`); keep it so.

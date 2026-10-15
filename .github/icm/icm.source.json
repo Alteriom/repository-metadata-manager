@@ -1,0 +1,993 @@
+{
+  "workspace_root": "",
+  "schema_version": 2,
+  "access": "workspace",
+  "entrypoint": "CLAUDE.md",
+  "runtimes": [
+    "claude_code",
+    "codex_cli"
+  ],
+  "projects": [
+    "repository-metadata-manager"
+  ],
+  "nodes": [
+    {
+      "id": "CLAUDE.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L0",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "CLAUDE.md"
+      ]
+    },
+    {
+      "id": "AGENTS.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L0",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "id": "doc-.github-copilot-instructions.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/copilot-instructions.md"
+      ]
+    },
+    {
+      "id": "doc-CHANGELOG.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "CHANGELOG.md"
+      ]
+    },
+    {
+      "id": "doc-README.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "doc-docs-COMMAND_CENTER.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "docs/COMMAND_CENTER.md"
+      ]
+    },
+    {
+      "id": "doc-docs-development-API.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "docs/development/API.md"
+      ]
+    },
+    {
+      "id": "doc-docs-development-VERSIONING.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "docs/development/VERSIONING.md"
+      ]
+    },
+    {
+      "id": "doc-docs-guides-CLI.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "docs/guides/CLI.md"
+      ]
+    },
+    {
+      "id": "doc-docs-guides-POLICY.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "docs/guides/POLICY.md"
+      ]
+    },
+    {
+      "id": "doc-mcp-server-README.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        "mcp-server/README.md"
+      ]
+    },
+    {
+      "id": "01-change-CLAUDE.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/01-change/CLAUDE.md"
+      ]
+    },
+    {
+      "id": "01-change-CONTEXT.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/01-change/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "01-change-stages-01_define-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/01-change/stages/01_define/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "01-change-stages-02_change-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/01-change/stages/02_change/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "01-change-stages-03_verify-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/01-change/stages/03_verify/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "02-release-CLAUDE.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/02-release/CLAUDE.md"
+      ]
+    },
+    {
+      "id": "02-release-CONTEXT.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/02-release/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "02-release-stages-01_plan-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/02-release/stages/01_plan/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "02-release-stages-02_prepare-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/02-release/stages/02_prepare/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "02-release-stages-03_publish-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/02-release/stages/03_publish/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "03-deps-CLAUDE.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/03-deps/CLAUDE.md"
+      ]
+    },
+    {
+      "id": "03-deps-CONTEXT.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/03-deps/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "03-deps-stages-01_review-CONTEXT.md",
+      "revision": 1,
+      "kind": "stage",
+      "layer": "L2",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/03-deps/stages/01_review/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "shared-CONTEXT.md",
+      "revision": 1,
+      "kind": "route",
+      "layer": "L1",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/CONTEXT.md"
+      ]
+    },
+    {
+      "id": "shared-architecture.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/architecture.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".repo-manager.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "README.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "action.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "bin/repo-manager.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/COMMAND_CENTER.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/development/API.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/guides/POLICY.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/superpowers/plans/2026-03-27-core-engine-rewrite.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/superpowers/specs/2026-03-27-core-engine-rewrite-design.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "index.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/control/Executor.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/control/Inventory.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/control/Planner.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/engine/Cache.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/engine/Checker.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/engine/Context.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/engine/Engine.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/engine/Report.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/policy/Policy.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "mcp-server/README.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "mcp-server/index.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "package.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    },
+    {
+      "id": "shared-build-and-test.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/build-and-test.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/ai-agent-compliance.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/ci.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/icm-check.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/security.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".nvmrc",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".repo-manager.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "eslint.config.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "package.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "test/workflows/configuration.test.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    },
+    {
+      "id": "shared-documents.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/documents.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/copilot-instructions.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/ai-agent-compliance.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/release.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".prettierrc",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".repo-manager.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "CHANGELOG.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "CONTRIBUTING.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "README.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "action.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "bin/repo-manager.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "config.example.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/COMMAND_CENTER.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/development/API.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/development/VERSIONING.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/guides/CLI.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/guides/POLICY.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "index.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/policy/Policy.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "mcp-server/README.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "mcp-server/index.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "package.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    },
+    {
+      "id": "shared-gotchas.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/gotchas.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".prettierrc",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".repo-manager.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "CONTRIBUTING.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "package.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "test/fixtures/insecure-project/config.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "test/workflows/trusted-runner.test.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    },
+    {
+      "id": "shared-invariants.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/invariants.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "README.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "bin/repo-manager.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/COMMAND_CENTER.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/control/Executor.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "lib/policy/Policy.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "mcp-server/index.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "scripts/run-trusted-tests.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "test/workflows/configuration.test.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "test/workflows/trusted-runner.test.js",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    },
+    {
+      "id": "shared-release.md",
+      "revision": 1,
+      "kind": "fact",
+      "layer": "L3",
+      "state": "accepted",
+      "project_id": "repository-metadata-manager",
+      "verified_at": "2026-10-15",
+      "review_after": "2027-01-13",
+      "files": [
+        ".github/icm/_shared/release.md"
+      ],
+      "evidence": [
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": ".github/workflows/release.yml",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "CHANGELOG.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "docs/development/VERSIONING.md",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        },
+        {
+          "repo": "Alteriom/repository-metadata-manager",
+          "path": "package.json",
+          "commit": "d5daf2275e14b98526f8b4b61ac7bda226efa9da"
+        }
+      ]
+    }
+  ],
+  "forms": [
+    {
+      "form": "umbrella",
+      "root": "",
+      "pipelines": [
+        ".github/icm/01-change",
+        ".github/icm/02-release",
+        ".github/icm/03-deps"
+      ],
+      "unit": "run"
+    },
+    {
+      "form": "pipeline",
+      "root": ".github/icm/01-change",
+      "unit": "run"
+    },
+    {
+      "form": "pipeline",
+      "root": ".github/icm/02-release",
+      "unit": "run"
+    },
+    {
+      "form": "pipeline",
+      "root": ".github/icm/03-deps",
+      "unit": "run"
+    }
+  ],
+  "stages": {
+    "change-define": {
+      "order": 1,
+      "contract": ".github/icm/01-change/stages/01_define/CONTEXT.md",
+      "inputs": {
+        "working": [],
+        "reference": [
+          ".github/icm/_shared/architecture.md",
+          ".github/icm/_shared/invariants.md",
+          ".github/icm/_shared/gotchas.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/02-release/",
+        ".github/icm/03-deps/",
+        "docs/releases/",
+        "docs/superpowers/",
+        "test/fixtures/"
+      ],
+      "outputs": [
+        ".github/icm/01-change/stages/01_define/output/definition.md"
+      ],
+      "human_check": "A person runs the reproduction and confirms it fails for the reported reason, or reads the spec and approves it, before any code changes.",
+      "required": [
+        "01-change-stages-01_define-CONTEXT.md"
+      ],
+      "optional": [
+        "shared-build-and-test.md"
+      ]
+    },
+    "change-change": {
+      "order": 2,
+      "contract": ".github/icm/01-change/stages/02_change/CONTEXT.md",
+      "inputs": {
+        "working": [
+          ".github/icm/01-change/stages/01_define/output/definition.md"
+        ],
+        "reference": [
+          ".github/icm/_shared/invariants.md",
+          ".github/icm/_shared/build-and-test.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/02-release/",
+        ".github/icm/03-deps/"
+      ],
+      "outputs": [
+        ".github/icm/01-change/stages/02_change/output/change.md"
+      ],
+      "human_check": "A person reads the diff beside `definition.md`: it does what was defined, every invariant touched has a test, and nothing outside the layer moved.",
+      "required": [
+        "01-change-stages-02_change-CONTEXT.md"
+      ],
+      "optional": [
+        "shared-architecture.md"
+      ]
+    },
+    "change-verify": {
+      "order": 3,
+      "contract": ".github/icm/01-change/stages/03_verify/CONTEXT.md",
+      "inputs": {
+        "working": [
+          ".github/icm/01-change/stages/02_change/output/change.md"
+        ],
+        "reference": [
+          ".github/icm/_shared/build-and-test.md",
+          ".github/icm/_shared/gotchas.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/02-release/",
+        ".github/icm/03-deps/"
+      ],
+      "outputs": [
+        ".github/icm/01-change/stages/03_verify/output/pull-request.md"
+      ],
+      "human_check": "A repository administrator reads `pull-request.md` and the diff, comments `/approve-command-center <sha>` if satisfied, and decides whether to merge.",
+      "required": [
+        "01-change-stages-03_verify-CONTEXT.md"
+      ]
+    },
+    "release-plan": {
+      "order": 1,
+      "contract": ".github/icm/02-release/stages/01_plan/CONTEXT.md",
+      "inputs": {
+        "working": [],
+        "reference": [
+          ".github/icm/_shared/release.md",
+          ".github/icm/_shared/architecture.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/01-change/",
+        ".github/icm/03-deps/",
+        "docs/releases/"
+      ],
+      "outputs": [
+        ".github/icm/02-release/stages/01_plan/output/plan.md"
+      ],
+      "human_check": "A person reads `plan.md` and approves the version number and the path, or names others.",
+      "required": [
+        "02-release-stages-01_plan-CONTEXT.md"
+      ],
+      "optional": [
+        "shared-gotchas.md"
+      ]
+    },
+    "release-prepare": {
+      "order": 2,
+      "contract": ".github/icm/02-release/stages/02_prepare/CONTEXT.md",
+      "inputs": {
+        "working": [
+          ".github/icm/02-release/stages/01_plan/output/plan.md"
+        ],
+        "reference": [
+          ".github/icm/_shared/release.md",
+          ".github/icm/_shared/build-and-test.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/01-change/",
+        ".github/icm/03-deps/"
+      ],
+      "outputs": [
+        ".github/icm/02-release/stages/02_prepare/output/release-pr.md"
+      ],
+      "human_check": "A person reads `release-pr.md` and the notes, merges the pull request, and then takes the step it names.",
+      "required": [
+        "02-release-stages-02_prepare-CONTEXT.md"
+      ]
+    },
+    "release-publish": {
+      "order": 3,
+      "contract": ".github/icm/02-release/stages/03_publish/CONTEXT.md",
+      "inputs": {
+        "working": [
+          ".github/icm/02-release/stages/02_prepare/output/release-pr.md"
+        ],
+        "reference": [
+          ".github/icm/_shared/release.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/01-change/",
+        ".github/icm/03-deps/"
+      ],
+      "outputs": [
+        ".github/icm/02-release/stages/03_publish/output/publish.md"
+      ],
+      "human_check": "A person reads `publish.md`, checks the npm page once, and decides whether anything missing must be done by hand.",
+      "required": [
+        "02-release-stages-03_publish-CONTEXT.md"
+      ]
+    },
+    "deps-review": {
+      "order": 1,
+      "contract": ".github/icm/03-deps/stages/01_review/CONTEXT.md",
+      "inputs": {
+        "working": [],
+        "reference": [
+          ".github/icm/_shared/build-and-test.md",
+          ".github/icm/_shared/gotchas.md"
+        ]
+      },
+      "do_not_load": [
+        ".github/icm/01-change/",
+        ".github/icm/02-release/",
+        "test/fixtures/"
+      ],
+      "outputs": [
+        ".github/icm/03-deps/stages/01_review/output/review.md"
+      ],
+      "human_check": "A person reads `review.md` and the CI result, approves the head with `/approve-command-center` if satisfied, and decides to merge, hold or close.",
+      "required": [
+        "03-deps-stages-01_review-CONTEXT.md"
+      ],
+      "optional": [
+        "shared-invariants.md"
+      ]
+    }
+  }
+}
