@@ -80,5 +80,10 @@
         "mcp-server/index.js",
         "mcp-server/README.md",
         "config.example.json"
-    ]
+    ],
+    "overrides": {
+        "@istanbuljs/load-nyc-config": {
+            "js-yaml": "^4.1.0"
+        }
+    }
 }
